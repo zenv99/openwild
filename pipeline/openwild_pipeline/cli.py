@@ -124,6 +124,13 @@ def cmd_buckets(_):
     print(f"Buckets: {n} species one-liners, {r} genus warnings")
 
 
+def cmd_kew(_):
+    from .kew_useful import run
+
+    n = run(config.REPO_ROOT / "content" / "quick" / "auto_0_kew_useful.csv")
+    print(f"Kew useful plants: {n} species one-liners")
+
+
 def cmd_summary(a):
     """Coverage summary for a region: how many species, and how many have safety info at each level."""
     import csv
@@ -452,6 +459,7 @@ def main(argv=None):
     sp = add("wcvp", cmd_wcvp, "add Kew WCVP plant species for the region's WGSRPD areas")
     sp.add_argument("region")
     add("wikidata", cmd_wikidata, "auto one-liners: mushroom edibility from Wikidata (CC0)")
+    add("kew", cmd_kew, "auto one-liners: Kew World Checklist of Useful Plant Species (CC BY 4.0)")
     add("buckets", cmd_buckets, "auto one-liners: edible/poisonous/medicinal lists from Wikipedia categories + Wikidata")
     sp = add("summary", cmd_summary, "coverage summary for a region -> data/regions/<id>/summary.json")
     sp.add_argument("region")
