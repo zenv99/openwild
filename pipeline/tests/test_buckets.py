@@ -58,3 +58,15 @@ def test_category_walk(monkeypatch):
     monkeypatch.setattr(buckets, "get_json", fake)
     assert buckets.category_pages("en", "Edible fruits", 1) == {"Mango": "Q9", "Lime": "Q8"}
     assert buckets.category_pages("en", "Edible fruits", 0) == {"Mango": "Q9"}
+
+
+def test_commons_titles_are_taxa(monkeypatch):
+    def fake(url, params=None, **_):
+        return {"query": {"categorymembers": [
+            {"title": "Category:Datura metel"}, {"title": "Category:Dieffenbachia"},
+            {"title": "Category:Poisonous plants of Australia"}, {"title": "Category:Ricinus communis"},
+        ]}}
+
+    monkeypatch.setattr(buckets, "get_json", fake)
+    assert buckets.commons_taxa("Poisonous plants") == [
+        ("Datura metel", "species"), ("Dieffenbachia", "genus"), ("Ricinus communis", "species")]

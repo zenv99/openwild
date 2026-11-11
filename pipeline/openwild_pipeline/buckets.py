@@ -75,6 +75,13 @@ BUCKETS: list[Bucket] = [
     Bucket("en", "Entheogens", "psychoactive", "psychoactive plant"),
     Bucket("en", "Hallucinogenic plants", "psychoactive", "psychoactive plant"),
     Bucket("en", "Plant dermatitis", "toxic", "causes skin rash"),
+    # --- Wikimedia Commons: curated categories whose subcategories are named by scientific name
+    Bucket("commons", "Poisonous plants", "toxic", "poisonous plant"),
+    Bucket("commons", "Poisonous fungi", "toxic", "poisonous mushroom"),
+    Bucket("commons", "Deadly fungi", "deadly", "deadly mushroom"),
+    Bucket("commons", "Edible fungi", "edible", "edible mushroom"),
+    Bucket("commons", "Psychoactive fungi", "psychoactive", "psychoactive mushroom"),
+    Bucket("commons", "Medicinal plants", "medicinal", "medicinal plant"),
     # --- Indonesian Wikipedia (Bali first)
     Bucket("id", "Buah-buahan", "edible", "buah (edible fruit)", 2),
     Bucket("id", "Buah tropis", "edible", "buah tropis (tropical fruit)"),
@@ -89,7 +96,33 @@ BUCKETS: list[Bucket] = [
 
 DANGER_KINDS = {"toxic", "deadly", "psychoactive"}
 FOOD_KINDS = {"edible", "edible_cooked"}
-CAT_PREFIX = {"en": "Category:", "id": "Kategori:"}
+CAT_PREFIX = {"en": "Category:", "id": "Kategori:", "commons": "Category:"}
+TAXON_TITLE = __import__("re").compile(r"^([A-Z][a-z-]+)(?: ([a-z-]+))?$")
+
+
+def commons_taxa(category: str, max_items: int = 20000) -> list[tuple[str, str]]:
+    """Wikimedia Commons: subcategories of e.g. 'Poisonous plants' are named by taxon ('Datura metel').
+    Returns [(name, 'species'|'genus')] for titles that look like a genus or a binomial."""
+    api = "https://commons.wikimedia.org/w/api.php"
+    params = {"action": "query", "format": "json", "list": "categorymembers", "cmtitle": f"Category:{category}",
+              "cmtype": "subcat", "cmlimit": "500"}
+    out: list[tuple[str, str]] = []
+    while len(out) < max_items:
+        try:
+            data = get_json(api, params)
+        except Exception as e:  # noqa: BLE001
+            print(f"  commons:{category}: {e!r}", flush=True)
+            break
+        for m in (data.get("query") or {}).get("categorymembers", []):
+            title = m["title"].split(":", 1)[-1].strip()
+            hit = TAXON_TITLE.match(title)
+            if hit:
+                out.append((title, "species" if hit.group(2) else "genus"))
+        cont = data.get("continue")
+        if not cont:
+            break
+        params = {**params, **cont}
+    return out
 
 
 def category_pages(lang: str, category: str, depth: int, max_pages: int = 8000) -> dict[str, str]:
@@ -222,8 +255,15 @@ def collect(buckets: list[Bucket] = BUCKETS) -> tuple[dict[str, dict], dict[str,
     genera: dict[str, dict] = defaultdict(lambda: defaultdict(set))
     per_bucket: list[tuple[Bucket, dict]] = []
     all_q: set[str] = set()
+    commons = [b for b in buckets if b.lang == "commons"]
+    for b in commons:
+        hits = commons_taxa(b.category)
+        for name, rank in hits:
+            (species if rank == "species" else genera)[name][b.kind].add(b.label)
+        print(f"commons:{b.category}: {len(hits)} taxa", flush=True)
+    wiki = [b for b in buckets if b.lang != "commons"]
     with cf.ThreadPoolExecutor(4) as ex:  # categories are independent: walk them in parallel (paced per host)
-        for b, pages in zip(buckets, ex.map(lambda b: category_pages(b.lang, b.category, b.depth), buckets)):
+        for b, pages in zip(wiki, ex.map(lambda b: category_pages(b.lang, b.category, b.depth), wiki)):
             print(f"{b.lang}:{b.category}: {len(pages)} articles", flush=True)
             per_bucket.append((b, pages))
             all_q |= set(pages.values())
