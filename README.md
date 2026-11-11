@@ -2,6 +2,8 @@
 
 **Free, offline plant and mushroom identification for everyone — built for the moment you have no signal and need to know what you're looking at.**
 
+*Created by EDM producer **Zen V**. "I'm a US Marine, and we may be foraging for survival one day. This is the go-to app. Hope you enjoy."*
+
 OpenWild is a free, open-source, non-commercial Android app. Point the camera at a plant or mushroom, take a few photos, and the app tells you what it most likely is, how confident it is, and what happens if it's eaten — harms first. Everything runs on the phone. No account, no ads, no tracking, no internet required after you download your region.
 
 > "OpenWild" is a working name. To rename, change `app_name` in `android/app/src/main/res/values/strings.xml` and `applicationId` in `android/app/build.gradle.kts`.
@@ -11,7 +13,10 @@ OpenWild is a free, open-source, non-commercial Android app. Point the camera at
 - **Photo ID, fully offline.** A small on-device model (~10–25 MB) turns each photo into a fingerprint and matches it against a regional reference library.
 - **Several photos, more confidence.** Take 1–5 shots (leaf, flower, fruit, whole plant; or cap, gills, stem, base). Results are fused across photos.
 - **Honest confidence.** Every result shows a calibrated confidence score and a tier: High, Medium, Low, or "Not in our library".
-- **Region packs.** The app detects your region by GPS (offline) and downloads only that region's species (typically 5–30 MB). Download extra regions before travel.
+- **Region downloads like Organic Maps.** Browse by continent, search countries, see sizes, update all. The app suggests your region from GPS (offline) and downloads only that region's species (typically 5–30 MB).
+- **Explore offline.** Search every species in your region; filter by deadly, survival, plants, mushrooms, psychoactive.
+- **Dark mode by default**, light and system themes too.
+- **Contribute privately.** Share a sighting (e.g. to iNaturalist) or report a wrong ID — only when you tap it. Nothing is ever sent automatically.
 - **"If eaten" for every species.** Benefits, harms (with symptom onset timing and what to do), and what it feels like — including clear legal warnings for psychoactive species.
 - **Survival mode.** Puts safe high-value plants, deadly species, and water/fire/shelter/medicinal uses first.
 - **Safety first, always.** Harms before benefits. Deadly lookalikes always shown. Full "If eaten" details only at High confidence. See [SAFETY.md](SAFETY.md).
@@ -67,6 +72,19 @@ Full walkthrough: [pipeline/README.md](pipeline/README.md).
 | Hosting region packs | GitHub Releases (packs are public files) |
 | Code hosting + CI | GitHub + GitHub Actions |
 | Distribution | Google Play ($25 one-time developer fee), F-Droid (free), GitHub APK |
+
+## Support
+
+OpenWild is free with no ads. Tips over Bitcoin Lightning: **zenv9@cake.cash**
+
+Feedback: open an issue (in-app **About → Send feedback** does this for you).
+
+> Google Play restricts in-app donation links for individuals. Build Play releases with `-PshowDonations=false`; keep the tip button in GitHub/F-Droid builds.
+
+## Automation
+
+- **Weekly data bot** (Sundays): adds 30–40 new species safety entries and missing regions, validates them, and opens a pull request for human review. Progress: [COVERAGE.md](COVERAGE.md).
+- **Monthly optimizer** (1st of each month): updates dependencies, improves speed, size, UI and accessibility, and opens a pull request. Safety rules are off-limits to it.
 
 ## License
 
