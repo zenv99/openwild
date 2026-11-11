@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenWild</string>
+    <string name="tagline">Free offline plant &amp; mushroom ID</string>
+
+    <!-- Disclaimer (first run) -->
+    <string name="disclaimer_title">Before you start</string>
+    <string name="disclaimer_body">OpenWild helps you identify plants and mushrooms from photos, offline.\n\nPhoto identification can be wrong. Some deadly species look almost identical to edible ones.\n\nNever eat anything based only on this app. In an emergency, seek medical help.</string>
+    <string name="disclaimer_accept">I understand</string>
+
+    <!-- Home -->
+    <string name="identify">Identify</string>
+    <string name="region_packs">Region packs</string>
+    <string name="survival_guide">Survival guide</string>
+    <string name="survival_mode">Survival mode</string>
+    <string name="survival_mode_desc">Show survival value first and highlight deadly species.</string>
+    <string name="active_region">Region: %1$s (%2$d species)</string>
+    <string name="no_pack">No region pack installed. Download one while you have internet.</string>
+    <string name="model_missing">Identification model not installed in this build.</string>
+    <string name="suggested_region">You seem to be in %1$s.</string>
+    <string name="credits">Photo credits</string>
+
+    <!-- Capture -->
+    <string name="capture_title">Take 1–5 photos</string>
+    <string name="what_is_it">What is it?</string>
+    <string name="kind_any">Not sure</string>
+    <string name="kind_plant">Plant</string>
+    <string name="kind_fungus">Mushroom</string>
+    <string name="hint_plant">Tip: photograph the whole plant, a leaf up close, and any flower or fruit.</string>
+    <string name="hint_fungus">Tip: photograph the cap, the underside (gills or pores), and the stem down to the base. Dig the base out gently.</string>
+    <string name="take_photo">Take photo</string>
+    <string name="from_gallery">From gallery</string>
+    <string name="photo_part">This photo shows:</string>
+    <string name="part_whole">Whole</string>
+    <string name="part_leaf">Leaf</string>
+    <string name="part_flower_fruit">Flower / fruit</string>
+    <string name="part_bark">Bark / stem</string>
+    <string name="part_cap">Cap</string>
+    <string name="part_underside">Gills / pores</string>
+    <string name="part_stem_base">Stem &amp; base</string>
+    <string name="camera_permission">Camera permission is needed to take photos. You can still choose photos from your gallery.</string>
+    <string name="identifying">Identifying…</string>
+
+    <!-- Results -->
+    <string name="results">Results</string>
+    <string name="confidence">%1$d%% confidence</string>
+    <string name="tier_high">High confidence</string>
+    <string name="tier_medium">Medium confidence</string>
+    <string name="tier_low">Low confidence</string>
+    <string name="tier_unknown">Not in our library</string>
+    <string name="deadly_banner">Could be %1$s — DEADLY. Do not eat.</string>
+    <string name="other_candidates">Other possibilities</string>
+    <string name="add_photo_more_confidence">Add another photo for more confidence</string>
+    <string name="new_search">New identification</string>
+
+    <!-- Notices (SAFETY.md) -->
+    <string name="notice_not_confident_eating">Not confident enough to show eating information. Do not eat.</string>
+    <string name="notice_not_confident">Not confident. Do not eat.</string>
+    <string name="notice_not_in_library">This doesn\'t match anything in your region pack. Treat as unsafe.</string>
+    <string name="notice_no_safety_data">No safety information yet. Treat as unsafe. Do not eat.</string>
+    <string name="notice_need_underside">For mushrooms, eating information needs at least 2 photos including the underside (gills or pores).</string>
+    <string name="notice_mushroom_survival">Mushrooms are a poor survival food: very few calories and high risk. Prioritise plants.</string>
+    <string name="notice_not_reviewed">Not yet expert reviewed.</string>
+    <string name="legal_warning">Psychoactive. Contains substances controlled in many countries. Possession or use may be illegal where you are. Toxic and deadly lookalikes exist.</string>
+    <string name="footer">Never eat anything based only on this app.</string>
+
+    <!-- Species page -->
+    <string name="lookalikes">Lookalikes</string>
+    <string name="if_eaten">If eaten</string>
+    <string name="harms">Harms</string>
+    <string name="benefits">Benefits</string>
+    <string name="feeling">Feeling</string>
+    <string name="toxicity">Toxicity: %1$s</string>
+    <string name="edibility">Edibility: %1$s</string>
+    <string name="toxic_parts">Toxic parts</string>
+    <string name="cooking_makes_safe">Cooking makes it safe</string>
+    <string name="cooking_not_safe">Cooking does NOT make it safe</string>
+    <string name="symptoms">Symptoms</string>
+    <string name="onset">When symptoms start</string>
+    <string name="severity">How serious</string>
+    <string name="what_to_do">What to do</string>
+    <string name="nutrition">Nutrition</string>
+    <string name="edible_parts">Edible parts</string>
+    <string name="preparation">Preparation required</string>
+    <string name="traditional_uses">Reported / traditional uses</string>
+    <string name="taste_texture">Taste &amp; texture</string>
+    <string name="effects">Effects</string>
+    <string name="risks">Risks</string>
+    <string name="survival">Survival</string>
+    <string name="survival_uses">Uses: %1$s</string>
+    <string name="about">About</string>
+    <string name="sources">Sources</string>
+    <string name="no_harm_info">No harm information recorded.</string>
+
+    <!-- Survival guide -->
+    <string name="survival_valuable">High survival value</string>
+    <string name="survival_deadly">Deadly — learn to recognise</string>
+    <string name="survival_empty">No survival information in this pack yet.</string>
+
+    <!-- Packs -->
+    <string name="installed">Installed</string>
+    <string name="available">Available to download</string>
+    <string name="refresh">Refresh list</string>
+    <string name="download">Download</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="use_region">Use</string>
+    <string name="in_use">In use</string>
+    <string name="incompatible">Needs app update</string>
+    <string name="pack_size">%1$s · %2$d species</string>
+    <string name="offline_list">Couldn\'t reach the pack list. Connect to the internet to download packs.</string>
+    <string name="back">Back</string>
+</resources>

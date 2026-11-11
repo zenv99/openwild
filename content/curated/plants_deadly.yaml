@@ -1,0 +1,212 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED. Must be reviewed by a botanist/toxicologist before public release.
+
+- scientific_name: Conium maculatum
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole plant, especially seeds and roots]
+      cooking_makes_safe: false
+      symptoms: "Burning mouth, salivation, trembling, then progressive muscle paralysis leading to breathing failure."
+      onset: "Often within 30 minutes to a few hours."
+      severity: "Frequently fatal. Purple-blotched hairless stems and a musty smell are warning signs."
+      what_to_do: "Seek emergency medical care immediately. Breathing support may be needed."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Daucus carota, danger: edible}
+    - {name: Anthriscus sylvestris, danger: toxic}
+    - {name: Foeniculum vulgare, danger: edible}
+  sources: ["Wikipedia: Conium maculatum"]
+  review: {status: unreviewed}
+
+- scientific_name: Cicuta maculata
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole plant, especially roots]
+      cooking_makes_safe: false
+      symptoms: "Nausea, vomiting, then violent seizures."
+      onset: "Very fast: often within 15–60 minutes."
+      severity: "One of the most toxic plants in North America. Often fatal."
+      what_to_do: "Seek emergency medical care immediately."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Pastinaca sativa, danger: edible}
+    - {name: Sium suave, danger: edible}
+  sources: ["Wikipedia: Cicuta maculata"]
+  review: {status: unreviewed}
+
+- scientific_name: Nerium oleander
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [all parts, including smoke from burning it]
+      cooking_makes_safe: false
+      symptoms: "Nausea, vomiting, abdominal pain, dizziness, slow or irregular heartbeat."
+      onset: "Usually within a few hours."
+      severity: "Can be fatal. Very common ornamental shrub in warm countries. Do not use the stems as skewers or burn it."
+      what_to_do: "Seek emergency medical care. Heart monitoring may be needed."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Nerium oleander"]
+  review: {status: unreviewed}
+
+- scientific_name: Cerbera odollam
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [seeds, fruit kernel, sap]
+      cooking_makes_safe: false
+      symptoms: "Vomiting, slow and irregular heartbeat, collapse."
+      onset: "Usually within a few hours."
+      severity: "Frequently fatal. Coastal tree of South and Southeast Asia with mango-like fruit."
+      what_to_do: "Seek emergency medical care immediately. Heart monitoring is needed."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Cerbera manghas, danger: deadly}
+  sources: ["Wikipedia: Cerbera odollam"]
+  review: {status: unreviewed}
+
+- scientific_name: Abrus precatorius
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [seeds]
+      cooking_makes_safe: false
+      symptoms: "Severe vomiting and bloody diarrhoea, dehydration, organ failure."
+      onset: "Delayed: from several hours to a few days."
+      severity: "Bright red-and-black seeds contain abrin. A broken or chewed seed can be fatal."
+      what_to_do: "Seek emergency medical care immediately, even before symptoms."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Abrus precatorius"]
+  review: {status: unreviewed}
+
+- scientific_name: Ricinus communis
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [seeds]
+      cooking_makes_safe: false
+      symptoms: "Vomiting, bloody diarrhoea, severe dehydration, organ failure."
+      onset: "Delayed: often several hours up to a day or more."
+      severity: "Seeds contain ricin. Chewed seeds can be fatal. Common weedy shrub in the tropics."
+      what_to_do: "Seek emergency medical care immediately."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Ricinus communis"]
+  review: {status: unreviewed}
+
+- scientific_name: Atropa belladonna
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: true
+  if_eaten:
+    harms:
+      toxic_parts: [all parts, especially berries and roots]
+      cooking_makes_safe: false
+      symptoms: "Dry mouth, dilated pupils, blurred vision, fast heartbeat, fever, confusion, delirium, seizures."
+      onset: "Usually within 30 minutes to a few hours."
+      severity: "Can be fatal. Shiny black berries look like edible berries."
+      what_to_do: "Seek emergency medical care immediately."
+    feeling:
+      effects: "Delirium and confusion rather than a pleasant experience; people may not know what is real."
+      risks: "Extremely dangerous. Delirium in the wild can lead to injury or getting lost."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Vaccinium myrtillus, danger: edible}
+  sources: ["Wikipedia: Atropa belladonna"]
+  review: {status: unreviewed}
+
+- scientific_name: Datura stramonium
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: true
+  if_eaten:
+    harms:
+      toxic_parts: [all parts, especially seeds]
+      cooking_makes_safe: false
+      symptoms: "Dry mouth, extreme thirst, dilated pupils, fast heartbeat, high temperature, confusion, delirium, seizures."
+      onset: "Usually within 30 minutes to a few hours; effects can last a day or more."
+      severity: "Can be fatal. Toxicity varies hugely between plants, so any amount is unpredictable."
+      what_to_do: "Seek emergency medical care immediately. Keep the person from wandering or harming themselves."
+    feeling:
+      effects: "Intense delirium with hallucinations people cannot tell apart from reality, confusion and memory loss."
+      risks: "Often terrifying. Frequent cause of injury, hospitalisation and death."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Datura stramonium"]
+  review: {status: unreviewed}
+
+- scientific_name: Aconitum napellus
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [all parts, especially roots]
+      cooking_makes_safe: false
+      symptoms: "Tingling and numbness of mouth and face, vomiting, weakness, dangerously irregular heartbeat."
+      onset: "Fast: from minutes to about an hour."
+      severity: "Frequently fatal. Toxin can also be absorbed through skin; wear gloves."
+      what_to_do: "Seek emergency medical care immediately."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Aconitum napellus"]
+  review: {status: unreviewed}
+
+- scientific_name: Taxus baccata
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [leaves, bark, seeds (the seed inside the red berry)]
+      cooking_makes_safe: false
+      symptoms: "Dizziness, vomiting, slow heartbeat, collapse; sometimes sudden death with few warning signs."
+      onset: "Usually within one to a few hours."
+      severity: "Can be fatal."
+      what_to_do: "Seek emergency medical care immediately."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Taxus baccata"]
+  review: {status: unreviewed}
+
+- scientific_name: Gloriosa superba
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [all parts, especially tubers]
+      cooking_makes_safe: false
+      symptoms: "Severe vomiting and diarrhoea, then multi-organ failure."
+      onset: "Usually within 2–12 hours; organ failure can follow over the next days."
+      severity: "Frequently fatal. Tubers have been mistaken for wild yams."
+      what_to_do: "Seek emergency medical care immediately."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Dioscorea spp., danger: edible}
+  sources: ["Wikipedia: Gloriosa superba"]
+  review: {status: unreviewed}
+
+- scientific_name: Jatropha curcas
+  edibility: toxic
+  toxicity: serious
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [seeds, sap]
+      cooking_makes_safe: false
+      symptoms: "Burning throat, severe vomiting and diarrhoea, dehydration."
+      onset: "Usually within an hour or two."
+      severity: "Seeds look and taste like nuts; children are often poisoned."
+      what_to_do: "Seek medical care, especially for children. Sip clean water to avoid dehydration."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Jatropha curcas"]
+  review: {status: unreviewed}

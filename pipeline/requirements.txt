@@ -1,0 +1,20 @@
+# Core (needed for tests, content validation and pack building)
+numpy>=1.26
+pyyaml>=6.0
+
+# Data processing
+duckdb>=1.1
+pillow>=10.0
+tqdm>=4.66
+
+# Model distillation / embedding (GPU recommended: Kaggle or Colab free tier)
+torch>=2.4
+torchvision>=0.19
+timm>=1.0.9
+open_clip_torch>=2.26
+
+# Export to LiteRT (.tflite)
+ai-edge-torch>=0.3
+
+# Tests
+pytest>=8.0

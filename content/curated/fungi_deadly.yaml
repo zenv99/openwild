@@ -1,0 +1,156 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED. Must be reviewed by a mycologist before public release.
+# Schema: docs/CONTENT_SCHEMA.md   Rules: SAFETY.md
+
+- scientific_name: Amanita phalloides
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Severe vomiting, watery diarrhoea and abdominal pain, then an apparent recovery, then liver and kidney failure."
+      onset: "Usually 6–24 hours after eating. A false recovery often follows on day 2–3 while the liver is failing."
+      severity: "A leading cause of fatal mushroom poisoning worldwide. A single cap can kill an adult."
+      what_to_do: "Seek emergency medical care immediately, even if you feel fine. Tell doctors you may have eaten a death cap (amatoxin). Keep a sample of the mushroom."
+    feeling:
+      taste_texture: "Survivors report it tasted pleasant. Taste gives no warning."
+  survival:
+    priority: avoid
+  lookalikes:
+    - {name: Volvariella volvacea, danger: edible}
+    - {name: Agaricus campestris, danger: edible}
+    - {name: Russula spp., danger: edible}
+    - {name: Amanita citrina, danger: harmless}
+  sources: ["Wikipedia: Amanita phalloides"]
+  review: {status: unreviewed}
+
+- scientific_name: Amanita bisporigera
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Severe vomiting and diarrhoea, false recovery, then liver and kidney failure."
+      onset: "Usually 6–24 hours after eating, with a false recovery on day 2–3."
+      severity: "Frequently fatal. One of the 'destroying angel' mushrooms."
+      what_to_do: "Seek emergency medical care immediately, even with no symptoms. Report possible amatoxin poisoning."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Agaricus spp., danger: edible}
+    - {name: Leucoagaricus leucothites, danger: edible}
+  sources: ["Wikipedia: Amanita bisporigera"]
+  review: {status: unreviewed}
+
+- scientific_name: Amanita virosa
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Severe vomiting and diarrhoea, false recovery, then liver and kidney failure."
+      onset: "Usually 6–24 hours after eating, with a false recovery on day 2–3."
+      severity: "Frequently fatal. European 'destroying angel'."
+      what_to_do: "Seek emergency medical care immediately, even with no symptoms. Report possible amatoxin poisoning."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Agaricus spp., danger: edible}
+  sources: ["Wikipedia: Amanita virosa"]
+  review: {status: unreviewed}
+
+- scientific_name: Galerina marginata
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Same amatoxins as the death cap: vomiting and diarrhoea, false recovery, then liver failure."
+      onset: "Usually 6–24 hours after eating."
+      severity: "Potentially fatal. A small brown mushroom on wood that is easily mistaken for edible or psychoactive species."
+      what_to_do: "Seek emergency medical care immediately and report possible amatoxin poisoning."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Kuehneromyces mutabilis, danger: edible}
+    - {name: Armillaria mellea, danger: edible}
+    - {name: Psilocybe spp., danger: psychoactive}
+  sources: ["Wikipedia: Galerina marginata"]
+  review: {status: unreviewed}
+
+- scientific_name: Lepiota brunneoincarnata
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Amatoxin poisoning: vomiting and diarrhoea, false recovery, then liver failure."
+      onset: "Usually 6–24 hours after eating."
+      severity: "Potentially fatal. Small Lepiota species are often confused with edible parasols."
+      what_to_do: "Seek emergency medical care immediately and report possible amatoxin poisoning."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Macrolepiota procera, danger: edible}
+  sources: ["Wikipedia: Lepiota brunneoincarnata"]
+  review: {status: unreviewed}
+
+- scientific_name: Cortinarius rubellus
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Intense thirst, frequent urination, nausea, headache, then kidney failure."
+      onset: "Very delayed: usually 2–4 days, sometimes up to 3 weeks after eating, so people often don't connect it to the meal."
+      severity: "Can cause permanent kidney failure or death."
+      what_to_do: "Seek medical care as soon as you suspect it, even days later. Tell doctors you may have eaten a webcap (orellanine)."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Cantharellus cibarius, danger: edible}
+  sources: ["Wikipedia: Cortinarius rubellus"]
+  review: {status: unreviewed}
+
+- scientific_name: Chlorophyllum molybdites
+  edibility: toxic
+  toxicity: serious
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Severe vomiting, diarrhoea and cramps; can cause dangerous dehydration."
+      onset: "Usually 1–3 hours after eating."
+      severity: "Rarely fatal but can be very severe, especially in children. Very common on lawns in warm regions."
+      what_to_do: "Seek medical care, especially for children or if you cannot keep fluids down. Drink small sips of clean water."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Macrolepiota procera, danger: edible}
+    - {name: Chlorophyllum rhacodes, danger: edible}
+  sources: ["Wikipedia: Chlorophyllum molybdites"]
+  review: {status: unreviewed}
+
+- scientific_name: Gyromitra esculenta
+  edibility: toxic
+  toxicity: deadly
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Vomiting, diarrhoea, headache, dizziness; in severe cases seizures and liver damage."
+      onset: "Usually 6–12 hours after eating."
+      severity: "Can be fatal. Fumes from cooking it are also dangerous."
+      what_to_do: "Seek emergency medical care. Tell doctors you may have eaten a false morel (gyromitrin)."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Morchella esculenta, danger: edible}
+  sources: ["Wikipedia: Gyromitra esculenta"]
+  review: {status: unreviewed}

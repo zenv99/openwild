@@ -1,0 +1,113 @@
+{
+ "schema": 1,
+ "regions": [
+  {
+   "id": "WORLD",
+   "name": "World (common species)",
+   "bbox": [
+    [
+     -180,
+     -90,
+     180,
+     90
+    ]
+   ]
+  },
+  {
+   "id": "PH",
+   "name": "Philippines",
+   "bbox": [
+    [
+     116.9,
+     4.5,
+     126.7,
+     21.2
+    ]
+   ]
+  },
+  {
+   "id": "ID",
+   "name": "Indonesia",
+   "bbox": [
+    [
+     94.9,
+     -11.1,
+     141.1,
+     6.1
+    ]
+   ]
+  },
+  {
+   "id": "TH",
+   "name": "Thailand",
+   "bbox": [
+    [
+     97.3,
+     5.6,
+     105.7,
+     20.5
+    ]
+   ]
+  },
+  {
+   "id": "MY",
+   "name": "Malaysia",
+   "bbox": [
+    [
+     99.6,
+     0.8,
+     119.3,
+     7.4
+    ]
+   ]
+  },
+  {
+   "id": "AU",
+   "name": "Australia",
+   "bbox": [
+    [
+     112.9,
+     -43.7,
+     153.7,
+     -10.0
+    ]
+   ]
+  },
+  {
+   "id": "GB",
+   "name": "United Kingdom",
+   "bbox": [
+    [
+     -8.7,
+     49.8,
+     1.8,
+     60.9
+    ]
+   ]
+  },
+  {
+   "id": "DE",
+   "name": "Germany",
+   "bbox": [
+    [
+     5.8,
+     47.2,
+     15.1,
+     55.1
+    ]
+   ]
+  },
+  {
+   "id": "US-CA",
+   "name": "California, USA",
+   "bbox": [
+    [
+     -124.5,
+     32.5,
+     -114.1,
+     42.0
+    ]
+   ]
+  }
+ ]
+}

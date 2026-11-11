@@ -1,0 +1,28 @@
+name: Pipeline & content
+
+on:
+  push:
+    paths: ["pipeline/**", "content/**", "regions/**", ".github/workflows/pipeline.yml"]
+  pull_request:
+    paths: ["pipeline/**", "content/**", "regions/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml pytest
+      - name: Validate safety content (SAFETY.md rules)
+        run: python -m openwild_pipeline.cli content-validate
+      - name: Unit tests
+        run: pytest -q
+      - name: Region index is up to date
+        run: |
+          python -m openwild_pipeline.cli regions-export
+          git diff --exit-code ../android/app/src/main/assets/regions.json

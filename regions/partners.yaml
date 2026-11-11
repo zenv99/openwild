@@ -1,0 +1,12 @@
+# Data contributed by partners (herbaria, mycological societies, research projects).
+# Each entry records the terms under which the data may be used in OpenWild packs.
+#
+# - id: example-herbarium
+#   name: Example University Herbarium
+#   contact: curator@example.edu
+#   data: "Specimen and field photographs, Philippine flora"
+#   license: CC BY-NC 4.0
+#   attribution: "Example University Herbarium"
+#   agreed_on: 2026-12-01
+#   notes: ""
+partners: []

@@ -1,0 +1,8 @@
+OpenWild
+Copyright 2026 The OpenWild contributors
+
+This product is licensed under the Apache License, Version 2.0.
+
+Region packs distributed separately contain third-party photographs and data,
+each under its own license (see DATA_SOURCES.md and the in-app Credits screen).
+Teacher model: BioCLIP 2 by Imageomics (MIT License).

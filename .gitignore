@@ -1,0 +1,20 @@
+# Pipeline working data (huge)
+work/
+pipeline/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.iml
+.DS_Store
+
+# Built artefacts: model ships via release assets, packs via GitHub Releases
+android/app/src/main/assets/embedder.tflite
+android/app/src/main/assets/embedder.json
+*.owpack

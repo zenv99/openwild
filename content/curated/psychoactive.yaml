@@ -1,0 +1,47 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED.
+# Rules (SAFETY.md §6): general encyclopedic effects and risks only. Never doses, preparation or ways to consume.
+# The app adds the standard legal warning automatically for psychoactive: true.
+
+- scientific_name: Psilocybe cubensis
+  edibility: psychoactive
+  toxicity: mild
+  psychoactive: true
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Nausea, vomiting, anxiety, panic, confusion, fast heartbeat."
+      onset: "Usually within 20–60 minutes; effects commonly last several hours."
+      severity: "Physical toxicity is low, but the main dangers are misidentification (deadly Galerina and Pholiotina look similar) and dangerous behaviour while affected."
+      what_to_do: "Stay with the person in a safe, calm place. Seek medical care for chest pain, seizures, severe agitation, or if a deadly lookalike could have been eaten."
+    feeling:
+      effects: "Reported effects include altered perception and visual distortions, changes in mood and sense of time, and intense emotions. Effects are unpredictable."
+      risks: "Panic, paranoia, impaired judgement and coordination. In a survival situation this can be life-threatening (falls, getting lost, water)."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Galerina marginata, danger: deadly}
+    - {name: Pholiotina rugosa, danger: deadly}
+  sources: ["Wikipedia: Psilocybe cubensis"]
+  review: {status: unreviewed}
+
+- scientific_name: Amanita muscaria
+  edibility: psychoactive
+  toxicity: serious
+  psychoactive: true
+  if_eaten:
+    harms:
+      toxic_parts: [whole mushroom]
+      cooking_makes_safe: false
+      symptoms: "Vomiting, confusion, drowsiness alternating with agitation, muscle twitching, delirium; rarely seizures or coma."
+      onset: "Usually within 30 minutes to 3 hours."
+      severity: "Deaths are rare but poisoning can be severe. Potency varies widely."
+      what_to_do: "Seek medical care. Keep the person safe and supervised."
+    feeling:
+      effects: "Reported effects include dream-like confusion, distorted perception and drowsiness, often with nausea."
+      risks: "Unpleasant and unpredictable; delirium and loss of coordination are dangerous outdoors."
+  survival: {priority: avoid}
+  lookalikes:
+    - {name: Amanita pantherina, danger: toxic}
+    - {name: Amanita caesarea, danger: edible}
+  sources: ["Wikipedia: Amanita muscaria"]
+  review: {status: unreviewed}

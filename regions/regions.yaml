@@ -1,0 +1,65 @@
+# Region definitions.
+# - id:      stable id used in pack filenames and the app
+# - gbif:    GBIF occurrence-search filter defining the region's species list
+#            (country = ISO 3166-1 alpha-2; gadmGid = GADM level-1 id for subdivisions)
+# - bbox:    one or more [min_lon, min_lat, max_lon, max_lat] boxes used by the app's
+#            offline region locator (smallest containing box wins; user can override).
+# - max_species: cap on species in the pack (most-observed first)
+#
+# Seed list. Add every country (and subdivisions for very large countries) over time:
+# `python -m openwild_pipeline.cli regions-from-naturalearth <admin0.geojson>` generates entries.
+
+regions:
+  - id: WORLD
+    name: World (common species)
+    gbif: {}
+    bbox: [[-180, -90, 180, 90]]
+    max_species: 3000
+
+  - id: PH
+    name: Philippines
+    gbif: {country: PH}
+    bbox: [[116.9, 4.5, 126.7, 21.2]]
+    max_species: 6000
+
+  - id: ID
+    name: Indonesia
+    gbif: {country: ID}
+    bbox: [[94.9, -11.1, 141.1, 6.1]]
+    max_species: 8000
+
+  - id: TH
+    name: Thailand
+    gbif: {country: TH}
+    bbox: [[97.3, 5.6, 105.7, 20.5]]
+    max_species: 6000
+
+  - id: MY
+    name: Malaysia
+    gbif: {country: MY}
+    bbox: [[99.6, 0.8, 119.3, 7.4]]
+    max_species: 6000
+
+  - id: AU
+    name: Australia
+    gbif: {country: AU}
+    bbox: [[112.9, -43.7, 153.7, -10.0]]
+    max_species: 8000
+
+  - id: GB
+    name: United Kingdom
+    gbif: {country: GB}
+    bbox: [[-8.7, 49.8, 1.8, 60.9]]
+    max_species: 5000
+
+  - id: DE
+    name: Germany
+    gbif: {country: DE}
+    bbox: [[5.8, 47.2, 15.1, 55.1]]
+    max_species: 5000
+
+  - id: US-CA
+    name: California, USA
+    gbif: {country: US, gadmGid: USA.5_1}
+    bbox: [[-124.5, 32.5, -114.1, 42.0]]
+    max_species: 6000

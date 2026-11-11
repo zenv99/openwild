@@ -1,0 +1,126 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED.
+
+- scientific_name: Typha latifolia
+  edibility: edible
+  toxicity: none
+  psychoactive: false
+  if_eaten:
+    benefits:
+      nutrition: "Rhizomes are rich in starch; young shoots and immature flower spikes are also eaten."
+      edible_parts: [rhizomes, young shoots, immature flower spikes, pollen]
+      preparation_required: "Best cooked. Only harvest from clean water; cattails absorb pollutants."
+      traditional_uses:
+        - {text: "Seed fluff used as fire tinder and insulation; leaves woven into mats and shelters.", source: "Wikipedia: Typha latifolia"}
+    feeling:
+      taste_texture: "Shoots taste mild, like cucumber; rhizome starch is bland and fibrous."
+  survival:
+    priority: high_value
+    uses: [food, fire, shelter, cordage]
+  lookalikes:
+    - {name: Iris pseudacorus, danger: toxic}
+  sources: ["Wikipedia: Typha latifolia"]
+  review: {status: unreviewed}
+
+- scientific_name: Cocos nucifera
+  edibility: edible
+  toxicity: none
+  psychoactive: false
+  if_eaten:
+    benefits:
+      nutrition: "Young coconut water provides fluid and electrolytes; mature flesh is high in fat and calories."
+      edible_parts: [coconut water, flesh, palm heart]
+      preparation_required: null
+      traditional_uses:
+        - {text: "Husk fibre (coir) used for cordage and fire; fronds for shelter.", source: "Wikipedia: Coconut"}
+    feeling:
+      taste_texture: "Sweet, refreshing water; firm, rich flesh. Large amounts of water from mature nuts can cause diarrhoea."
+  survival:
+    priority: high_value
+    uses: [food, water, fire, shelter, cordage]
+  sources: ["Wikipedia: Coconut"]
+  review: {status: unreviewed}
+
+- scientific_name: Plantago major
+  edibility: edible
+  toxicity: none
+  psychoactive: false
+  if_eaten:
+    benefits:
+      nutrition: "Young leaves are edible raw or cooked; seeds are edible."
+      edible_parts: [young leaves, seeds]
+      preparation_required: null
+      traditional_uses:
+        - {text: "Crushed leaves are traditionally applied to minor cuts, stings and insect bites.", source: "Wikipedia: Plantago major"}
+    feeling:
+      taste_texture: "Slightly bitter; older leaves are stringy."
+  survival:
+    priority: high_value
+    uses: [food, medicinal]
+  sources: ["Wikipedia: Plantago major"]
+  review: {status: unreviewed}
+
+- scientific_name: Taraxacum officinale
+  edibility: edible
+  toxicity: none
+  psychoactive: false
+  if_eaten:
+    benefits:
+      nutrition: "Leaves are rich in vitamins A, C and K; roots and flowers are also edible."
+      edible_parts: [leaves, flowers, roots]
+      preparation_required: null
+    feeling:
+      taste_texture: "Leaves are bitter, especially when older; flowers are mildly sweet."
+  survival:
+    priority: high_value
+    uses: [food]
+  lookalikes:
+    - {name: Hypochaeris radicata, danger: edible}
+  sources: ["Wikipedia: Taraxacum officinale"]
+  review: {status: unreviewed}
+
+- scientific_name: Urtica dioica
+  edibility: edible_with_preparation
+  toxicity: mild
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [stinging hairs on raw leaves and stems]
+      cooking_makes_safe: true
+      symptoms: "Raw plant stings skin and mouth: burning, itching, rash."
+    benefits:
+      nutrition: "Cooked young leaves are nutritious, rich in protein, iron and vitamins."
+      edible_parts: [young leaves, shoots]
+      preparation_required: "Cook, boil or thoroughly dry before eating to destroy the stinging hairs. Avoid old plants in flower."
+      traditional_uses:
+        - {text: "Stem fibres used for cordage and fabric.", source: "Wikipedia: Urtica dioica"}
+    feeling:
+      taste_texture: "Cooked leaves taste like spinach."
+  survival:
+    priority: high_value
+    uses: [food, cordage]
+  sources: ["Wikipedia: Urtica dioica"]
+  review: {status: unreviewed}
+
+- scientific_name: Manihot esculenta
+  edibility: edible_with_preparation
+  toxicity: serious
+  psychoactive: false
+  if_eaten:
+    harms:
+      toxic_parts: [raw roots, raw leaves, especially peel]
+      cooking_makes_safe: true
+      symptoms: "Raw or poorly prepared cassava releases cyanide: dizziness, headache, vomiting, rapid breathing, collapse."
+      onset: "Usually within a few hours."
+      severity: "Can be fatal when eaten raw or badly prepared. Bitter varieties are most dangerous."
+      what_to_do: "Seek emergency medical care for any symptoms after eating cassava."
+    benefits:
+      nutrition: "Major source of calories (starch) in the tropics; leaves are high in protein when properly cooked."
+      edible_parts: [roots, leaves]
+      preparation_required: "Never eat raw. Peel, then soak and cook thoroughly; discard soaking and cooking water. Leaves must be pounded and boiled well."
+    feeling:
+      taste_texture: "Starchy and mild, like potato, once cooked."
+  survival:
+    priority: use_with_caution
+    uses: [food]
+  sources: ["Wikipedia: Cassava"]
+  review: {status: unreviewed}
