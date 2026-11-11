@@ -1,0 +1,291 @@
+# AUTO-GENERATED genus WARNINGS from Wikipedia categories + Wikidata by `cli buckets`.
+# Rules here only warn. Hand-written content/group_rules.yaml overrides any genus listed here.
+- taxon: Anadenanthera
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Atropa
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Boophone
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Brugmansia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Caladium
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Cannabis
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Claviceps
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive mushroom; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Copelandia
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive mushroom, psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Datura
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Derris
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Desfontainia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Digitalis
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Echinocereus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Euphorbia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Faidherbia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Galerina
+  rank: genus
+  kingdom: Fungi
+  toxicity: deadly
+  warning: This genus includes a deadly mushroom. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek emergency medical care.
+  source: Wikipedia categories + Wikidata
+- taxon: Heimia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Hippobroma
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Inocybe
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  warning: This genus includes a poisonous mushroom. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Iresine
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Mandevilla
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Mandragora
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Maytenus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Mostuea
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Nicotiana
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Opuntia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Periglandula
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive mushroom, psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Psilocybe
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive mushroom, psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Sarcosphaera
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  warning: This genus includes a poisonous mushroom. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Tabebuia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Tabernaemontana
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Virola
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Weraroa
+  rank: genus
+  kingdom: Fungi
+  toxicity: serious
+  psychoactive: true
+  warning: This genus includes a psychoactive mushroom; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
