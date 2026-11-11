@@ -141,13 +141,18 @@ def cmd_pack_index(a):
 
 
 def cmd_pfaf(a):
-    from .content import load_quick
-    from .pfaf import build, write
+    from .pfaf import facts, write_facts
 
-    out = config.REPO_ROOT / "content" / "quick" / "auto_pfaf.csv"
-    out.unlink(missing_ok=True)  # rebuild against the other sources only
-    n = write(build(Path(a.db), load_quick()), out)
-    print(f"PFAF: {n} one-liners -> {out}")
+    out = config.REPO_ROOT / "content" / "evidence" / "pfaf_facts.csv"
+    print(f"PFAF facts: {write_facts(facts(Path(a.db)), out)} plants -> {out}")
+
+
+def cmd_evidence(_):
+    from .evidence import build, write
+
+    rows, ledger = build(config.REPO_ROOT / "content")
+    n, m = write(rows, ledger, config.REPO_ROOT / "content")
+    print(f"Combined: {n} plant lines in our own words; {m} source records in the ledger")
 
 
 def cmd_summary(a):
@@ -491,7 +496,8 @@ def main(argv=None):
     sp.add_argument("--pack", required=True)
     sp.add_argument("--index", required=True)
     sp.add_argument("--url", required=True)
-    sp = add("pfaf", cmd_pfaf, "auto one-liners from a Plants For A Future database file (used with permission)")
+    add("evidence", cmd_evidence, "combine PFAF facts + Kew + Wikipedia into original one-liners with a source ledger")
+    sp = add("pfaf", cmd_pfaf, "extract facts (no text) from a Plants For A Future database file (used with permission)")
     sp.add_argument("--db", required=True, help="path to the PFAF SQLite export")
     add("kew", cmd_kew, "auto one-liners: Kew World Checklist of Useful Plant Species (CC BY 4.0)")
     add("buckets", cmd_buckets, "auto one-liners: edible/poisonous/medicinal lists from Wikipedia categories + Wikidata")

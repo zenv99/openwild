@@ -30,10 +30,14 @@ License interpretation (for example, whether model fingerprints are derivative w
 
 | Source | Licence | What we take |
 |---|---|---|
-| Plants For A Future (pfaf.org), database of ~8,800 useful plants | Used with permission of PFAF | Edibility and medicinal ratings, edible parts, preparation notes and known hazards, shortened to one-liners and credited. Plants whose hazards say fatal or strongly poisonous are never shown as food. The database itself is not redistributed. |
+| Plants For A Future (pfaf.org), database of ~8,800 useful plants | Used with permission of PFAF | Facts only (content/evidence/pfaf_facts.csv): parts eaten, raw or cooked, kinds of hazard, food/medicine ratings, survival uses, link to the PFAF page. No PFAF text, selection or structure is reproduced; the database itself is not redistributed. |
 | Kew, World Checklist of Useful Plant Species (Diazgranados et al. 2020, KNB doi:10.5063/F1CV4G34) | CC BY 4.0 | Human food / medicine / poison / fuel flags for ~40,000 species (includes PROSEA, Plant Resources of South-East Asia) |
 | Wikipedia categories, English and Indonesian (edible fruits, vegetables, spices, herbs, edible and poisonous mushrooms, medicinal plants, and more) | CC BY-SA | Category membership only, mapped to species through Wikidata |
 | Wikimedia Commons curated categories (poisonous plants, poisonous/deadly/psychoactive fungi, medicinal plants) | CC BY-SA | Category membership only |
 | Wikidata (P225 taxon name, P105 rank, P1582 natural product of taxon, P846 GBIF key, P789 mushroom edibility) | CC0 | Names, ranks, links |
 
-Rules: poison always beats food; rows apply only to species of the same kingdom; genus-level hits only add warnings; hand-written files override all automatic rows. All automatic rows show "not expert reviewed" in the app.
+**How the lines in the app are written.** `cli evidence` combines the facts from PFAF, Kew and Wikipedia/Commons for each plant and writes one line in OpenWild's own words (content/quick/auto_combined.csv), saying how many independent sources confirm a food use. Every claim, per source, with a link, is kept in content/evidence/ledger.csv. Kew's "poisons" category means a plant is *used as* a poison (fish or insect poison), so on its own it does not mark a known food plant as dangerous.
+
+Photos come only from GBIF occurrence media under Creative Commons licences (CC0, CC BY, CC BY-SA, CC BY-NC, CC BY-NC-SA), with the photographer and licence shown under every photo. No PFAF images are used.
+
+Rules: poison always beats food; a food claim from one source, or without documented edible parts, never outweighs a poison flag; anything any source says can kill is never shown as food; rows apply only to species of the same kingdom; genus-level hits only add warnings; hand-written files override all automatic rows. All automatic rows show "not expert reviewed" in the app.

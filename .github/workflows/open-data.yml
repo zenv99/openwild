@@ -43,6 +43,8 @@ jobs:
       - run: python -m openwild_pipeline.cli buckets
         if: inputs.skip_buckets != 'true'
         timeout-minutes: 60
+      - name: Combine sources into original one-liners (+ source ledger)
+        run: python -m openwild_pipeline.cli evidence
       - run: python -m openwild_pipeline.cli content-validate
       - run: pytest -q
       - name: Coverage for Bali
@@ -52,7 +54,7 @@ jobs:
         run: |
           git config user.name "openwild-data-bot"
           git config user.email "openwild-data-bot@users.noreply.github.com"
-          git add content/quick/auto_wikidata_fungi.csv content/quick/auto_buckets.csv content/auto_group_rules.yaml content/quick/auto_0_kew_useful.csv 2>/dev/null || git add content/quick/auto_wikidata_fungi.csv content/quick/auto_buckets.csv content/auto_group_rules.yaml
+          git add content/quick/auto_wikidata_fungi.csv content/quick/auto_buckets.csv content/auto_group_rules.yaml content/quick/auto_0_kew_useful.csv content/quick/auto_combined.csv content/evidence/ledger.csv 2>/dev/null || git add content/quick/auto_wikidata_fungi.csv content/quick/auto_buckets.csv content/auto_group_rules.yaml
           git commit -m "Open data: $(grep -vc '^#' content/quick/auto_buckets.csv) bucket one-liners, $(grep -c '^- taxon' content/auto_group_rules.yaml) genus warnings, $(grep -vc '^#' content/quick/auto_wikidata_fungi.csv) mushroom rows" || echo "No changes"
           git pull --rebase --autostash origin main
           git push origin HEAD:main
