@@ -12,6 +12,11 @@ import java.security.MessageDigest
 
 /** Downloads, verifies and stores region packs in app-private storage (filesDir/packs). */
 class PackManager(private val context: Context) {
+    companion object {
+        /** The only hosts the app will ever contact: GitHub release downloads and the CDN they redirect to. */
+        val ALLOWED_HOSTS = listOf("github.com", "githubusercontent.com")
+    }
+
 
     data class RemotePack(
         val regionId: String,
@@ -107,7 +112,7 @@ class PackManager(private val context: Context) {
         return region
     }
 
-    /** Fetch the hosted pack list. Disabled: the app has no INTERNET permission (BuildConfig.ALLOW_NETWORK). */
+    /** Fetch the list of downloadable region packs (GitHub release "packs", index.json). */
     fun fetchIndex(): List<RemotePack> {
         if (!BuildConfig.ALLOW_NETWORK) throw IOException("Network disabled in this build")
         val text = try {
@@ -178,13 +183,20 @@ class PackManager(private val context: Context) {
         if (activeRegionId == regionId) activeRegionId = null
     }
 
+    private fun checkHost(u: URL) {
+        if (u.protocol != "https" || ALLOWED_HOSTS.none { u.host == it || u.host.endsWith(".$it") }) {
+            throw IOException("Blocked: OpenWild only downloads region packs from GitHub (${u.host})")
+        }
+    }
+
     private fun open(url: String): HttpURLConnection {
         var current = URL(url)
         repeat(5) { // follow redirects (GitHub Releases redirects to its CDN)
+            checkHost(current)
             val c = (current.openConnection() as HttpURLConnection).apply {
                 connectTimeout = 20_000
                 readTimeout = 60_000
-                instanceFollowRedirects = true
+                instanceFollowRedirects = false // we follow redirects ourselves, checking each host
                 setRequestProperty("User-Agent", "OpenWild-Android")
             }
             val code = c.responseCode

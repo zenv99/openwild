@@ -175,7 +175,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_system">System</string>
     <string name="privacy_title">100% private</string>
-    <string name="privacy_body">OpenWild has no internet permission, so Android blocks it from going online at all. Identification runs entirely on your phone. No account, no ads, no analytics, no tracking, no cloud backup. Photos and location never leave the device. Share and feedback buttons only hand text to another app when you tap them.</string>
+    <string name="privacy_body">OpenWild goes online for one thing only: downloading a region when you tap Download. It talks only to GitHub, where the regions are published, and sends nothing about you. Identification runs entirely on your phone, with or without signal. No account, no ads, no analytics, no tracking, no cloud backup. Photos and location never leave the device. Share and feedback buttons only hand text to another app when you tap them.</string>
     <string name="contribute_title">Help make it better</string>
     <string name="contribute_body">Botanists, mycologists and translators: every safety entry is reviewed by people. Share confirmed sightings on iNaturalist to help train future versions.</string>
     <string name="contribute_review">Review safety content</string>
@@ -195,6 +195,6 @@
     <string name="home_deadly_row">Deadly here — learn these</string>
     <string name="see_all">See all</string>
     <string name="updates_title">Updates</string>
-    <string name="updates_body">OpenWild never goes online, so it can\'t update itself. For automatic updates, install the free, open-source app Obtainium and add the address below. It installs each new version (new species, photos, fixes) for you. Or download the newest OpenWild.apk from the same page whenever you like.</string>
+    <string name="updates_body">Regions update from the Packs tab. The app itself doesn\'t update on its own. For automatic updates, install the free, open-source app Obtainium and add the address below. It installs each new version (new species, photos, fixes) for you. Or download the newest OpenWild.apk from the same page whenever you like.</string>
 </resources>
 

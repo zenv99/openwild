@@ -1,17 +1,18 @@
 # Security & Privacy
 
-OpenWild is built so that **nothing leaves your phone**.
+OpenWild is built so that **nothing about you leaves your phone**. It goes online for one thing only: downloading a region pack when you tap Download (like Organic Maps downloads maps).
 
 | Guarantee | How it's enforced |
 |---|---|
-| No internet access at all | The app does not request the `INTERNET` permission, so Android blocks every network connection. CI fails the build if the permission ever appears. |
+| Internet only for region downloads | `INTERNET` is used solely by `PackManager` to fetch region packs from GitHub (this repo's "packs" release). It refuses any host other than github.com / githubusercontent.com, HTTPS only (plain http blocked by the network security config, system certificates only), and checks each pack's SHA-256 before installing. Nothing is uploaded: the requests carry no account, ID or location. CI fails the build if any other permission appears, if plain http is allowed, or if network code appears outside `PackManager`. |
+| Works offline | Identification, search, safety info and photos all run from the downloaded pack with no signal. |
 | No tracking | No analytics, ads, crash reporters, accounts, or Google Play Services. |
 | No cloud backup | `allowBackup="false"` and backup/transfer rules exclude all app data. CI checks this. |
 | Not debuggable | Published APKs are release builds (minified, `debuggable=false`). CI checks this. |
 | Camera & photos | Used only on the device for identification; never saved outside the app's private cache. |
 | Location | Optional and coarse. Only used on the device to suggest your region. Deny it and pick a region manually. |
 | Sharing | "Share sighting", "Wrong ID?", "Feedback" and "Tip" only hand text/a photo to another app **when you tap them**. |
-| New regions | Bundled in the APK, or imported from a file you choose (Regions → Import file). |
+| New regions | Downloaded in the Packs tab, or imported from a file you choose (Packs → Import file). |
 
 ## Why Android shows a warning when installing
 

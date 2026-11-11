@@ -6,12 +6,16 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Coarse location is enough to pick a region; it never leaves the phone. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- NO INTERNET PERMISSION: Android itself blocks this app from any network access.
-         Region packs are bundled or imported from a file the user picks. CI fails if INTERNET is added. -->
+    <!-- INTERNET is used for one thing only: downloading region packs from GitHub when the user taps
+         Download (Packs tab). PackManager refuses any other host, and plain http is blocked by
+         network_security_config. No analytics, no telemetry, nothing uploaded. CI checks this on every build. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".OpenWildApp"
         android:allowBackup="false"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
         android:hasFragileUserData="false"

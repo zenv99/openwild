@@ -26,18 +26,27 @@ jobs:
         env:
           OW_BUILD_NUMBER: ${{ github.run_number }}
         run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
-      - name: Security gate (no internet, not debuggable, no backup)
+      - name: Security gate (permissions, HTTPS only, not debuggable, no backup)
         run: |
           AAPT=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)aapt
           APK=app/build/outputs/apk/release/app-release.apk
           $AAPT dump badging $APK > badging.txt
           $AAPT dump xmltree $APK AndroidManifest.xml > manifest.txt
           echo "Permissions:"; grep "uses-permission" badging.txt || true
-          if grep -q "android.permission.INTERNET" badging.txt; then echo "FAIL: INTERNET permission found"; exit 1; fi
+          # Only these permissions are allowed. INTERNET is for region downloads from GitHub only (PackManager.ALLOWED_HOSTS).
+          ALLOWED="android.permission.CAMERA android.permission.ACCESS_COARSE_LOCATION android.permission.INTERNET org.openwild.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+          for p in $(grep "uses-permission" badging.txt | sed "s/.*name='\([^']*\)'.*/\1/"); do
+            echo " $ALLOWED " | grep -q " $p " || { echo "FAIL: unexpected permission $p"; exit 1; }
+          done
           if grep -q "application-debuggable" badging.txt; then echo "FAIL: debuggable build"; exit 1; fi
           grep "allowBackup" manifest.txt || true
           if grep "allowBackup" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: backup enabled"; exit 1; fi
-          echo "PASS: no internet permission, not debuggable, backup off"
+          if grep "usesCleartextTraffic" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: plain http allowed"; exit 1; fi
+          grep -q "networkSecurityConfig" manifest.txt || { echo "FAIL: no network security config"; exit 1; }
+          # Network code may only live in PackManager (region downloads).
+          HITS=$(grep -rlE "HttpURLConnection|java\.net\.URL\b|okhttp|Socket\(" app/src/main/java | grep -v "pack/PackManager.kt" || true)
+          if [ -n "$HITS" ]; then echo "FAIL: network code outside PackManager: $HITS"; exit 1; fi
+          echo "PASS: only allowed permissions, HTTPS-only, network code only in PackManager, not debuggable, backup off"
       - uses: actions/upload-artifact@v4
         with:
           name: openwild-apk
@@ -50,7 +59,7 @@ jobs:
         run: |
           VER="0.6.${OW_BUILD_NUMBER}"
           cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
-          NOTES="OpenWild ${VER}. No internet permission, not debuggable, no cloud backup (checked automatically on every build).
+          NOTES="OpenWild ${VER}. Goes online only to download regions from GitHub; HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
           Install: download OpenWild.apk on your Android phone, open it, allow installing from this source.
           Automatic updates: install Obtainium (free, open source) and add https://github.com/zenv99/openwild"
           # Versioned release: what updaters such as Obtainium follow.

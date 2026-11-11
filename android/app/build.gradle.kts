@@ -32,7 +32,7 @@ android {
         buildConfigField("String", "FEEDBACK_EMAIL", "\"$feedbackEmail\"")
         buildConfigField("boolean", "SHOW_DONATIONS", "$showDonations")
         // The app has no INTERNET permission; keep network code paths switched off too.
-        buildConfigField("boolean", "ALLOW_NETWORK", "false")
+        buildConfigField("boolean", "ALLOW_NETWORK", "true")
     }
 
     signingConfigs {
