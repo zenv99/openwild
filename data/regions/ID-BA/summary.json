@@ -1,0 +1,15 @@
+{
+  "region": "ID-BA",
+  "species": 1683,
+  "plants": 1604,
+  "fungi": 79,
+  "with_common_name": 1018,
+  "with_description": 396,
+  "safety_info": {
+    "species": 39,
+    "quick": 166,
+    "genus": 58,
+    "family": 72,
+    "none": 1348
+  }
+}
