@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy pyyaml pytest
+      - run: pip install numpy pyyaml pytest pillow
       - name: Validate safety content (SAFETY.md rules)
         run: python -m openwild_pipeline.cli content-validate
       - name: Unit tests
