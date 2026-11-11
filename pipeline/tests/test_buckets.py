@@ -28,16 +28,19 @@ def test_genus_rules_only_warn():
 
 
 def test_resolve_follows_food_items(monkeypatch):
+    W = "http://www.wikidata.org/entity/"
+
     def fake(url, params=None, **_):
-        ids = params["ids"].split("|")
-        ents = {
-            "Q1": {"claims": {"P1582": [{"mainsnak": {"datavalue": {"value": {"id": "Q2"}}}}]}},  # "Banana" (food)
-            "Q2": {"claims": {"P225": [{"mainsnak": {"datavalue": {"value": "Musa acuminata"}}}],
-                              "P105": [{"mainsnak": {"datavalue": {"value": {"id": "Q7432"}}}}]}},
-            "Q3": {"claims": {"P225": [{"mainsnak": {"datavalue": {"value": "Datura"}}}],
-                              "P105": [{"mainsnak": {"datavalue": {"value": {"id": "Q34740"}}}}]}},
+        rows = {
+            "Q1": [{"prod": W + "Q2"}],                                     # "Banana" (food item)
+            "Q2": [{"name": "Musa acuminata", "rank": W + "Q7432"}],
+            "Q3": [{"name": "Datura", "rank": W + "Q34740"}],
         }
-        return {"entities": {i: ents[i] for i in ids if i in ents}}
+        asked = [t.split(":")[1] for t in params["query"].split("{ ")[2].split(" }")[0].split()]
+        return {"results": {"bindings": [
+            {"item": {"value": W + q}, **{k: {"value": v} for k, v in r.items()}}
+            for q in asked for r in rows.get(q, [])
+        ]}}
 
     monkeypatch.setattr(buckets, "get_json", fake)
     out = buckets.resolve_taxa(["Q1", "Q3"])

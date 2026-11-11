@@ -92,7 +92,7 @@ FOOD_KINDS = {"edible", "edible_cooked"}
 CAT_PREFIX = {"en": "Category:", "id": "Kategori:"}
 
 
-def category_pages(lang: str, category: str, depth: int, max_pages: int = 30000) -> dict[str, str]:
+def category_pages(lang: str, category: str, depth: int, max_pages: int = 8000) -> dict[str, str]:
     """{page title: wikidata QID} for articles in a category and its subcategories (to `depth`)."""
     api = f"https://{lang}.wikipedia.org/w/api.php"
     pages: dict[str, str] = {}
@@ -128,7 +128,7 @@ def category_pages(lang: str, category: str, depth: int, max_pages: int = 30000)
     return pages
 
 
-def _claim_values(entity: dict, prop: str) -> list:
+def _claim_values(entity: dict, prop: str) -> list:  # kept for callers that read full entities
     out = []
     for c in (entity.get("claims") or {}).get(prop, []):
         v = ((c.get("mainsnak") or {}).get("datavalue") or {}).get("value")
@@ -139,29 +139,49 @@ def _claim_values(entity: dict, prop: str) -> list:
     return out
 
 
-def taxon_facts(qids: list[str], workers: int = 4) -> dict[str, dict]:
-    """{qid: {name, rank, product_of: [qid]}} from Wikidata (P225, P105, P1582)."""
+WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
+
+
+def _sparql_facts(chunk: list[str]) -> dict[str, dict]:
+    values = " ".join(f"wd:{q}" for q in chunk)
+    query = (
+        "SELECT ?item ?name ?rank ?prod WHERE { VALUES ?item { " + values + " } "
+        "OPTIONAL { ?item wdt:P225 ?name } OPTIONAL { ?item wdt:P105 ?rank } OPTIONAL { ?item wdt:P1582 ?prod } }"
+    )
+    d = get_json(WIKIDATA_SPARQL, {"query": query, "format": "json"})
+    out: dict[str, dict] = {}
+    for b in d["results"]["bindings"]:
+        q = b["item"]["value"].rsplit("/", 1)[-1]
+        f = out.setdefault(q, {"name": None, "rank": None, "product_of": []})
+        if "name" in b and not f["name"]:
+            f["name"] = b["name"]["value"]
+        if "rank" in b and not f["rank"]:
+            f["rank"] = b["rank"]["value"].rsplit("/", 1)[-1]
+        if "prod" in b:
+            p = b["prod"]["value"].rsplit("/", 1)[-1]
+            if p not in f["product_of"]:
+                f["product_of"].append(p)
+    return out
+
+
+def taxon_facts(qids: list[str], workers: int = 4, chunk_size: int = 200) -> dict[str, dict]:
+    """{qid: {name, rank, product_of: [qid]}} from Wikidata (P225, P105, P1582), via small SPARQL lookups."""
     qids = sorted(set(qids))
-    chunks = [qids[i:i + 50] for i in range(0, len(qids), 50)]
+    chunks = [qids[i:i + chunk_size] for i in range(0, len(qids), chunk_size)]
 
     def one(chunk):
         try:
-            d = get_json(WIKIDATA_API, {"action": "wbgetentities", "ids": "|".join(chunk), "props": "claims", "format": "json"})
+            return _sparql_facts(chunk)
         except Exception as e:  # noqa: BLE001
-            print(f"  wikidata chunk failed: {e!r}")
+            print(f"  wikidata chunk failed: {e!r}", flush=True)
             return {}
-        out = {}
-        for q, ent in (d.get("entities") or {}).items():
-            names = _claim_values(ent, "P225")
-            ranks = _claim_values(ent, "P105")
-            out[q] = {"name": names[0] if names else None, "rank": ranks[0] if ranks else None,
-                      "product_of": _claim_values(ent, "P1582")}
-        return out
 
     facts: dict[str, dict] = {}
     with cf.ThreadPoolExecutor(workers) as ex:
-        for part in ex.map(one, chunks):
+        for n, part in enumerate(ex.map(one, chunks), 1):
             facts.update(part)
+            if n % 25 == 0:
+                print(f"  wikidata {n}/{len(chunks)} lookups", flush=True)
     return facts
 
 
@@ -204,7 +224,7 @@ def collect(buckets: list[Bucket] = BUCKETS) -> tuple[dict[str, dict], dict[str,
     all_q: set[str] = set()
     for b in buckets:
         pages = category_pages(b.lang, b.category, b.depth)
-        print(f"{b.lang}:{b.category}: {len(pages)} articles")
+        print(f"{b.lang}:{b.category}: {len(pages)} articles", flush=True)
         per_bucket.append((b, pages))
         all_q |= set(pages.values())
     taxa = resolve_taxa(sorted(all_q))
