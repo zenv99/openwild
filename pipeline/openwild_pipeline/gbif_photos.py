@@ -53,7 +53,8 @@ INAT_RESEARCH_GRADE = "50c9509d-22c7-4a22-a47d-8c48425ef4a7"  # GBIF dataset: iN
 def _candidates(params: dict, want: int, seen: set) -> list[dict]:
     out: list[dict] = []
     try:
-        d = get_json(f"{config.GBIF_API}/occurrence/search", {"mediaType": "StillImage", "limit": 80, **params})
+        # Small pages: we need ~8 photos, and full occurrence records are large.
+        d = get_json(f"{config.GBIF_API}/occurrence/search", {"mediaType": "StillImage", "limit": max(12, want * 2), **params})
     except Exception:
         return out
     for occ in d.get("results", []):
