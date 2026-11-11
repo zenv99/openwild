@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/images/banner.png" alt="OpenWild — free offline plant & mushroom ID" width="100%"></p>
+
 # OpenWild
 
 **Free, offline plant and mushroom identification for everyone — built for the moment you have no signal and need to know what you're looking at.**

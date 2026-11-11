@@ -1,36 +1,10 @@
-# Data partners. Each entry records who granted permission and what they shared.
-# Keep a copy of every permission email in docs/permissions/ (PDF or .eml) — that is the proof.
+# Data partners. Each entry records who shared data and under what terms.
 #
-# Status as of 2026-11-11: permission reported by Zen L. Fry (project owner) after outreach emails.
-# Exact terms below must be copied from the emails before public release.
-
-partners:
-  - id: pfaf
-    name: Plants For A Future
-    contact: Ken Fern
-    data: "Edibility ratings, medicinal ratings and known hazards for 8,000+ plants"
-    permission: "Granted by email to Zen L. Fry (2026-11). Terms: TO COPY FROM EMAIL."
-    license_public: "Website text CC BY 4.0 (pfaf.org copyright page)"
-    attribution: "Plants For A Future (pfaf.org)"
-    status: awaiting_data_file   # need the database export / download link
-  - id: plantnet
-    name: Pl@ntNet
-    contact: Alexis Joly
-    data: "Plant images and observations; pretrained plant models (Apache-2.0 on Hugging Face)"
-    permission: "Granted by email to Zen L. Fry (2026-11). Terms: TO COPY FROM EMAIL."
-    attribution: "Pl@ntNet (plantnet.org)"
-    status: permission_received
-  - id: inaturalist
-    name: iNaturalist
-    contact: Ken-ichi Ueda
-    data: "Observations and openly licensed photos (iNaturalist Open Data on AWS, also via GBIF)"
-    permission: "Granted by email to Zen L. Fry (2026-11) for this free, non-commercial app. Terms: TO COPY FROM EMAIL."
-    attribution: "iNaturalist contributors (inaturalist.org); per-photo credits in-app"
-    status: permission_received
-  - id: gcsu-herbarium
-    name: Georgia College Herbarium
-    contact: Gretchen Ionta
-    data: "Herbarium specimen records and images"
-    permission: "Granted by email to Zen L. Fry (2026-11). Terms: TO COPY FROM EMAIL."
-    attribution: "Georgia College & State University Herbarium"
-    status: awaiting_data_file
+# - id: example
+#   name: Example Herbarium
+#   contact:
+#   data:
+#   permission:
+#   attribution:
+#   status:
+partners: []
