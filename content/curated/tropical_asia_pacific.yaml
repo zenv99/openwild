@@ -1,0 +1,459 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED. Tropical Asia & Pacific.
+# Schema: docs/CONTENT_SCHEMA.md   Rules: SAFETY.md
+
+# ---------- dangerous ----------
+- scientific_name: Cerbera manghas
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [seeds, fruit, sap], cooking_makes_safe: false,
+      symptoms: "Vomiting, slow and irregular heartbeat, collapse.",
+      onset: "Usually within a few hours.",
+      severity: "Frequently fatal. Coastal tree with mango-like fruit, close relative of the pong-pong tree.",
+      what_to_do: "Seek emergency medical care immediately. Heart monitoring is needed."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Cerbera odollam, danger: deadly}, {name: Mangifera indica, danger: edible}]
+  sources: ["Wikipedia: Cerbera manghas"]
+
+- scientific_name: Cascabela thevetia
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially seeds], cooking_makes_safe: false,
+      symptoms: "Burning mouth, vomiting, diarrhoea, dizziness, dangerously slow or irregular heartbeat.",
+      onset: "Usually within a few hours.",
+      severity: "Yellow oleander. A common ornamental and a frequent cause of fatal poisoning in South Asia.",
+      what_to_do: "Seek emergency medical care immediately. Heart monitoring is needed."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Nerium oleander, danger: deadly}]
+  sources: ["Wikipedia: Cascabela thevetia"]
+
+- scientific_name: Strychnos nux-vomica
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [seeds, bark], cooking_makes_safe: false,
+      symptoms: "Agitation, then violent muscle spasms and convulsions while awake, breathing failure.",
+      onset: "Fast: often within 15–60 minutes.",
+      severity: "Seeds contain strychnine. Frequently fatal.",
+      what_to_do: "Seek emergency medical care immediately. Keep the person quiet and still; noise and touch can trigger spasms."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Strychnos nux-vomica"]
+
+- scientific_name: Antiaris toxicaria
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [latex, seeds], cooking_makes_safe: false,
+      symptoms: "Vomiting, slow and irregular heartbeat, collapse.",
+      onset: "Usually within minutes to a few hours.",
+      severity: "Upas tree. Its latex was used as an arrow poison. Potentially fatal.",
+      what_to_do: "Seek emergency medical care immediately. Wash any latex off skin."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Antiaris"]
+
+- scientific_name: Excoecaria agallocha
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [milky sap, smoke from burning], cooking_makes_safe: false,
+      symptoms: "Sap blisters skin and can cause temporary or permanent blindness if it reaches the eyes.",
+      onset: "Immediately on contact.",
+      severity: "'Blind-your-eye' mangrove. Do not burn it or rub your eyes after touching it.",
+      what_to_do: "Flush eyes or skin with clean water for at least 15 minutes and seek medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Excoecaria agallocha"]
+
+- scientific_name: Calotropis gigantea
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [milky sap, leaves, all parts], cooking_makes_safe: false,
+      symptoms: "Vomiting, diarrhoea, slow heartbeat; sap causes severe eye inflammation.",
+      onset: "Usually within a few hours; eye pain immediately.",
+      severity: "Crown flower. Contains heart toxins.",
+      what_to_do: "Seek medical care. Flush eyes or skin with clean water."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Calotropis gigantea"]
+
+- scientific_name: Euphorbia tirucalli
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [milky sap], cooking_makes_safe: false,
+      symptoms: "Burning of mouth and throat, vomiting; sap causes severe eye pain and can damage vision.",
+      onset: "Immediately on contact.",
+      severity: "Pencil cactus / firestick plant. Common hedge plant in the tropics.",
+      what_to_do: "Flush eyes or skin with clean water for at least 15 minutes and seek medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Euphorbia tirucalli"]
+
+- scientific_name: Dieffenbachia seguine
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [leaves, stems], cooking_makes_safe: false,
+      symptoms: "Intense burning pain, swelling of mouth, tongue and throat, drooling, difficulty speaking.",
+      onset: "Immediately on chewing.",
+      severity: "Dumb cane. Swelling can rarely block breathing.",
+      what_to_do: "Rinse the mouth. Seek urgent care if breathing or swallowing is difficult."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Dieffenbachia"]
+
+- scientific_name: Alocasia macrorrhizos
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [all parts when raw], cooking_makes_safe: false,
+      symptoms: "Intense burning and swelling of mouth and throat, drooling, vomiting.",
+      onset: "Immediately on chewing.",
+      severity: "Giant taro. Easily confused with edible taro; treat as inedible.",
+      what_to_do: "Rinse the mouth. Seek urgent care if breathing or swallowing is difficult."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Colocasia esculenta, danger: edible}]
+  sources: ["Wikipedia: Alocasia macrorrhizos"]
+
+- scientific_name: Lantana camara
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [unripe green berries, leaves], cooking_makes_safe: false,
+      symptoms: "Vomiting, diarrhoea, weakness, breathing difficulty; leaves can damage the liver.",
+      onset: "Usually within a few hours.",
+      severity: "Very common weedy shrub worldwide. Children are poisoned by the green berries.",
+      what_to_do: "Seek medical care, especially for children."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Lantana camara"]
+
+- scientific_name: Cycas revoluta
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [seeds, all parts], cooking_makes_safe: false,
+      symptoms: "Vomiting and diarrhoea, then liver failure; nerve damage can follow.",
+      onset: "Vomiting usually within hours; liver damage over the next days.",
+      severity: "Cycad, often called 'sago palm' though it is not one. Potentially fatal.",
+      what_to_do: "Seek emergency medical care immediately, even if symptoms seem mild."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Metroxylon sagu, danger: edible}]
+  sources: ["Wikipedia: Cycas revoluta"]
+
+- scientific_name: Brugmansia suaveolens
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially seeds and leaves], cooking_makes_safe: false,
+      symptoms: "Dry mouth, dilated pupils, fast heartbeat, fever, confusion, severe delirium, seizures.",
+      onset: "Usually within 30 minutes to a few hours; effects can last days.",
+      severity: "Angel's trumpet. Common garden plant in the tropics. Toxicity is wildly unpredictable.",
+      what_to_do: "Seek emergency medical care immediately. Keep the person safe and supervised."}
+    feeling:
+      effects: "Severe delirium: people talk to things that aren't there and cannot tell what is real."
+      risks: "Frequently terrifying; injuries, drownings and deaths occur. Memory of the episode is often lost."
+  survival: {priority: avoid}
+  lookalikes: [{name: Datura stramonium, danger: deadly}]
+  sources: ["Wikipedia: Brugmansia suaveolens"]
+
+- scientific_name: Mitragyna speciosa
+  edibility: psychoactive
+  toxicity: serious
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [leaves], cooking_makes_safe: false,
+      symptoms: "Nausea, vomiting, constipation, drowsiness, fast heartbeat; rarely seizures.",
+      onset: "Usually within an hour.",
+      severity: "Kratom. Serious harm and deaths are reported, especially combined with other substances. Dependence occurs with regular use.",
+      what_to_do: "Seek medical care for seizures, breathing difficulty or severe drowsiness."}
+    feeling:
+      effects: "Reported effects range from stimulation to opioid-like sedation."
+      risks: "Dependence and withdrawal; dangerous combined with alcohol or other drugs. Legal status varies widely by country."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Mitragyna speciosa"]
+
+# ---------- edible only with preparation ----------
+- scientific_name: Colocasia esculenta
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw corms, raw leaves], cooking_makes_safe: true,
+      symptoms: "Raw taro causes burning and itching of mouth and throat."}
+    benefits:
+      nutrition: "Corms are a starchy staple; leaves are eaten as greens once well cooked."
+      edible_parts: [corms, leaves, stems]
+      preparation_required: "Always cook thoroughly; never eat raw. Boil leaves well."
+    feeling: {taste_texture: "Cooked corms are starchy and slightly nutty."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes: [{name: Alocasia macrorrhizos, danger: toxic}, {name: Dieffenbachia seguine, danger: toxic}]
+  sources: ["Wikipedia: Taro"]
+
+- scientific_name: Dioscorea hispida
+  edibility: edible_with_preparation
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [raw tubers], cooking_makes_safe: false,
+      symptoms: "Nausea, vomiting, dizziness, drowsiness; in severe cases convulsions.",
+      onset: "Usually within a few hours.",
+      severity: "Asiatic bitter yam. Only edible after lengthy traditional detoxification by soaking in running water for days.",
+      what_to_do: "Seek medical care for any symptoms."}
+    benefits:
+      nutrition: "Starchy tuber used as famine food."
+      edible_parts: [tubers]
+      preparation_required: "Requires slicing, prolonged soaking in running water and cooking. Do not attempt without local expertise."
+  survival: {priority: use_with_caution, uses: [food]}
+  sources: ["Wikipedia: Dioscorea hispida"]
+
+- scientific_name: Pangium edule
+  edibility: edible_with_preparation
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [raw seeds, fruit, leaves], cooking_makes_safe: false,
+      symptoms: "Cyanide poisoning: headache, dizziness, rapid breathing, vomiting, collapse.",
+      onset: "Within minutes to a few hours.",
+      severity: "Kepayang / keluak. Raw seeds can be fatal.",
+      what_to_do: "Seek emergency medical care immediately."}
+    benefits:
+      nutrition: "Fermented seeds (kluwak) are a traditional Indonesian ingredient."
+      edible_parts: [fermented seeds]
+      preparation_required: "Only edible after traditional boiling and weeks of fermentation that removes cyanide. Never eat raw or improvised."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Pangium edule"]
+
+- scientific_name: Bambusa vulgaris
+  edibility: edible_with_preparation
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [raw shoots], cooking_makes_safe: true,
+      symptoms: "Raw shoots release cyanide: headache, dizziness, nausea, rapid breathing.",
+      onset: "Within minutes to a few hours.",
+      severity: "Raw bamboo shoots can be dangerous; properly cooked shoots are a common food.",
+      what_to_do: "Seek medical care for any symptoms after eating raw or undercooked shoots."}
+    benefits:
+      nutrition: "Young shoots are low in calories but provide fibre and some nutrients."
+      edible_parts: [young shoots]
+      preparation_required: "Peel and slice young shoots, then boil thoroughly, discarding the water."
+  survival: {priority: high_value, uses: [food, shelter, water, fire]}
+  sources: ["Wikipedia: Bamboo shoot"]
+
+- scientific_name: Metroxylon sagu
+  edibility: edible_with_preparation
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "The trunk pith yields large amounts of starch (sago), a high-calorie staple."
+      edible_parts: [pith starch, palm heart]
+      preparation_required: "Pith is pounded and washed to extract the starch, which is then cooked."
+      traditional_uses: [{text: "Leaves used for thatch and walls.", source: "Wikipedia: Metroxylon sagu"}]
+  survival: {priority: high_value, uses: [food, shelter]}
+  lookalikes: [{name: Cycas revoluta, danger: deadly}]
+  sources: ["Wikipedia: Metroxylon sagu"]
+
+# ---------- edible ----------
+- scientific_name: Ipomoea aquatica
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Water spinach. Leaves and shoots are nutritious greens."
+      edible_parts: [leaves, shoots]
+      preparation_required: "Cook before eating; plants from dirty water can carry parasites."
+    feeling: {taste_texture: "Mild and tender, like spinach, with crunchy stems."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Ipomoea aquatica"]
+
+- scientific_name: Moringa oleifera
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [roots, root bark], symptoms: "Roots and root bark are toxic; avoid them."}
+    benefits:
+      nutrition: "Leaves are exceptionally rich in protein, vitamins and minerals; young pods and flowers are also eaten."
+      edible_parts: [leaves, young pods, flowers, seeds]
+      preparation_required: null
+    feeling: {taste_texture: "Leaves taste slightly peppery, like watercress."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Moringa oleifera"]
+
+- scientific_name: Musa acuminata
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Fruit is high in calories and potassium; the flower (banana heart) and inner stem are also eaten cooked."
+      edible_parts: [fruit, flower, inner stem]
+      traditional_uses: [{text: "Leaves used as plates, wrapping, rain cover and shelter roofing.", source: "Wikipedia: Banana"}]
+    feeling: {taste_texture: "Wild bananas are often seedy but sweet when ripe."}
+  survival: {priority: high_value, uses: [food, shelter, water]}
+  sources: ["Wikipedia: Musa acuminata"]
+
+- scientific_name: Artocarpus altilis
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Breadfruit is very high in starch and calories when cooked."
+      edible_parts: [fruit, seeds]
+      preparation_required: "Usually roasted, boiled or baked."
+    feeling: {taste_texture: "Cooked fruit tastes like potato or fresh bread."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Breadfruit"]
+
+- scientific_name: Artocarpus heterophyllus
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Jackfruit pulp is sweet and filling; seeds are high in starch and protein when cooked."
+      edible_parts: [ripe fruit pulp, young fruit, seeds]
+      preparation_required: "Cook the seeds. Sticky latex is easier to handle with oiled hands."
+    feeling: {taste_texture: "Ripe pulp is sweet and fragrant; young fruit is neutral and meaty when cooked."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Jackfruit"]
+
+- scientific_name: Centella asiatica
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Leaves eaten raw or cooked as a green vegetable."
+      edible_parts: [leaves]
+      traditional_uses: [{text: "Widely used in traditional Asian medicine for wounds.", source: "Wikipedia: Centella asiatica"}]
+    feeling: {taste_texture: "Slightly bitter and grassy."}
+  survival: {priority: high_value, uses: [food, medicinal]}
+  sources: ["Wikipedia: Centella asiatica"]
+
+- scientific_name: Pandanus tectorius
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "The fleshy base of ripe fruit segments (keys) is chewed or cooked."
+      edible_parts: [ripe fruit keys, seeds]
+      traditional_uses: [{text: "Leaves woven into mats, baskets, sails and thatch.", source: "Wikipedia: Pandanus tectorius"}]
+    feeling: {taste_texture: "Fibrous, sweet and slightly mango-like."}
+  survival: {priority: high_value, uses: [food, shelter, cordage]}
+  sources: ["Wikipedia: Pandanus tectorius"]
+
+- scientific_name: Psidium guajava
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Guava fruit is very rich in vitamin C."
+      edible_parts: [fruit]
+    feeling: {taste_texture: "Sweet, fragrant, with many small hard seeds."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Guava"]
+
+- scientific_name: Carica papaya
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [latex of unripe fruit], symptoms: "Latex from unripe fruit can irritate skin and mouth."}
+    benefits:
+      nutrition: "Ripe fruit is rich in vitamins A and C; unripe fruit is cooked as a vegetable."
+      edible_parts: [ripe fruit, unripe fruit when cooked, young leaves when cooked]
+    feeling: {taste_texture: "Ripe fruit is soft and sweet."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Papaya"]
+
+- scientific_name: Averrhoa carambola
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [fruit, for people with kidney disease],
+      symptoms: "People with kidney disease can develop hiccups, confusion and seizures; this can be fatal. Healthy people tolerate it well.",
+      what_to_do: "Anyone with kidney problems who feels unwell after eating starfruit needs urgent medical care."}
+    benefits:
+      nutrition: "Juicy fruit with vitamin C."
+      edible_parts: [fruit]
+    feeling: {taste_texture: "Crisp, juicy, sweet to sour."}
+  survival: {priority: use_with_caution, uses: [food, water]}
+  sources: ["Wikipedia: Carambola"]
+
+- scientific_name: Nypa fruticans
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Young seeds are eaten; the sweet sap is drunk or boiled into sugar."
+      edible_parts: [young seeds, sap]
+      traditional_uses: [{text: "Fronds widely used for thatching (nipa huts).", source: "Wikipedia: Nypa fruticans"}]
+  survival: {priority: high_value, uses: [food, water, shelter]}
+  sources: ["Wikipedia: Nypa fruticans"]
+
+- scientific_name: Mangifera indica
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [sap, peel, leaves], symptoms: "Sap and peel contain urushiol-like compounds that can cause an itchy rash around the mouth in sensitive people."}
+    benefits:
+      nutrition: "Ripe fruit is high in sugar and vitamins A and C."
+      edible_parts: [fruit flesh]
+    feeling: {taste_texture: "Sweet and juicy when ripe; sour when green."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes: [{name: Cerbera odollam, danger: deadly}, {name: Cerbera manghas, danger: deadly}]
+  sources: ["Wikipedia: Mango"]
+
+- scientific_name: Tamarindus indica
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Pod pulp is high in sugar and acids; young leaves are also eaten."
+      edible_parts: [pod pulp, young leaves, flowers]
+    feeling: {taste_texture: "Sweet-sour and sticky."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Tamarind"]
+
+- scientific_name: Anacardium occidentale
+  edibility: edible_with_preparation
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [raw nut shell, shell oil], cooking_makes_safe: true,
+      symptoms: "Oil in the shell causes burning, blistering skin and mouth.",
+      onset: "Within hours of contact.",
+      severity: "Raw cashew nuts in the shell are not safe to bite open; roasting fumes are also irritating.",
+      what_to_do: "Wash skin with soap and water; seek medical care for blistering of mouth or eyes."}
+    benefits:
+      nutrition: "The cashew apple is edible raw; the processed nut is high in fat and protein."
+      edible_parts: [cashew apple, processed nut]
+      preparation_required: "The nut must be roasted and shelled carefully to destroy the shell oil."
+  survival: {priority: use_with_caution, uses: [food]}
+  sources: ["Wikipedia: Cashew"]
+
+- scientific_name: Auricularia auricula-judae
+  edibility: edible_with_preparation
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Wood ear mushroom; low in calories."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook thoroughly."
+    feeling: {taste_texture: "Rubbery, crunchy jelly texture with little flavour."}
+  survival: {priority: neutral, uses: [food]}
+  sources: ["Wikipedia: Auricularia auricula-judae"]
+
+- scientific_name: Volvariella volvacea
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Paddy straw mushroom, widely cultivated in Asia."
+      edible_parts: [whole mushroom]
+    feeling: {taste_texture: "Mild and slightly sweet."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Amanita phalloides, danger: deadly}, {name: Amanita virosa, danger: deadly}]
+  sources: ["Wikipedia: Volvariella volvacea"]
+
+- scientific_name: Termitomyces eurrhizus
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Termite mushroom, a prized wild food in Asia and Africa."
+      edible_parts: [whole mushroom]
+    feeling: {taste_texture: "Firm, meaty, rich flavour."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Amanita spp., danger: deadly}, {name: Chlorophyllum molybdites, danger: toxic}]
+  sources: ["Wikipedia: Termitomyces"]
