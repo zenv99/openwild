@@ -175,11 +175,16 @@ def run(out_csv: Path) -> int:
     print("KNB files:", [(f.get("fileName"), f.get("formatId"), f.get("size"), f.get("obsoletedBy")) for f in files])
     tables = [f for f in files if str(f.get("fileName", "")).lower().endswith((".csv", ".xlsx", ".xls", ".txt", ".tsv"))]
     for f in tables:
-        rows = to_rows(read_table(f["fileName"], download_object(f["identifier"])))
+        try:
+            rows = to_rows(read_table(f["fileName"], download_object(f["identifier"])))
+        except Exception as e:  # noqa: BLE001
+            print(f"{f['fileName']}: unreadable ({e!r})")
+            continue
         if len(rows) > 1000:
             return write(rows, out_csv)
         print(f"{f['fileName']}: only {len(rows)} usable rows, trying next file")
-    pdfs = [f for f in files if str(f.get("fileName", "")).lower().endswith(".pdf")]
+    pdfs = [f for f in files if str(f.get("fileName", "")).lower().endswith(".pdf") and "40292" in str(f.get("fileName"))]
+    pdfs += [f for f in files if str(f.get("fileName", "")).lower().endswith(".pdf") and f not in pdfs]
     for f in pdfs[:1]:
         rows = pdf_rows(download_object(f["identifier"]))
         if len(rows) > 1000:
