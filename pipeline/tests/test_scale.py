@@ -53,7 +53,7 @@ def test_pack_with_projection_and_group_rules(tmp_path):
         SpeciesRecord("Amanita imaginaria", "Fungi", 1, genus="Amanita", family="Amanitaceae", embeddings=embs[:20]),
         SpeciesRecord("Quercus alba", "Plantae", 2, genus="Quercus", family="Fagaceae", embeddings=embs[20:40]),
     ]
-    out = build_pack(tmp_path / "S-v1.owpack", "S", "Scale", 1, recs, load_curated(), projection=(w, mean))
+    out = build_pack(tmp_path / "S-v1.owpack", "S", "Scale", 1, recs, load_curated(), projection=(w, mean), quick_rows={})
     con = sqlite3.connect(out)
     meta = dict(con.execute("SELECT key, value FROM meta"))
     assert meta["embedding_dim"] == "64" and meta["input_dim"] == str(config.EMBED_DIM)
