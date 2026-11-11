@@ -32,9 +32,16 @@ GBIF_KINGDOM_KEYS = {"Plantae": 6, "Fungi": 5}
 # Licenses usable in a free, non-commercial app. ND (no-derivatives) excluded.
 ALLOWED_LICENSES = {"cc0", "cc-by", "cc-by-sa", "cc-by-nc", "cc-by-nc-sa"}
 
-# Model contract (must match android/.../ml/Embedder.kt)
-MODEL_ID = "ow-mnv4m-768-v1"
-EMBED_DIM = 768
+# Model contract (must match the app's assets/embedder.json, written by export).
+# "dinov2s": free, no training — DINOv2 ViT-S/14 (Apache-2.0), runs on GitHub's CPUs. Default.
+# "distilled": BioCLIP 2 distilled into MobileNetV4 (needs a free Kaggle/Colab GPU; more accurate later).
+MODELS = {
+    "dinov2s": {"id": "ow-dinov2s-384-v1", "dim": 384},
+    "distilled": {"id": "ow-mnv4m-768-v1", "dim": 768},
+}
+MODEL = os.environ.get("OPENWILD_MODEL", "dinov2s")
+MODEL_ID = MODELS[MODEL]["id"]
+EMBED_DIM = MODELS[MODEL]["dim"]
 INPUT_SIZE = 224
 
 # Default confidence parameters (overwritten by calibration)

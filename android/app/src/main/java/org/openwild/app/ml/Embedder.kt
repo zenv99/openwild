@@ -17,12 +17,22 @@ import kotlin.math.sqrt
  */
 class Embedder private constructor(private val interpreter: Interpreter) : Closeable {
 
+    /** Fingerprint length, read from the model itself (384 for the free DINOv2-small model). */
+    val dim: Int = interpreter.getOutputTensor(0).shape().last()
+
     companion object {
-        /** Must equal pipeline config.MODEL_ID and every pack's meta.model_id. */
-        const val MODEL_ID = "ow-mnv4m-768-v1"
+        /** Fallback when assets/embedder.json is missing. Packs must carry the same meta.model_id. */
+        const val DEFAULT_MODEL_ID = "ow-dinov2s-384-v1"
         const val INPUT = 224
-        const val DIM = 768
         private const val ASSET = "embedder.tflite"
+
+        /** Model id written by the pipeline next to the model (assets/embedder.json). */
+        fun modelId(context: Context): String = try {
+            org.json.JSONObject(context.assets.open("embedder.json").bufferedReader().readText())
+                .optString("model_id", DEFAULT_MODEL_ID)
+        } catch (e: IOException) {
+            DEFAULT_MODEL_ID
+        }
 
         /** Returns null if the model asset is missing (e.g. a CI build without the pipeline output). */
         fun loadOrNull(context: Context): Embedder? = try {
@@ -58,7 +68,7 @@ class Embedder private constructor(private val interpreter: Interpreter) : Close
             input.putFloat((p and 0xFF) / 255f)
         }
         input.rewind()
-        val out = Array(1) { FloatArray(DIM) }
+        val out = Array(1) { FloatArray(dim) }
         interpreter.run(input, out)
         val v = out[0]
         var n = 0f

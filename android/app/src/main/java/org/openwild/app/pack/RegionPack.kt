@@ -184,6 +184,14 @@ class RegionPack(file: File) : Closeable {
 
         fun dangerRank(d: String) = when (d) { "deadly" -> 0; "toxic" -> 1; "psychoactive" -> 2; "harmless" -> 3; else -> 4 }
 
+        fun prototypeCount(file: File): Int = try {
+            SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                db.rawQuery("SELECT count(*) FROM prototype", null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+            }
+        } catch (e: Exception) {
+            0
+        }
+
         /** Read just the meta table (for listing installed packs without loading them). */
         fun readMeta(file: File): Map<String, String>? = try {
             SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->

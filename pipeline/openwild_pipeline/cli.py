@@ -318,6 +318,79 @@ def cmd_guide_pack(a):
     print(out, f"{out.stat().st_size / 1e6:.1f} MB")
 
 
+def cmd_free_model(_):
+    from .freemodel import export
+
+    export()
+
+
+def cmd_photos(a):
+    from .gbif_photos import fetch_region_photos
+
+    fetch_region_photos(data_dir(a.region) / "species.csv", config.WORK / "photos_gbif" / a.region,
+                        per_species=a.per_species, workers=a.workers, max_species=a.max_species)
+
+
+def cmd_photo_pack(a):
+    """Field guide + photo fingerprints (free DINOv2 model) for every species with reference photos."""
+    import csv
+    from collections import defaultdict
+
+    import numpy as np
+
+    from .calibrate import calibrate
+    from .content import load_curated
+    from .freemodel import embed_paths
+    from .pack import SpeciesRecord, build_pack
+    from .regions import get_region
+
+    region = get_region(a.region)
+    d = data_dir(a.region)
+    photos = list(csv.DictReader(open(config.WORK / "photos_gbif" / a.region / "photos.csv", encoding="utf-8")))
+    embs = embed_paths([Path(p["path"]) for p in photos])
+    by_species: dict[str, list[int]] = defaultdict(list)
+    for i, p in enumerate(photos):
+        by_species[p["scientific_name"].lower()].append(i)
+
+    taxa = np.array([hash(p["scientific_name"].lower()) for p in photos])
+    params = {}
+    try:
+        cal = calibrate(embs, taxa)
+        print("calibration:", cal)
+        params = {k: v for k, v in cal.items() if k in config.DEFAULT_PARAMS}
+    except Exception as e:  # noqa: BLE001
+        print(f"calibration skipped: {e!r}")
+
+    descs = {}
+    if (d / "descriptions.csv").exists():
+        descs = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
+    recs = []
+    for r in csv.DictReader(open(d / "species.csv", encoding="utf-8")):
+        key = r["scientific_name"].lower()
+        idx = by_species.get(key, [])
+        dsc = descs.get(key, {})
+        recs.append(SpeciesRecord(
+            scientific_name=r["scientific_name"],
+            kingdom=r.get("kingdom") or "Plantae",
+            gbif_key=int(r["gbif_key"]) if (r.get("gbif_key") or "").isdigit() else None,
+            common_name=r.get("common_name") or None,
+            common_names=json.loads(r["common_names"]) if r.get("common_names") else {},
+            family=r.get("family") or None,
+            genus=r.get("genus") or None,
+            obs_count=int(float(r.get("gbif_count") or 0)),
+            description=dsc.get("description") or None,
+            wiki_url=dsc.get("wiki_url") or None,
+            embeddings=embs[idx] if idx else None,
+            attributions=[{"observer": photos[i]["observer"], "license": photos[i]["license"], "url": photos[i]["page"]} for i in idx],
+        ))
+    out = Path(a.out) if a.out else config.PACKS_DIR / f"{region.id}-v{a.version}.owpack"
+    build_pack(out, region.id, region.name, a.version, recs, load_curated(), params=params, guide_only=True,
+               min_photos_for_image_protos=2,
+               sources=["GBIF.org occurrence media (CC licences)", "Kew WCVP (CC BY)", "Wikipedia (CC BY-SA)", "Wikidata (CC0)"])
+    with_photos = sum(1 for r in recs if r.embeddings is not None and len(r.embeddings) >= 2)
+    print(out, f"{out.stat().st_size / 1e6:.1f} MB; {with_photos} species identifiable by photo")
+
+
 def cmd_region(a):
     """embed + calibrate + build for one region (assumes species/select/fetch and a trained model)."""
     cmd_embed(a)
@@ -384,6 +457,16 @@ def main(argv=None):
         sp.add_argument("--version", type=int, default=1)
         sp.add_argument("--wiki", action="store_true", help="add Wikipedia descriptions")
         sp.add_argument("--text-protos", action="store_true", help="add teacher text prototypes for photo-poor species")
+    add("free-model", cmd_free_model, "export the free DINOv2-small fingerprint model to android assets (CPU)")
+    sp = add("photos", cmd_photos, "download licensed reference photos from GBIF for a region")
+    sp.add_argument("region")
+    sp.add_argument("--per-species", type=int, default=8)
+    sp.add_argument("--workers", type=int, default=16)
+    sp.add_argument("--max-species", type=int, default=None)
+    sp = add("photo-pack", cmd_photo_pack, "build a region pack with photo fingerprints (free model, CPU)")
+    sp.add_argument("region")
+    sp.add_argument("--version", type=int, default=2)
+    sp.add_argument("--out", default=None)
     sp = add("guide-pack", cmd_guide_pack, "offline field-guide pack from data/regions/<id> (no photo model needed)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=1)

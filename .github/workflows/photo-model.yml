@@ -1,0 +1,70 @@
+name: Photo model + region photo pack (free, CPU)
+
+# Free on-phone photo ID with no GPU and no training:
+#  1. exports DINOv2-small (Apache-2.0) to android/app/src/main/assets/embedder.tflite
+#  2. downloads openly licensed reference photos for the region from GBIF
+#  3. fingerprints them on CPU and builds the region pack into the app's assets
+#  4. commits -> the Android workflow builds and publishes a new OpenWild.apk
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region id (e.g. ID-BA for Bali)"
+        required: true
+        default: "ID-BA"
+      per_species:
+        description: "Reference photos per species"
+        required: true
+        default: "8"
+      export_model:
+        description: "Re-export the model (true/false)"
+        required: true
+        default: "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: photo-model
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install (CPU)
+        run: |
+          pip install --upgrade pip
+          pip install ai-edge-torch timm pillow numpy pyyaml
+          python -c "import torch, timm, ai_edge_torch; print('torch', torch.__version__, 'timm', timm.__version__)"
+      - name: Export free model (DINOv2-small -> LiteRT)
+        if: inputs.export_model == 'true'
+        run: python -m openwild_pipeline.cli free-model
+      - name: Reference photos from GBIF
+        run: python -m openwild_pipeline.cli photos "${{ inputs.region }}" --per-species "${{ inputs.per_species }}" --workers 16
+      - name: Fingerprint photos + build region pack
+        run: |
+          python -m openwild_pipeline.cli photo-pack "${{ inputs.region }}" --version 2 \
+            --out ../android/app/src/main/assets/packs/${{ inputs.region }}.owpack
+      - name: Commit model + pack
+        working-directory: .
+        run: |
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git add android/app/src/main/assets/embedder.tflite android/app/src/main/assets/embedder.json android/app/src/main/assets/packs/${{ inputs.region }}.owpack || true
+          git commit -m "Photo ID: free model + ${{ inputs.region }} photo pack" || echo "No changes"
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Build the app with the new model (dispatch Android workflow)
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run android.yml --ref main || true

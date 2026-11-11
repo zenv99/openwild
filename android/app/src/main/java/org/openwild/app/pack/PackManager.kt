@@ -41,7 +41,8 @@ class PackManager(private val context: Context) {
                 name = meta["region_name"] ?: f.nameWithoutExtension,
                 version = meta["pack_version"]?.toIntOrNull() ?: 0,
                 file = f,
-                compatible = meta["model_id"] == Embedder.MODEL_ID,
+                // Guide-only packs (no photo fingerprints) work with any model.
+                compatible = meta["model_id"] == Embedder.modelId(context) || RegionPack.prototypeCount(f) == 0,
             )
         }.sortedBy { it.name }
 
@@ -129,7 +130,7 @@ class PackManager(private val context: Context) {
             throw IOException("Checksum mismatch for ${pack.regionId}")
         }
         val meta = RegionPack.readMeta(tmp)
-        if (meta == null || meta["model_id"] != Embedder.MODEL_ID) {
+        if (meta == null || (meta["model_id"] != Embedder.modelId(context) && RegionPack.prototypeCount(tmp) > 0)) {
             tmp.delete()
             throw IOException("Pack ${pack.regionId} was built for a different model; update the app")
         }

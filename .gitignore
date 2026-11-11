@@ -14,8 +14,6 @@ android/.idea/
 *.iml
 .DS_Store
 
-# Built artefacts: model ships via release assets, packs via GitHub Releases
-android/app/src/main/assets/embedder.tflite
-android/app/src/main/assets/embedder.json
+# Built artefacts: packs via GitHub Releases (bundled packs + the model live in android assets)
 *.owpack
 !android/app/src/main/assets/packs/*.owpack
