@@ -47,6 +47,35 @@ class PackManager(private val context: Context) {
 
     fun fileFor(regionId: String) = File(dir, "$regionId.owpack")
 
+    /**
+     * Copy packs shipped inside the APK (assets/packs) into storage on first launch, or when the
+     * bundled version is newer than the installed one. Lets the field guide work with no internet at all.
+     */
+    fun installBundled() {
+        val names = context.assets.list("packs").orEmpty().filter { it.endsWith(".owpack") }
+        for (name in names) {
+            val tmp = File(dir, "$name.bundled")
+            context.assets.open("packs/$name").use { input -> tmp.outputStream().use { input.copyTo(it) } }
+            val meta = RegionPack.readMeta(tmp)
+            val region = meta?.get("region_id")
+            if (meta == null || region == null) {
+                tmp.delete()
+                continue
+            }
+            val bundledVersion = meta["pack_version"]?.toIntOrNull() ?: 0
+            val dest = fileFor(region)
+            val installedVersion = if (dest.exists()) RegionPack.readMeta(dest)?.get("pack_version")?.toIntOrNull() ?: -1 else -1
+            if (bundledVersion > installedVersion) {
+                if (!tmp.renameTo(dest)) {
+                    tmp.copyTo(dest, overwrite = true)
+                    tmp.delete()
+                }
+            } else {
+                tmp.delete()
+            }
+        }
+    }
+
     /** Fetch the hosted pack list; falls back to the last cached copy when offline. */
     fun fetchIndex(): List<RemotePack> {
         val text = try {

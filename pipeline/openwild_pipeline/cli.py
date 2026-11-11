@@ -283,6 +283,41 @@ def cmd_build(a):
     print(out)
 
 
+def cmd_guide_pack(a):
+    """Offline field-guide pack (no photo matching yet): every species in data/regions/<id> with names,
+    descriptions and safety info. Search/browse works in the app before the photo model exists."""
+    import csv
+
+    from .content import load_curated
+    from .pack import SpeciesRecord, build_pack
+    from .regions import get_region
+
+    region = get_region(a.region)
+    d = data_dir(a.region)
+    descs = {}
+    if (d / "descriptions.csv").exists():
+        descs = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
+    recs = []
+    for r in csv.DictReader(open(d / "species.csv", encoding="utf-8")):
+        dsc = descs.get(r["scientific_name"].lower(), {})
+        recs.append(SpeciesRecord(
+            scientific_name=r["scientific_name"],
+            kingdom=r.get("kingdom") or "Plantae",
+            gbif_key=int(r["gbif_key"]) if (r.get("gbif_key") or "").isdigit() else None,
+            common_name=r.get("common_name") or None,
+            common_names=json.loads(r["common_names"]) if r.get("common_names") else {},
+            family=r.get("family") or None,
+            genus=r.get("genus") or None,
+            obs_count=int(float(r.get("gbif_count") or 0)),
+            description=dsc.get("description") or None,
+            wiki_url=dsc.get("wiki_url") or None,
+        ))
+    out = Path(a.out) if a.out else config.PACKS_DIR / f"{region.id}-v{a.version}.owpack"
+    build_pack(out, region.id, region.name, a.version, recs, load_curated(), guide_only=True,
+               sources=["GBIF.org", "Kew WCVP (CC BY)", "Wikipedia (CC BY-SA)", "Wikidata (CC0)"])
+    print(out, f"{out.stat().st_size / 1e6:.1f} MB")
+
+
 def cmd_region(a):
     """embed + calibrate + build for one region (assumes species/select/fetch and a trained model)."""
     cmd_embed(a)
@@ -349,6 +384,10 @@ def main(argv=None):
         sp.add_argument("--version", type=int, default=1)
         sp.add_argument("--wiki", action="store_true", help="add Wikipedia descriptions")
         sp.add_argument("--text-protos", action="store_true", help="add teacher text prototypes for photo-poor species")
+    sp = add("guide-pack", cmd_guide_pack, "offline field-guide pack from data/regions/<id> (no photo model needed)")
+    sp.add_argument("region")
+    sp.add_argument("--version", type=int, default=1)
+    sp.add_argument("--out", default=None)
     sp = add("index", cmd_index, "add a built pack to index.json")
     sp.add_argument("pack")
     sp.add_argument("--url", required=True)

@@ -1,6 +1,7 @@
 name: Android
 
 on:
+  workflow_dispatch:
   push:
     paths: ["android/**", ".github/workflows/android.yml"]
   pull_request:
@@ -9,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: android
@@ -25,3 +28,11 @@ jobs:
         with:
           name: openwild-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
+      - name: Publish installable APK (GitHub Release "app-latest")
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk OpenWild.apk
+          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --prerelease --title "OpenWild (latest build)" --notes "Latest build from main. On Android: download OpenWild.apk, open it, allow installing from this source."
+          gh release upload app-latest OpenWild.apk --clobber

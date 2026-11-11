@@ -90,6 +90,7 @@ def build_pack(
     min_photos_for_image_protos: int = 3,
     group_rules: dict | None = None,
     quick_rows: dict | None = None,
+    guide_only: bool = False,
     projection: tuple | None = None,
 ) -> Path:
     params = {**config.DEFAULT_PARAMS, **(params or {})}
@@ -129,8 +130,10 @@ def build_pack(
     sid = 0
     for rec in species:
         has_img = rec.embeddings is not None and len(rec.embeddings) >= min_photos_for_image_protos
-        if not has_img and rec.text_embedding is None:
+        if not has_img and rec.text_embedding is None and not guide_only:
             skipped += 1
+            continue
+        if rec.scientific_name.lower() in name_to_id:  # duplicate name (e.g. synonym keys): keep the first
             continue
         sid += 1
         name_to_id[rec.scientific_name.lower()] = sid
@@ -160,10 +163,12 @@ def build_pack(
     rules = load_group_rules() if group_rules is None else group_rules
     quick = load_quick() if quick_rows is None else quick_rows
     covered = {"species": 0, "quick": 0, "genus": 0, "family": 0, "none": 0}
+    done: set[str] = set()
     for rec in species:
         key = rec.scientific_name.lower()
-        if key not in name_to_id:
+        if key not in name_to_id or key in done:
             continue
+        done.add(key)
         entry = curated.get(key)
         content = resolve(curated, rules, rec.scientific_name, rec.genus, rec.family, quick)
         covered[content["level"] if content else "none"] += 1

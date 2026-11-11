@@ -70,6 +70,8 @@ data class UiState(
     val stack: List<Screen> = listOf(Screen.Home),
     val survivalMode: Boolean = false,
     val modelMissing: Boolean = false,
+    /** Active pack has photo fingerprints (guide-only packs don't yet). */
+    val photoIdReady: Boolean = false,
     val activeRegionName: String? = null,
     val activeSpeciesCount: Int = 0,
     val suggestedRegion: String? = null,
@@ -113,6 +115,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val missing = withContext(Dispatchers.Default) { ow.embedder == null }
             _state.update { it.copy(modelMissing = missing) }
+            withContext(Dispatchers.IO) { runCatching { ow.packs.installBundled() } }
             val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
             _state.update { it.copy(regions = regions) }
             refreshInstalled()
@@ -189,7 +192,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         pack = loaded
         identifier = loaded?.let { Identifier(it.index, it.species, it.params, it.projection) }
         if (loaded != null) ow.packs.activeRegionId = loaded.regionId
-        _state.update { it.copy(activeRegionName = loaded?.regionName, activeSpeciesCount = loaded?.species?.size ?: 0) }
+        _state.update {
+            it.copy(
+                activeRegionName = loaded?.regionName,
+                activeSpeciesCount = loaded?.species?.size ?: 0,
+                photoIdReady = (loaded?.index?.size ?: 0) > 0,
+            )
+        }
     }
 
     fun useRegion(regionId: String) = viewModelScope.launch {
@@ -250,7 +259,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val emb = ow.embedder
         val id = identifier
         val p = pack
-        if (s.photos.isEmpty() || emb == null || id == null || p == null) return@launch
+        if (s.photos.isEmpty() || emb == null || id == null || p == null || p.index.size == 0) return@launch
         _state.update { it.copy(busy = true) }
         val res = withContext(Dispatchers.Default) {
             val embeddings = s.photos.map { emb.embed(it.bitmap) }

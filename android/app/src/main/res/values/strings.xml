@@ -16,7 +16,7 @@
     <string name="survival_mode_desc">Show survival value first and highlight deadly species.</string>
     <string name="active_region">Region: %1$s (%2$d species)</string>
     <string name="no_pack">No region pack installed. Download one while you have internet.</string>
-    <string name="model_missing">Identification model not installed in this build.</string>
+    <string name="model_missing">Photo ID is coming soon. Meanwhile, the full offline field guide is ready: tap Explore to search every species.</string>
     <string name="suggested_region">You seem to be in %1$s.</string>
     <string name="credits">Photo credits</string>
 

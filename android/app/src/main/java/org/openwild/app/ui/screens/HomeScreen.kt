@@ -56,7 +56,7 @@ import org.openwild.app.ui.theme.Lime
 
 @Composable
 fun HomeScreen(state: UiState, vm: AppViewModel) {
-    val canIdentify = state.activeRegionName != null && !state.modelMissing
+    val canIdentify = state.activeRegionName != null && !state.modelMissing && state.photoIdReady
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         // ---------- Hero ----------
         Box(
@@ -102,7 +102,9 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
         }
 
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            if (state.modelMissing) WarningBox(stringResource(R.string.model_missing), danger = false)
+            if (state.activeRegionName != null && (state.modelMissing || !state.photoIdReady)) {
+                WarningBox(stringResource(R.string.model_missing), danger = false)
+            }
             if (state.activeRegionName == null) {
                 WarningBox(stringResource(R.string.no_pack), danger = false)
             }

@@ -31,6 +31,17 @@ android {
         buildConfigField("boolean", "SHOW_DONATIONS", "$showDonations")
     }
 
+    signingConfigs {
+        // Shared debug key committed to the repo so every CI build can be installed over the last one.
+        // NOT for Play Store releases — create a private release key for that.
+        getByName("debug") {
+            storeFile = file("openwild-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
