@@ -33,7 +33,8 @@ jobs:
           echo "Permissions:"; grep "uses-permission" badging.txt || true
           if grep -q "android.permission.INTERNET" badging.txt; then echo "FAIL: INTERNET permission found"; exit 1; fi
           if grep -q "application-debuggable" badging.txt; then echo "FAIL: debuggable build"; exit 1; fi
-          if grep -A2 "allowBackup" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: backup enabled"; exit 1; fi
+          grep "allowBackup" manifest.txt || true
+          if grep "allowBackup" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: backup enabled"; exit 1; fi
           echo "PASS: no internet permission, not debuggable, backup off"
       - uses: actions/upload-artifact@v4
         with:
