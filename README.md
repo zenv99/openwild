@@ -16,7 +16,8 @@ OpenWild is a free, open-source, non-commercial Android app. Point the camera at
 - **Several photos, more confidence.** Take 1–5 shots (leaf, flower, fruit, whole plant; or cap, gills, stem, base). Results are fused across photos.
 - **Honest confidence.** Every result shows a calibrated confidence score and a tier: High, Medium, Low, or "Not in our library".
 - **Region downloads like Organic Maps.** Browse by continent, search countries, see sizes, update all. The app suggests your region from GPS (offline) and downloads only that region's species (typically 5–30 MB).
-- **Explore offline.** Search every species in your region; filter by deadly, survival, plants, mushrooms, psychoactive.
+- **Photos for every species.** A photo grid in Explore, thumbnails in every list, photo rows on the home screen ("Food you can find here", "Deadly here — learn these"), and a full-screen, pinch-to-zoom viewer with the photographer and licence credited. Field photos from iNaturalist come first; herbarium sheets only when nothing else exists. All photos live inside the region pack, offline.
+- **Explore offline.** Search every species in your region; filter by deadly, survival, plants, mushrooms, psychoactive. Switch between photo grid and list.
 - **Dark mode by default**, light and system themes too.
 - **Contribute privately.** Share a sighting (e.g. to iNaturalist) or report a wrong ID — only when you tap it. Nothing is ever sent automatically.
 - **"If eaten" for every species.** Benefits, harms (with symptom onset timing and what to do), and what it feels like — including clear legal warnings for psychoactive species.
@@ -85,6 +86,7 @@ Feedback: open an issue (in-app **About → Send feedback** does this for you).
 
 ## Automation
 
+- **Weekly open-data buckets** (Sundays): walks Wikipedia categories in English and Indonesian (edible fruits, vegetables, nuts, spices, herbs, edible/poisonous/deadly/psychoactive mushrooms, poisonous plants, medicinal and fibre plants), maps every article to its species through Wikidata, and turns them into one-line verdicts. Poisonous always beats edible; genus-level hits only add warnings.
 - **Weekly data bot** (Sundays): adds 30–40 new species safety entries and missing regions, validates them, and opens a pull request for human review. Progress: [COVERAGE.md](COVERAGE.md).
 - **Monthly optimizer** (1st of each month): updates dependencies, improves speed, size, UI and accessibility, and opens a pull request. Safety rules are off-limits to it.
 
