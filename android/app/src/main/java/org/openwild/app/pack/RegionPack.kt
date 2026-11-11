@@ -106,20 +106,60 @@ class RegionPack(file: File) : Closeable {
 
     fun creditCount(): Int = db.rawQuery("SELECT count(*) FROM attribution", null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
-    /** Survival guide: (high-value species, deadly species) for this region, each sorted by how common they are. */
-    fun survivalGuide(): Pair<List<Int>, List<Int>> {
-        val valuable = ArrayList<Int>()
-        val deadly = ArrayList<Int>()
+    /** Compact per-species safety flags, parsed once on first use (for lists, filters and badges). */
+    data class SafetyFlags(val toxicity: String, val edibility: String, val psychoactive: Boolean, val survival: String) {
+        val isDeadly get() = toxicity == "deadly" || edibility == "deadly"
+        val isDangerous get() = isDeadly || toxicity == "serious"
+    }
+
+    val safety: Array<SafetyFlags?> by lazy {
+        val out = arrayOfNulls<SafetyFlags>(species.size)
         db.rawQuery("SELECT species_id, json FROM content", null).use { c ->
             while (c.moveToNext()) {
                 val i = idToIndex[c.getLong(0)] ?: continue
                 val content = ContentParser.parse(c.getString(1)) ?: continue
-                if (content.isDeadly) deadly += i
-                else if (content.survivalPriority == "high_value") valuable += i
+                synchronized(this) { contentCache.getOrPut(i) { content } }
+                if (content.hasSafetyData) {
+                    out[i] = SafetyFlags(content.toxicity, content.edibility, content.psychoactive, content.survivalPriority)
+                }
             }
         }
+        out
+    }
+
+    /** Survival guide: (high-value species, deadly species) for this region, each sorted by how common they are. */
+    fun survivalGuide(): Pair<List<Int>, List<Int>> {
+        val flags = safety
         val byCount = compareByDescending<Int> { species.obsCounts[it] }
-        return valuable.sortedWith(byCount) to deadly.sortedWith(byCount)
+        val deadly = species.ids.indices.filter { flags[it]?.isDeadly == true }.sortedWith(byCount)
+        val valuable = species.ids.indices.filter { flags[it]?.survival == "high_value" && flags[it]?.isDeadly != true }.sortedWith(byCount)
+        return valuable to deadly
+    }
+
+    enum class ExploreFilter { ALL, PLANTS, FUNGI, DEADLY, SURVIVAL, PSYCHOACTIVE }
+
+    /** Offline search over scientific and common names, most-observed first. */
+    fun search(query: String, filter: ExploreFilter, limit: Int = 300): List<Int> {
+        val q = query.trim().lowercase()
+        val flags = if (filter in setOf(ExploreFilter.DEADLY, ExploreFilter.SURVIVAL, ExploreFilter.PSYCHOACTIVE)) safety else null
+        return species.ids.indices.asSequence()
+            .filter { i ->
+                when (filter) {
+                    ExploreFilter.ALL -> true
+                    ExploreFilter.PLANTS -> !species.isFungus[i]
+                    ExploreFilter.FUNGI -> species.isFungus[i]
+                    ExploreFilter.DEADLY -> flags!![i]?.isDeadly == true
+                    ExploreFilter.SURVIVAL -> flags!![i]?.survival == "high_value"
+                    ExploreFilter.PSYCHOACTIVE -> flags!![i]?.psychoactive == true
+                }
+            }
+            .filter { i ->
+                q.isEmpty() || species.scientificNames[i].lowercase().contains(q) ||
+                    (species.commonNames[i]?.lowercase()?.contains(q) == true)
+            }
+            .sortedByDescending { species.obsCounts[it] }
+            .take(limit)
+            .toList()
     }
 
     override fun close() = db.close()

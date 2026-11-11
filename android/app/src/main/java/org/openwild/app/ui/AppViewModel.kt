@@ -16,6 +16,7 @@ import org.openwild.app.R
 import org.openwild.app.core.ConfidenceResult
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
+import org.openwild.app.core.RegionInfo
 import org.openwild.app.core.RegionLocator
 import org.openwild.app.core.SafetyPolicy
 import org.openwild.app.core.Tier
@@ -47,6 +48,8 @@ data class IdResult(
     val hasUnderside: Boolean,
 )
 
+enum class ThemeMode { SYSTEM, LIGHT, DARK }
+
 sealed interface Screen {
     data object Home : Screen
     data object Capture : Screen
@@ -55,7 +58,12 @@ sealed interface Screen {
     data object Packs : Screen
     data object Survival : Screen
     data object Credits : Screen
+    data object Explore : Screen
+    data object About : Screen
 }
+
+/** Bottom-navigation destinations. */
+val TopLevel: List<Screen> = listOf(Screen.Home, Screen.Explore, Screen.Packs, Screen.About)
 
 data class UiState(
     val disclaimerAccepted: Boolean = false,
@@ -65,6 +73,9 @@ data class UiState(
     val activeRegionName: String? = null,
     val activeSpeciesCount: Int = 0,
     val suggestedRegion: String? = null,
+    val suggestedRegionId: String? = null,
+    val regions: List<RegionInfo> = emptyList(),
+    val themeMode: ThemeMode = ThemeMode.DARK,
     val installed: List<PackManager.InstalledPack> = emptyList(),
     val remote: List<PackManager.RemotePack> = emptyList(),
     val remoteError: Boolean = false,
@@ -74,6 +85,8 @@ data class UiState(
     val busy: Boolean = false,
     val result: IdResult? = null,
     val message: String? = null,
+    val exploreQuery: String = "",
+    val exploreFilter: RegionPack.ExploreFilter = RegionPack.ExploreFilter.ALL,
 ) {
     val screen: Screen get() = stack.last()
 }
@@ -86,6 +99,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         UiState(
             disclaimerAccepted = prefs.getBoolean("disclaimer", false),
             survivalMode = prefs.getBoolean("survival", false),
+            themeMode = runCatching { ThemeMode.valueOf(prefs.getString("theme", "DARK")!!) }.getOrDefault(ThemeMode.DARK),
         ),
     )
     val state: StateFlow<UiState> = _state
@@ -99,9 +113,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val missing = withContext(Dispatchers.Default) { ow.embedder == null }
             _state.update { it.copy(modelMissing = missing) }
+            val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
+            _state.update { it.copy(regions = regions) }
             refreshInstalled()
             loadActivePack()
         }
+    }
+
+    fun setThemeMode(m: ThemeMode) {
+        prefs.edit().putString("theme", m.name).apply()
+        _state.update { it.copy(themeMode = m) }
+    }
+
+    /** Download every installed pack that has a newer version in the index. */
+    fun updateAll() {
+        val have = _state.value.installed.associate { it.regionId to it.version }
+        _state.value.remote.filter { r -> have[r.regionId]?.let { it < r.version } == true }.forEach { download(it) }
     }
 
     // ---------- navigation ----------
@@ -111,6 +138,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(stack = it.stack.dropLast(1)) }
         return true
     }
+    /** Switch bottom-nav tab: resets the back stack to that tab. */
+    fun tab(s: Screen) = _state.update { it.copy(stack = if (s == Screen.Home) listOf(Screen.Home) else listOf(Screen.Home, s)) }
+
+    fun setExploreQuery(q: String) = _state.update { it.copy(exploreQuery = q) }
+    fun setExploreFilter(f: RegionPack.ExploreFilter) = _state.update { it.copy(exploreFilter = f) }
+
     private fun replaceTop(s: Screen) = _state.update { it.copy(stack = it.stack.dropLast(1) + s) }
 
     fun acceptDisclaimer() {
@@ -138,7 +171,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val loc = Location.lastKnown(app) ?: return@withContext null
             RegionLocator.locate(Location.bundledRegions(app), loc.first, loc.second)
         } ?: return@launch
-        _state.update { it.copy(suggestedRegion = region.name) }
+        _state.update { it.copy(suggestedRegion = region.name, suggestedRegionId = region.id) }
         // Auto-select an installed pack for the detected region if none is active yet.
         if (ow.packs.activeRegionId == null && _state.value.installed.any { it.regionId == region.id && it.compatible }) {
             useRegion(region.id)

@@ -17,6 +17,7 @@ class Region:
     gbif: dict = field(default_factory=dict)
     bbox: list[list[float]] = field(default_factory=list)
     max_species: int = 5000
+    continent: str = ""
 
     def contains(self, lon: float, lat: float) -> bool:
         return any(b[0] <= lon <= b[2] and b[1] <= lat <= b[3] for b in self.bbox)
@@ -33,6 +34,9 @@ def load_regions(path: Path = config.REGIONS_YAML) -> list[Region]:
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate region ids in regions.yaml")
     for r in regions:
+        # YAML 1.1 turns unquoted NO/ON/YES into booleans (Norway!) — require strings.
+        if not isinstance(r.id, str) or not all(isinstance(v, str) for v in r.gbif.values()):
+            raise ValueError(f"Region id and gbif values must be strings (quote them): {r.id!r} {r.gbif!r}")
         for b in r.bbox:
             if len(b) != 4 or not (b[0] <= b[2] and b[1] <= b[3]):
                 raise ValueError(f"Bad bbox for region {r.id}: {b}")
@@ -56,7 +60,7 @@ def export_app_index(out: Path = config.ANDROID_ASSETS / "regions.json") -> Path
     regions = load_regions()
     payload = {
         "schema": 1,
-        "regions": [{"id": r.id, "name": r.name, "bbox": r.bbox} for r in regions],
+        "regions": [{"id": r.id, "name": r.name, "continent": r.continent, "bbox": r.bbox} for r in regions],
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=1))

@@ -30,7 +30,7 @@ class Identifier(
             KingdomFilter.PLANTS -> BooleanArray(species.size) { !species.isFungus[it] }
             KingdomFilter.FUNGI -> BooleanArray(species.size) { species.isFungus[it] }
         }
-        val sim = embeddings.map { index.similarity(it, params.textProtoPenalty, allowed) }.toTypedArray()
+        val sim = index.similarityBatch(embeddings, params.textProtoPenalty, allowed)
         val prior = Confidence.prior(species.obsCounts, species.months[(month - 1).coerceIn(0, 11)])
         val logPrior = DoubleArray(prior.size) { ln(prior[it]) }
         return Confidence.score(sim, logPrior, params)

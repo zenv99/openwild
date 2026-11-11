@@ -4,9 +4,15 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Where the app looks for region packs. Override with -PpackIndexUrl=... when building.
-val packIndexUrl: String = (findProperty("packIndexUrl") as String?)
-    ?: "https://github.com/openwild-app/openwild/releases/download/packs/index.json"
+// Project links and settings. Override any with -P<name>=... when building.
+val repoUrl: String = (findProperty("repoUrl") as String?) ?: "https://github.com/zenv99/openwild"
+val packIndexUrl: String = (findProperty("packIndexUrl") as String?) ?: "$repoUrl/releases/download/packs/index.json"
+// Bitcoin Lightning address for tips.
+val lightningAddress: String = (findProperty("lightningAddress") as String?) ?: "zenv9@cake.cash"
+// App feedback inbox. Empty = feedback goes to GitHub issues.
+val feedbackEmail: String = (findProperty("feedbackEmail") as String?) ?: ""
+// Google Play restricts in-app donation links; build Play releases with -PshowDonations=false.
+val showDonations: Boolean = ((findProperty("showDonations") as String?) ?: "true").toBoolean()
 
 android {
     namespace = "org.openwild.app"
@@ -16,9 +22,13 @@ android {
         applicationId = "org.openwild.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         buildConfigField("String", "PACK_INDEX_URL", "\"$packIndexUrl\"")
+        buildConfigField("String", "REPO_URL", "\"$repoUrl\"")
+        buildConfigField("String", "LIGHTNING_ADDRESS", "\"$lightningAddress\"")
+        buildConfigField("String", "FEEDBACK_EMAIL", "\"$feedbackEmail\"")
+        buildConfigField("boolean", "SHOW_DONATIONS", "$showDonations")
     }
 
     buildTypes {

@@ -34,6 +34,7 @@ object Location {
                     val b = boxes.getJSONArray(j)
                     DoubleArray(4) { k -> b.getDouble(k) }
                 },
+                continent = r.optString("continent", ""),
             )
         }
     } catch (e: Exception) {

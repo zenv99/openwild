@@ -1,7 +1,11 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -25,7 +31,9 @@ import org.openwild.app.R
 import org.openwild.app.core.Tier
 import org.openwild.app.pack.RegionPack
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.DangerBadge
 import org.openwild.app.ui.Screen
+import org.openwild.app.ui.WarningBox
 import org.openwild.app.ui.theme.Danger
 
 /** "Know before you go": the region's deadliest species and its high-value survival plants. */
@@ -36,15 +44,17 @@ fun SurvivalScreen(vm: AppViewModel) {
     LaunchedEffect(pack.regionId) { lists = withContext(Dispatchers.IO) { pack.survivalGuide() } }
     val (valuable, deadly) = lists ?: return
 
-    if (valuable.isEmpty() && deadly.isEmpty()) {
-        Text(stringResource(R.string.survival_empty), Modifier.padding(16.dp))
-        return
-    }
-    LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-        item { Header(stringResource(R.string.survival_deadly), danger = true) }
-        items(deadly) { SpeciesRow(vm, pack, it, danger = true) }
-        item { Header(stringResource(R.string.survival_valuable), danger = false) }
-        items(valuable) { SpeciesRow(vm, pack, it, danger = false) }
+    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        item { WarningBox(stringResource(R.string.survival_rules), danger = false) }
+        if (valuable.isEmpty() && deadly.isEmpty()) item { Text(stringResource(R.string.survival_empty)) }
+        if (deadly.isNotEmpty()) {
+            item { Header(stringResource(R.string.survival_deadly), danger = true) }
+            items(deadly) { SpeciesRow(vm, pack, it) }
+        }
+        if (valuable.isNotEmpty()) {
+            item { Header(stringResource(R.string.survival_valuable), danger = false) }
+            items(valuable) { SpeciesRow(vm, pack, it) }
+        }
     }
 }
 
@@ -55,16 +65,25 @@ private fun Header(text: String, danger: Boolean) {
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
         color = if (danger) Danger else MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(vertical = 12.dp),
+        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
     )
 }
 
 @Composable
-private fun SpeciesRow(vm: AppViewModel, pack: RegionPack, i: Int, danger: Boolean) {
+private fun SpeciesRow(vm: AppViewModel, pack: RegionPack, i: Int) {
     val sp = pack.species
     // Browsing (not a photo ID): opened as LOW tier so eating details stay hidden.
-    Column(Modifier.fillMaxWidth().clickable { vm.go(Screen.Species(i, Tier.LOW)) }.padding(vertical = 8.dp)) {
-        Text(sp.commonNames[i] ?: sp.scientificNames[i], fontWeight = FontWeight.SemiBold, color = if (danger) Danger else MaterialTheme.colorScheme.onSurface)
-        Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .clickable { vm.go(Screen.Species(i, Tier.LOW)) }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(sp.commonNames[i] ?: sp.scientificNames[i], style = MaterialTheme.typography.titleSmall)
+            Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
+        }
+        DangerBadge(pack.safety[i])
     }
 }

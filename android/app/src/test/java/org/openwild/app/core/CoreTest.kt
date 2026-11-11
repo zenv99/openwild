@@ -142,3 +142,28 @@ class RegionLocatorTest {
         assertEquals("WORLD", RegionLocator.locate(listOf(world, ph), -30.0, 0.0)?.id)
     }
 }
+
+class PrototypeBatchTest {
+    @Test
+    fun parallelBatchMatchesSequentialSingle() {
+        val rnd = java.util.Random(7)
+        val dim = 64
+        val protos = 5000
+        val species = 700
+        val vecs = ByteArray(protos * dim) { (rnd.nextInt(255) - 127).toByte() }
+        val scales = FloatArray(protos) { 1f / (127f * kotlin.math.sqrt(dim.toFloat())) }
+        val owner = IntArray(protos) { it % species }
+        val isText = BooleanArray(protos) { it % 11 == 0 }
+        val idx = PrototypeIndex(dim, vecs, scales, owner, isText, species)
+        val photos = List(4) { FloatArray(dim) { rnd.nextFloat() - 0.5f } }
+        val allowed = BooleanArray(species) { it % 3 != 0 }
+        val batch = idx.similarityBatch(photos, 0.05, allowed, parallel = true)
+        photos.forEachIndexed { p, e ->
+            val single = idx.similarity(e, 0.05, allowed)
+            for (s in 0 until species) {
+                if (single[s].isInfinite()) assertTrue(batch[p][s].isInfinite())
+                else assertEquals(single[s], batch[p][s], 1e-9)
+            }
+        }
+    }
+}

@@ -4,6 +4,7 @@
   {
    "id": "WORLD",
    "name": "World (common species)",
+   "continent": "World",
    "bbox": [
     [
      -180,
@@ -16,6 +17,7 @@
   {
    "id": "PH",
    "name": "Philippines",
+   "continent": "Asia",
    "bbox": [
     [
      116.9,
@@ -28,6 +30,7 @@
   {
    "id": "ID",
    "name": "Indonesia",
+   "continent": "Asia",
    "bbox": [
     [
      94.9,
@@ -40,6 +43,7 @@
   {
    "id": "TH",
    "name": "Thailand",
+   "continent": "Asia",
    "bbox": [
     [
      97.3,
@@ -52,6 +56,7 @@
   {
    "id": "MY",
    "name": "Malaysia",
+   "continent": "Asia",
    "bbox": [
     [
      99.6,
@@ -64,6 +69,7 @@
   {
    "id": "AU",
    "name": "Australia",
+   "continent": "Oceania",
    "bbox": [
     [
      112.9,
@@ -76,6 +82,7 @@
   {
    "id": "GB",
    "name": "United Kingdom",
+   "continent": "Europe",
    "bbox": [
     [
      -8.7,
@@ -88,6 +95,7 @@
   {
    "id": "DE",
    "name": "Germany",
+   "continent": "Europe",
    "bbox": [
     [
      5.8,
@@ -100,6 +108,7 @@
   {
    "id": "US-CA",
    "name": "California, USA",
+   "continent": "North & Central America",
    "bbox": [
     [
      -124.5,
@@ -112,6 +121,7 @@
   {
    "id": "VN",
    "name": "Vietnam",
+   "continent": "Asia",
    "bbox": [
     [
      102.1,
@@ -124,6 +134,7 @@
   {
    "id": "KH",
    "name": "Cambodia",
+   "continent": "Asia",
    "bbox": [
     [
      102.3,
@@ -136,6 +147,7 @@
   {
    "id": "LA",
    "name": "Laos",
+   "continent": "Asia",
    "bbox": [
     [
      100.1,
@@ -148,6 +160,7 @@
   {
    "id": "MM",
    "name": "Myanmar",
+   "continent": "Asia",
    "bbox": [
     [
      92.2,
@@ -160,6 +173,7 @@
   {
    "id": "SG",
    "name": "Singapore",
+   "continent": "Asia",
    "bbox": [
     [
      103.6,
@@ -172,6 +186,7 @@
   {
    "id": "BN",
    "name": "Brunei",
+   "continent": "Asia",
    "bbox": [
     [
      114.0,
@@ -184,6 +199,7 @@
   {
    "id": "TL",
    "name": "Timor-Leste",
+   "continent": "Asia",
    "bbox": [
     [
      124.0,
@@ -196,6 +212,7 @@
   {
    "id": "PG",
    "name": "Papua New Guinea",
+   "continent": "Oceania",
    "bbox": [
     [
      140.8,
@@ -208,6 +225,7 @@
   {
    "id": "IN",
    "name": "India",
+   "continent": "Asia",
    "bbox": [
     [
      68.1,
@@ -220,6 +238,7 @@
   {
    "id": "LK",
    "name": "Sri Lanka",
+   "continent": "Asia",
    "bbox": [
     [
      79.6,
@@ -232,6 +251,7 @@
   {
    "id": "NP",
    "name": "Nepal",
+   "continent": "Asia",
    "bbox": [
     [
      80.0,
@@ -244,6 +264,7 @@
   {
    "id": "BD",
    "name": "Bangladesh",
+   "continent": "Asia",
    "bbox": [
     [
      88.0,
@@ -256,6 +277,7 @@
   {
    "id": "CN",
    "name": "China",
+   "continent": "Asia",
    "bbox": [
     [
      73.5,
@@ -268,6 +290,7 @@
   {
    "id": "JP",
    "name": "Japan",
+   "continent": "Asia",
    "bbox": [
     [
      122.9,
@@ -280,6 +303,7 @@
   {
    "id": "KR",
    "name": "South Korea",
+   "continent": "Asia",
    "bbox": [
     [
      124.6,
@@ -292,6 +316,7 @@
   {
    "id": "TW",
    "name": "Taiwan",
+   "continent": "Asia",
    "bbox": [
     [
      119.3,
@@ -304,6 +329,7 @@
   {
    "id": "NZ",
    "name": "New Zealand",
+   "continent": "Oceania",
    "bbox": [
     [
      166.4,
@@ -316,6 +342,7 @@
   {
    "id": "FJ",
    "name": "Fiji",
+   "continent": "Oceania",
    "bbox": [
     [
      177.0,
@@ -328,6 +355,7 @@
   {
    "id": "AE",
    "name": "United Arab Emirates",
+   "continent": "Asia",
    "bbox": [
     [
      51.6,
@@ -340,6 +368,7 @@
   {
    "id": "IL",
    "name": "Israel",
+   "continent": "Asia",
    "bbox": [
     [
      34.3,
@@ -352,6 +381,7 @@
   {
    "id": "TR",
    "name": "Turkey",
+   "continent": "Asia",
    "bbox": [
     [
      26.0,
@@ -364,6 +394,7 @@
   {
    "id": "US",
    "name": "United States",
+   "continent": "North & Central America",
    "bbox": [
     [
      -124.8,
@@ -376,6 +407,7 @@
   {
    "id": "US-HI",
    "name": "Hawaii, USA",
+   "continent": "Oceania",
    "bbox": [
     [
      -160.3,
@@ -388,6 +420,7 @@
   {
    "id": "US-AK",
    "name": "Alaska, USA",
+   "continent": "North & Central America",
    "bbox": [
     [
      -170.0,
@@ -400,6 +433,7 @@
   {
    "id": "CA",
    "name": "Canada",
+   "continent": "North & Central America",
    "bbox": [
     [
      -141.0,
@@ -412,6 +446,7 @@
   {
    "id": "MX",
    "name": "Mexico",
+   "continent": "North & Central America",
    "bbox": [
     [
      -117.1,
@@ -424,6 +459,7 @@
   {
    "id": "GT",
    "name": "Guatemala",
+   "continent": "North & Central America",
    "bbox": [
     [
      -92.3,
@@ -436,6 +472,7 @@
   {
    "id": "CR",
    "name": "Costa Rica",
+   "continent": "North & Central America",
    "bbox": [
     [
      -85.95,
@@ -448,6 +485,7 @@
   {
    "id": "CO",
    "name": "Colombia",
+   "continent": "South America",
    "bbox": [
     [
      -79.0,
@@ -460,6 +498,7 @@
   {
    "id": "EC",
    "name": "Ecuador",
+   "continent": "South America",
    "bbox": [
     [
      -81.1,
@@ -472,6 +511,7 @@
   {
    "id": "PE",
    "name": "Peru",
+   "continent": "South America",
    "bbox": [
     [
      -81.4,
@@ -484,6 +524,7 @@
   {
    "id": "BR",
    "name": "Brazil",
+   "continent": "South America",
    "bbox": [
     [
      -74.0,
@@ -496,6 +537,7 @@
   {
    "id": "AR",
    "name": "Argentina",
+   "continent": "South America",
    "bbox": [
     [
      -73.6,
@@ -508,6 +550,7 @@
   {
    "id": "CL",
    "name": "Chile",
+   "continent": "South America",
    "bbox": [
     [
      -75.7,
@@ -520,6 +563,7 @@
   {
    "id": "FR",
    "name": "France",
+   "continent": "Europe",
    "bbox": [
     [
      -5.1,
@@ -532,6 +576,7 @@
   {
    "id": "ES",
    "name": "Spain",
+   "continent": "Europe",
    "bbox": [
     [
      -9.4,
@@ -544,6 +589,7 @@
   {
    "id": "PT",
    "name": "Portugal",
+   "continent": "Europe",
    "bbox": [
     [
      -9.5,
@@ -556,6 +602,7 @@
   {
    "id": "IT",
    "name": "Italy",
+   "continent": "Europe",
    "bbox": [
     [
      6.6,
@@ -568,6 +615,7 @@
   {
    "id": "NL",
    "name": "Netherlands",
+   "continent": "Europe",
    "bbox": [
     [
      3.3,
@@ -580,6 +628,7 @@
   {
    "id": "BE",
    "name": "Belgium",
+   "continent": "Europe",
    "bbox": [
     [
      2.5,
@@ -592,6 +641,7 @@
   {
    "id": "CH",
    "name": "Switzerland",
+   "continent": "Europe",
    "bbox": [
     [
      5.9,
@@ -604,6 +654,7 @@
   {
    "id": "AT",
    "name": "Austria",
+   "continent": "Europe",
    "bbox": [
     [
      9.5,
@@ -616,6 +667,7 @@
   {
    "id": "PL",
    "name": "Poland",
+   "continent": "Europe",
    "bbox": [
     [
      14.1,
@@ -628,6 +680,7 @@
   {
    "id": "CZ",
    "name": "Czechia",
+   "continent": "Europe",
    "bbox": [
     [
      12.1,
@@ -640,6 +693,7 @@
   {
    "id": "SE",
    "name": "Sweden",
+   "continent": "Europe",
    "bbox": [
     [
      11.1,
@@ -650,8 +704,9 @@
    ]
   },
   {
-   "id": false,
+   "id": "NO",
    "name": "Norway",
+   "continent": "Europe",
    "bbox": [
     [
      4.6,
@@ -664,6 +719,7 @@
   {
    "id": "FI",
    "name": "Finland",
+   "continent": "Europe",
    "bbox": [
     [
      20.5,
@@ -676,6 +732,7 @@
   {
    "id": "DK",
    "name": "Denmark",
+   "continent": "Europe",
    "bbox": [
     [
      8.0,
@@ -688,6 +745,7 @@
   {
    "id": "IE",
    "name": "Ireland",
+   "continent": "Europe",
    "bbox": [
     [
      -10.5,
@@ -700,6 +758,7 @@
   {
    "id": "GR",
    "name": "Greece",
+   "continent": "Europe",
    "bbox": [
     [
      19.4,
@@ -712,6 +771,7 @@
   {
    "id": "UA",
    "name": "Ukraine",
+   "continent": "Europe",
    "bbox": [
     [
      22.1,
@@ -724,6 +784,7 @@
   {
    "id": "RU",
    "name": "Russia",
+   "continent": "Europe",
    "bbox": [
     [
      27.0,
@@ -736,6 +797,7 @@
   {
    "id": "ZA",
    "name": "South Africa",
+   "continent": "Africa",
    "bbox": [
     [
      16.5,
@@ -748,6 +810,7 @@
   {
    "id": "KE",
    "name": "Kenya",
+   "continent": "Africa",
    "bbox": [
     [
      33.9,
@@ -760,6 +823,7 @@
   {
    "id": "TZ",
    "name": "Tanzania",
+   "continent": "Africa",
    "bbox": [
     [
      29.3,
@@ -772,6 +836,7 @@
   {
    "id": "NG",
    "name": "Nigeria",
+   "continent": "Africa",
    "bbox": [
     [
      2.7,
@@ -784,6 +849,7 @@
   {
    "id": "GH",
    "name": "Ghana",
+   "continent": "Africa",
    "bbox": [
     [
      -3.3,
@@ -796,6 +862,7 @@
   {
    "id": "EG",
    "name": "Egypt",
+   "continent": "Africa",
    "bbox": [
     [
      24.7,
@@ -808,6 +875,7 @@
   {
    "id": "MA",
    "name": "Morocco",
+   "continent": "Africa",
    "bbox": [
     [
      -13.2,
@@ -820,6 +888,7 @@
   {
    "id": "MG",
    "name": "Madagascar",
+   "continent": "Africa",
    "bbox": [
     [
      43.2,

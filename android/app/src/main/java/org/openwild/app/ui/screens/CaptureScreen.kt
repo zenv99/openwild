@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package org.openwild.app.ui.screens
 
@@ -15,30 +15,41 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -49,19 +60,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import org.openwild.app.R
 import org.openwild.app.core.KingdomFilter
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.Photo
 import org.openwild.app.ui.PhotoPart
 import org.openwild.app.ui.UiState
+import org.openwild.app.ui.theme.ForestDeep
+import org.openwild.app.ui.theme.Lime
 import java.io.File
 
 @Composable
@@ -82,29 +99,34 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
     val full = state.photos.size >= AppViewModel.MAX_PHOTOS
 
     Column(
-        Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(stringResource(R.string.what_is_it), style = MaterialTheme.typography.titleSmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(
-                KingdomFilter.ANY to R.string.kind_any,
-                KingdomFilter.PLANTS to R.string.kind_plant,
-                KingdomFilter.FUNGI to R.string.kind_fungus,
-            ).forEach { (f, label) ->
-                FilterChip(selected = state.filter == f, onClick = { vm.setFilter(f) }, label = { Text(stringResource(label)) })
+        val kinds = listOf(
+            KingdomFilter.ANY to R.string.kind_any,
+            KingdomFilter.PLANTS to R.string.kind_plant,
+            KingdomFilter.FUNGI to R.string.kind_fungus,
+        )
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            kinds.forEachIndexed { i, (f, label) ->
+                SegmentedButton(
+                    selected = state.filter == f,
+                    onClick = { vm.setFilter(f) },
+                    shape = SegmentedButtonDefaults.itemShape(index = i, count = kinds.size),
+                ) { Text(stringResource(label)) }
             }
         }
-        Text(
-            stringResource(if (state.filter == KingdomFilter.FUNGI) R.string.hint_fungus else R.string.hint_plant),
-            style = MaterialTheme.typography.bodySmall,
-        )
 
-        if (hasCamera) {
-            Box(Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
+        // Viewfinder
+        Box(
+            Modifier.fillMaxWidth().aspectRatio(3f / 4f).clip(MaterialTheme.shapes.extraLarge).background(Color.Black),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (hasCamera) {
                 AndroidView(
                     factory = { ctx ->
                         PreviewView(ctx).also { view ->
+                            view.scaleType = PreviewView.ScaleType.FILL_CENTER
                             val providerFuture = ProcessCameraProvider.getInstance(ctx)
                             providerFuture.addListener({
                                 val provider = providerFuture.get()
@@ -114,84 +136,124 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
                             }, ContextCompat.getMainExecutor(ctx))
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f),
+                    modifier = Modifier.fillMaxSize(),
                 )
+                DisposableEffect(Unit) {
+                    onDispose { runCatching { ProcessCameraProvider.getInstance(context).get().unbindAll() } }
+                }
+            } else {
+                Text(stringResource(R.string.camera_permission), color = Color.White, modifier = Modifier.padding(24.dp))
             }
-            DisposableEffect(Unit) {
-                onDispose { runCatching { ProcessCameraProvider.getInstance(context).get().unbindAll() } }
-            }
-        } else {
-            Text(stringResource(R.string.camera_permission), style = MaterialTheme.typography.bodySmall)
+            Text(
+                stringResource(if (state.filter == KingdomFilter.FUNGI) R.string.hint_fungus else R.string.hint_plant),
+                color = Color.White,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .padding(12.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(Color.Black.copy(alpha = 0.45f))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+            )
+            Text(
+                "${state.photos.size}/${AppViewModel.MAX_PHOTOS}",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.BottomEnd).padding(14.dp)
+                    .clip(CircleShape).background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 10.dp, vertical = 4.dp),
+            )
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
-                enabled = hasCamera && !full,
-                onClick = {
-                    val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
-                    imageCapture.takePicture(
-                        ImageCapture.OutputFileOptions.Builder(file).build(),
-                        ContextCompat.getMainExecutor(context),
-                        object : ImageCapture.OnImageSavedCallback {
-                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                                vm.addPhoto(Uri.fromFile(file))
-                            }
-                            override fun onError(exception: ImageCaptureException) {}
-                        },
-                    )
-                },
-            ) {
-                Icon(Icons.Filled.CameraAlt, contentDescription = null)
-                Text(" " + stringResource(R.string.take_photo))
-            }
-            OutlinedButton(
+        // Controls: gallery · shutter · identify
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            FilledTonalIconButton(
                 enabled = !full,
                 onClick = { gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                modifier = Modifier.size(56.dp),
+            ) { Icon(Icons.Filled.PhotoLibrary, contentDescription = stringResource(R.string.from_gallery)) }
+
+            val shutterEnabled = hasCamera && !full
+            Box(
+                Modifier.size(78.dp).clip(CircleShape)
+                    .border(5.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    .padding(8.dp).clip(CircleShape)
+                    .background(if (shutterEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                    .clickable(enabled = shutterEnabled) {
+                        val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
+                        imageCapture.takePicture(
+                            ImageCapture.OutputFileOptions.Builder(file).build(),
+                            ContextCompat.getMainExecutor(context),
+                            object : ImageCapture.OnImageSavedCallback {
+                                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                    vm.addPhoto(Uri.fromFile(file))
+                                }
+
+                                override fun onError(exception: ImageCaptureException) {}
+                            },
+                        )
+                    },
+            )
+
+            Button(
+                onClick = { vm.identify() },
+                enabled = state.photos.isNotEmpty() && !state.busy,
+                modifier = Modifier.height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Lime, contentColor = ForestDeep),
             ) {
-                Icon(Icons.Filled.PhotoLibrary, contentDescription = null)
-                Text(" " + stringResource(R.string.from_gallery))
-            }
-        }
-
-        state.photos.forEachIndexed { i, photo ->
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Image(
-                    bitmap = photo.bitmap.asImageBitmap(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(72.dp),
-                )
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.photo_part), style = MaterialTheme.typography.labelSmall)
-                    val fungusParts = state.filter == KingdomFilter.FUNGI
-                    val parts = when (state.filter) {
-                        KingdomFilter.ANY -> PhotoPart.entries.toList()
-                        else -> PhotoPart.entries.filter { it.forFungus == fungusParts }
-                    }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        parts.forEach { part ->
-                            FilterChip(
-                                selected = photo.part == part,
-                                onClick = { vm.setPart(i, part) },
-                                label = { Text(stringResource(part.label)) },
-                            )
-                        }
-                    }
+                if (state.busy) {
+                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = ForestDeep)
+                } else {
+                    Text(stringResource(R.string.identify), fontWeight = FontWeight.ExtraBold)
                 }
-                IconButton(onClick = { vm.removePhoto(i) }) { Icon(Icons.Filled.Close, contentDescription = null) }
             }
         }
 
-        Button(
-            onClick = { vm.identify() },
-            enabled = state.photos.isNotEmpty() && !state.busy,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            if (state.busy) {
-                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                Text(" " + stringResource(R.string.identifying))
-            } else {
-                Text(stringResource(R.string.identify) + " (${state.photos.size}/${AppViewModel.MAX_PHOTOS})")
+        if (state.photos.isNotEmpty()) {
+            Text(stringResource(R.string.photo_part), style = MaterialTheme.typography.labelLarge)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                itemsIndexed(state.photos) { i, photo -> Thumb(i, photo, state.filter, vm) }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun Thumb(i: Int, photo: Photo, filter: KingdomFilter, vm: AppViewModel) {
+    var open by remember { mutableStateOf(false) }
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(104.dp)) {
+        Box {
+            Image(
+                bitmap = photo.bitmap.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(104.dp).clip(MaterialTheme.shapes.medium),
+            )
+            Box(
+                Modifier.align(Alignment.TopEnd).padding(4.dp).size(26.dp).clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.55f)).clickable { vm.removePhoto(i) },
+                contentAlignment = Alignment.Center,
+            ) { Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp)) }
+        }
+        Box {
+            Text(
+                stringResource(photo.part.label) + " ▾",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(top = 6.dp).clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { open = true }
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                val parts = when (filter) {
+                    KingdomFilter.ANY -> PhotoPart.entries.toList()
+                    KingdomFilter.FUNGI -> PhotoPart.entries.filter { it.forFungus }
+                    KingdomFilter.PLANTS -> PhotoPart.entries.filter { !it.forFungus }
+                }
+                parts.forEach { part ->
+                    DropdownMenuItem(text = { Text(stringResource(part.label)) }, onClick = { vm.setPart(i, part); open = false })
+                }
             }
         }
     }
