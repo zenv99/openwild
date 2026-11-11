@@ -77,8 +77,35 @@ class PackManager(private val context: Context) {
         }
     }
 
-    /** Fetch the hosted pack list; falls back to the last cached copy when offline. */
+    /**
+     * Install a region pack from a file the user picked (Files app, USB, Bluetooth, SD card...).
+     * Validated before install. This is how new regions arrive: the app never goes online.
+     */
+    fun importPack(uri: android.net.Uri): String {
+        val tmp = File(dir, "import.tmp")
+        context.contentResolver.openInputStream(uri)?.use { input -> tmp.outputStream().use { input.copyTo(it) } }
+            ?: throw IOException("Can't read that file")
+        val meta = RegionPack.readMeta(tmp)
+        val region = meta?.get("region_id")
+        if (meta == null || region == null || meta["schema_version"] == null) {
+            tmp.delete()
+            throw IOException("That isn't an OpenWild region file")
+        }
+        if (meta["model_id"] != Embedder.modelId(context) && RegionPack.prototypeCount(tmp) > 0) {
+            tmp.delete()
+            throw IOException("That region file needs a newer app version")
+        }
+        val dest = fileFor(region)
+        if (!tmp.renameTo(dest)) {
+            tmp.copyTo(dest, overwrite = true)
+            tmp.delete()
+        }
+        return region
+    }
+
+    /** Fetch the hosted pack list. Disabled: the app has no INTERNET permission (BuildConfig.ALLOW_NETWORK). */
     fun fetchIndex(): List<RemotePack> {
+        if (!BuildConfig.ALLOW_NETWORK) throw IOException("Network disabled in this build")
         val text = try {
             httpGet(BuildConfig.PACK_INDEX_URL).also { indexCache.writeText(it) }
         } catch (e: IOException) {
@@ -102,6 +129,7 @@ class PackManager(private val context: Context) {
 
     /** Download, verify checksum and model compatibility, then atomically install. */
     fun download(pack: RemotePack, onProgress: (Float) -> Unit) {
+        if (!BuildConfig.ALLOW_NETWORK) throw IOException("Network disabled in this build")
         val tmp = File(dir, "${pack.regionId}.download")
         val digest = MessageDigest.getInstance("SHA-256")
         val conn = open(pack.url)

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Region packs are large and re-downloadable: exclude them from backup. -->
-<full-backup-content>
-    <exclude domain="file" path="packs/" />
-</full-backup-content>

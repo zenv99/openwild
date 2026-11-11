@@ -1,5 +1,7 @@
 package org.openwild.app.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.openwild.app.BuildConfig
 import org.openwild.app.R
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.pack.PackManager
@@ -70,7 +73,10 @@ private sealed interface Status {
  */
 @Composable
 fun PacksScreen(state: UiState, vm: AppViewModel) {
-    LaunchedEffect(Unit) { if (state.remote.isEmpty()) vm.refreshRemote() }
+    LaunchedEffect(Unit) { if (BuildConfig.ALLOW_NETWORK && state.remote.isEmpty()) vm.refreshRemote() }
+    val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) vm.importPack(uri)
+    }
     var query by rememberSaveable { mutableStateOf("") }
     val activeId = vm.pack?.regionId
     val installed = state.installed.associateBy { it.regionId }
@@ -113,10 +119,15 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
                     if (updates > 0) {
                         Button(onClick = vm::updateAll) { Text(stringResource(R.string.update_all, updates)) }
                     }
+                    if (!BuildConfig.ALLOW_NETWORK) {
+                        Button(onClick = { importer.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.import_region)) }
+                    }
                 }
             }
         }
-        if (state.remoteError && state.remote.isEmpty()) item { WarningBox(stringResource(R.string.offline_list), danger = false) }
+        if (BuildConfig.ALLOW_NETWORK && state.remoteError && state.remote.isEmpty()) {
+            item { WarningBox(stringResource(R.string.offline_list), danger = false) }
+        }
 
         item {
             OutlinedTextField(
@@ -196,7 +207,7 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
                 is Status.Installed -> stringResource(if (s.active) R.string.status_in_use else R.string.status_downloaded, s.version)
                 is Status.Available -> stringResource(R.string.pack_size, mb(s.pack.size), s.pack.speciesCount)
                 is Status.Downloading -> stringResource(R.string.status_downloading, (s.progress * 100).toInt())
-                Status.NotBuilt -> stringResource(R.string.status_coming_soon)
+                Status.NotBuilt -> stringResource(if (BuildConfig.ALLOW_NETWORK) R.string.status_coming_soon else R.string.status_import)
             }
             Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

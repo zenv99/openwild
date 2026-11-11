@@ -22,17 +22,28 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Unit tests and debug APK
-        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+      - name: Unit tests and release APK
+        run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
+      - name: Security gate (no internet, not debuggable, no backup)
+        run: |
+          AAPT=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)aapt
+          APK=app/build/outputs/apk/release/app-release.apk
+          $AAPT dump badging $APK > badging.txt
+          $AAPT dump xmltree $APK AndroidManifest.xml > manifest.txt
+          echo "Permissions:"; grep "uses-permission" badging.txt || true
+          if grep -q "android.permission.INTERNET" badging.txt; then echo "FAIL: INTERNET permission found"; exit 1; fi
+          if grep -q "application-debuggable" badging.txt; then echo "FAIL: debuggable build"; exit 1; fi
+          if grep -A2 "allowBackup" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: backup enabled"; exit 1; fi
+          echo "PASS: no internet permission, not debuggable, backup off"
       - uses: actions/upload-artifact@v4
         with:
-          name: openwild-debug-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: openwild-apk
+          path: android/app/build/outputs/apk/release/*.apk
       - name: Publish installable APK (GitHub Release "app-latest")
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk OpenWild.apk
-          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --prerelease --title "OpenWild (latest build)" --notes "Latest build from main. On Android: download OpenWild.apk, open it, allow installing from this source."
+          cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
+          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --prerelease --title "OpenWild (latest build)" --notes "Latest build from main. No internet permission, not debuggable, no cloud backup (checked automatically on every build). On Android: download OpenWild.apk, open it, allow installing from this source."
           gh release upload app-latest OpenWild.apk --clobber

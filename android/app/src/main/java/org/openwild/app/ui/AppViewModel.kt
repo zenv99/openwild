@@ -206,7 +206,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         loadActivePack()
     }
 
+    /** Install a region file chosen by the user. */
+    fun importPack(uri: Uri) = viewModelScope.launch {
+        val r = withContext(Dispatchers.IO) { runCatching { ow.packs.importPack(uri) } }
+        refreshInstalled()
+        r.onSuccess { useRegion(it) }
+        _state.update { it.copy(message = r.exceptionOrNull()?.message) }
+    }
+
     fun refreshRemote() = viewModelScope.launch {
+        if (!org.openwild.app.BuildConfig.ALLOW_NETWORK) return@launch
         val r = withContext(Dispatchers.IO) { runCatching { ow.packs.fetchIndex() } }
         _state.update { it.copy(remote = r.getOrDefault(it.remote), remoteError = r.isFailure) }
     }

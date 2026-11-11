@@ -140,7 +140,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                         icon = { Icon(Icons.Filled.Explore, null) }, label = { Text(stringResource(R.string.explore)) },
                     )
                     NavigationBarItem(
-                        selected = screen == Screen.Packs, onClick = { vm.refreshRemote(); vm.tab(Screen.Packs) },
+                        selected = screen == Screen.Packs, onClick = { vm.tab(Screen.Packs) },
                         icon = { Icon(Icons.Filled.CloudDownload, null) }, label = { Text(stringResource(R.string.nav_packs)) },
                     )
                     NavigationBarItem(

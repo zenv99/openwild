@@ -22,20 +22,22 @@ android {
         applicationId = "org.openwild.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
         buildConfigField("String", "PACK_INDEX_URL", "\"$packIndexUrl\"")
         buildConfigField("String", "REPO_URL", "\"$repoUrl\"")
         buildConfigField("String", "LIGHTNING_ADDRESS", "\"$lightningAddress\"")
         buildConfigField("String", "FEEDBACK_EMAIL", "\"$feedbackEmail\"")
         buildConfigField("boolean", "SHOW_DONATIONS", "$showDonations")
+        // The app has no INTERNET permission; keep network code paths switched off too.
+        buildConfigField("boolean", "ALLOW_NETWORK", "false")
     }
 
     signingConfigs {
         // Shared debug key committed to the repo so every CI build can be installed over the last one.
         // NOT for Play Store releases — create a private release key for that.
         getByName("debug") {
-            storeFile = file("openwild-debug.keystore")
+            storeFile = file("openwild-dev.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
@@ -44,6 +46,10 @@ android {
 
     buildTypes {
         release {
+            // Not debuggable, shrunk and obfuscated. Signed with the repo key until a private
+            // release key is added as a GitHub secret (see SECURITY.md).
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

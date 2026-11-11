@@ -115,7 +115,7 @@
     <string name="nav_packs">Regions</string>
     <string name="nav_about">About</string>
     <string name="explore">Explore</string>
-    <string name="works_offline">Works with no signal. No account. Nothing leaves your phone.</string>
+    <string name="works_offline">No internet access. No account. Nothing leaves your phone.</string>
     <string name="region_pill">%1$s · %2$d species</string>
     <string name="no_region_pill">No region downloaded</string>
     <string name="tile_deadly">Deadly here</string>
@@ -140,7 +140,9 @@
     <!-- regions (packs) -->
     <string name="on_device">On this device</string>
     <string name="on_device_summary">%1$d regions · %2$s</string>
-    <string name="private_note">Downloaded once, used offline forever. Your location never leaves the phone.</string>
+    <string name="private_note">This app has no internet access at all. Regions are built in or imported from a file you choose.</string>
+    <string name="import_region">Import file</string>
+    <string name="status_import">Not installed · import its region file</string>
     <string name="update_all">Update all (%1$d)</string>
     <string name="search_regions">Search countries and regions</string>
     <string name="near_you">Near you</string>
@@ -173,7 +175,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_system">System</string>
     <string name="privacy_title">100% private</string>
-    <string name="privacy_body">Identification runs entirely on your phone. No account, no ads, no analytics, no tracking. Photos and location never leave the device unless you choose to share them.</string>
+    <string name="privacy_body">OpenWild has no internet permission, so Android blocks it from going online at all. Identification runs entirely on your phone. No account, no ads, no analytics, no tracking, no cloud backup. Photos and location never leave the device. Share and feedback buttons only hand text to another app when you tap them.</string>
     <string name="contribute_title">Help make it better</string>
     <string name="contribute_body">Botanists, mycologists and translators: every safety entry is reviewed by people. Share confirmed sightings on iNaturalist to help train future versions.</string>
     <string name="contribute_review">Review safety content</string>
