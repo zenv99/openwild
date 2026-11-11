@@ -194,5 +194,7 @@
     <string name="home_food_row">Food you can find here</string>
     <string name="home_deadly_row">Deadly here — learn these</string>
     <string name="see_all">See all</string>
+    <string name="updates_title">Updates</string>
+    <string name="updates_body">OpenWild never goes online, so it can\'t update itself. For automatic updates, install the free, open-source app Obtainium and add the address below. It installs each new version (new species, photos, fixes) for you. Or download the newest OpenWild.apk from the same page whenever you like.</string>
 </resources>
 

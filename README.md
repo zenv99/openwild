@@ -10,6 +10,13 @@ OpenWild is a free, open-source, non-commercial Android app. Point the camera at
 
 > "OpenWild" is a working name. To rename, change `app_name` in `android/app/src/main/res/values/strings.xml` and `applicationId` in `android/app/build.gradle.kts`.
 
+## Install on Android
+
+1. On your phone, download **[OpenWild.apk](https://github.com/zenv99/openwild/releases/download/app-latest/OpenWild.apk)**, open it, and allow installing from this source.
+2. **Automatic updates:** install [Obtainium](https://github.com/ImranR98/Obtainium) (free, open source), tap *Add app*, paste `https://github.com/zenv99/openwild`. Obtainium checks for new releases and installs them. OpenWild itself never goes online.
+
+Every build gets a new version number and a release (`v0.6.N`), checked automatically for no internet permission, no backup and no debug mode.
+
 ## What it does
 
 - **Photo ID, fully offline.** A small on-device model (~10–25 MB) turns each photo into a fingerprint and matches it against a regional reference library.

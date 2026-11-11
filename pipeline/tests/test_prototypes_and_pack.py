@@ -135,7 +135,7 @@ def test_build_pack_stores_display_photos(tmp_path):
     con = sqlite3.connect(out)
     rows = con.execute("SELECT rank, thumb, image, observer, license FROM photo ORDER BY rank").fetchall()
     assert [r[0] for r in rows] == [0, 1]
-    thumb = Image.open(__import__("io").BytesIO(rows[0][1]))
-    assert thumb.format == "WEBP" and thumb.size == (160, 160)
-    assert Image.open(__import__("io").BytesIO(rows[0][2])).size == (300, 200)
+    assert rows[0][1] == b""  # thumbnails are made on the phone from the cover photo
+    cover = Image.open(__import__("io").BytesIO(rows[0][2]))
+    assert cover.format == "WEBP" and cover.size == (300, 200)
     assert rows[0][3:] == ("A", "cc-by")

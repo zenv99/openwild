@@ -23,6 +23,8 @@ jobs:
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests and release APK
+        env:
+          OW_BUILD_NUMBER: ${{ github.run_number }}
         run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
       - name: Security gate (no internet, not debuggable, no backup)
         run: |
@@ -40,11 +42,21 @@ jobs:
         with:
           name: openwild-apk
           path: android/app/build/outputs/apk/release/*.apk
-      - name: Publish installable APK (GitHub Release "app-latest")
+      - name: Publish installable APK (versioned release + "app-latest")
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          OW_BUILD_NUMBER: ${{ github.run_number }}
         run: |
+          VER="0.6.${OW_BUILD_NUMBER}"
           cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
-          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --prerelease --title "OpenWild (latest build)" --notes "Latest build from main. No internet permission, not debuggable, no cloud backup (checked automatically on every build). On Android: download OpenWild.apk, open it, allow installing from this source."
+          NOTES="OpenWild ${VER}. No internet permission, not debuggable, no cloud backup (checked automatically on every build).
+          Install: download OpenWild.apk on your Android phone, open it, allow installing from this source.
+          Automatic updates: install Obtainium (free, open source) and add https://github.com/zenv99/openwild"
+          # Versioned release: what updaters such as Obtainium follow.
+          gh release create "v${VER}" OpenWild.apk --title "OpenWild ${VER}" --notes "$NOTES" --latest
+          # Stable download link that always points at the newest build.
+          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --prerelease --title "OpenWild (latest build)" --notes "$NOTES"
           gh release upload app-latest OpenWild.apk --clobber
+          # Keep the 5 newest versioned releases.
+          gh release list --limit 100 --json tagName --jq '.[].tagName' | grep '^v0\.' | sort -V -r | tail -n +6 | while read t; do gh release delete "$t" --yes --cleanup-tag; done

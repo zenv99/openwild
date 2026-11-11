@@ -67,31 +67,28 @@ class SpeciesRecord:
     photos: list[dict] = field(default_factory=list)  # {path, observer, license, url}: shown in the app
 
 
-THUMB_PX = 160      # list thumbnails (sharp at 52 dp on 3x screens)
-IMAGE_PX = 448      # tap-to-view photo
-THUMB_Q = 62
+IMAGE_PX = 448      # cover photo (also scaled down on the phone for list thumbnails)
 IMAGE_Q = 56
+EXTRA_PX = 384      # further photos, shown when swiping
+EXTRA_Q = 50
 
 
-def encode_photo(path) -> tuple[bytes, bytes] | None:
-    """(thumbnail, image) as WebP. Thumbnails are centre-cropped squares."""
+def encode_photo(path, cover: bool = True) -> tuple[bytes, bytes] | None:
+    """(thumbnail, image) as WebP. Thumbnails are no longer stored (empty): the app scales the cover photo
+    down itself, which saves ~6 KB per species."""
     import io
 
-    from PIL import Image, ImageOps
+    from PIL import Image
 
     try:
         im = Image.open(path).convert("RGB")
     except Exception:
         return None
-    big = im.copy()
-    big.thumbnail((IMAGE_PX, IMAGE_PX))
-    thumb = ImageOps.fit(im, (THUMB_PX, THUMB_PX), method=Image.LANCZOS)
-    out = []
-    for img, q in ((thumb, THUMB_Q), (big, IMAGE_Q)):
-        b = io.BytesIO()
-        img.save(b, "WEBP", quality=q, method=6)
-        out.append(b.getvalue())
-    return out[0], out[1]
+    px, q = (IMAGE_PX, IMAGE_Q) if cover else (EXTRA_PX, EXTRA_Q)
+    im.thumbnail((px, px), Image.LANCZOS)
+    b = io.BytesIO()
+    im.save(b, "WEBP", quality=q, method=6)
+    return b"", b.getvalue()
 
 
 def _projected(rec: "SpeciesRecord", w, mean, project) -> "SpeciesRecord":
@@ -125,8 +122,8 @@ def build_pack(
     quick_rows: dict | None = None,
     guide_only: bool = False,
     projection: tuple | None = None,
-    photos_per_species: int = 1,
-    photos_per_key_species: int = 3,
+    photos_per_species: int = 3,
+    photos_per_key_species: int = 4,
 ) -> Path:
     params = {**config.DEFAULT_PARAMS, **(params or {})}
     if projection is not None:
@@ -199,7 +196,7 @@ def build_pack(
         for ph in rec.photos:
             if rank >= limit:
                 break
-            enc = encode_photo(ph["path"])
+            enc = encode_photo(ph["path"], cover=rank == 0)
             if enc is None:
                 continue
             con.execute(

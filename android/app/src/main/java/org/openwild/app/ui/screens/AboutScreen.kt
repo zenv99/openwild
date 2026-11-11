@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -104,6 +105,11 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
                     ) { Text(stringResource(label)) }
                 }
             }
+        }
+
+        SectionCard(stringResource(R.string.updates_title), Icons.Filled.Update, MaterialTheme.colorScheme.primary) {
+            Text(stringResource(R.string.updates_body))
+            Text(BuildConfig.REPO_URL, fontWeight = FontWeight.Bold)
         }
 
         SectionCard(stringResource(R.string.privacy_title), Icons.Filled.Lock, Leaf) {

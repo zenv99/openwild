@@ -74,8 +74,13 @@ private object CoverCache {
     }
 }
 
-private fun decode(bytes: ByteArray?): ImageBitmap? =
-    bytes?.let { runCatching { BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap() }.getOrNull() }
+private fun decode(bytes: ByteArray?, sample: Int = 1): ImageBitmap? =
+    bytes?.takeIf { it.isNotEmpty() }?.let {
+        runCatching {
+            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+            BitmapFactory.decodeByteArray(it, 0, it.size, opts)?.asImageBitmap()
+        }.getOrNull()
+    }
 
 /** Square species thumbnail for list rows; falls back to a leaf icon when the pack has no photo. */
 @Composable
@@ -83,7 +88,10 @@ fun SpeciesThumb(pack: RegionPack, i: Int, tint: Color, size: Dp = 52.dp) {
     val key = "${pack.regionId}:${pack.version}:$i"
     val bmp by produceState(ThumbCache.cache.get(key), key) {
         if (value == null && pack.hasPhotos) {
-            value = withContext(Dispatchers.IO) { decode(pack.thumbnail(i)) }?.also { ThumbCache.cache.put(key, it) }
+            value = withContext(Dispatchers.IO) {
+                // Newer packs store no separate thumbnail: scale the cover photo down (448 px -> 224 px) instead.
+                decode(pack.thumbnail(i)) ?: decode(pack.coverImage(i), sample = 2)
+            }?.also { ThumbCache.cache.put(key, it) }
         }
     }
     Box(
