@@ -51,7 +51,21 @@ CREATE TABLE attribution (
   license     TEXT NOT NULL,
   url         TEXT NOT NULL
 );
+
+-- Optional (v0.4+): photos shown in the app. One per species by default.
+CREATE TABLE photo (
+  id          INTEGER PRIMARY KEY,
+  species_id  INTEGER NOT NULL REFERENCES species(id),
+  rank        INTEGER NOT NULL,     -- 0 = cover photo
+  thumb       BLOB NOT NULL,        -- 112x112 centre-cropped WebP (list thumbnail)
+  image       BLOB NOT NULL,        -- up to 320 px WebP (tap to view full screen)
+  observer    TEXT,
+  license     TEXT NOT NULL,        -- shown under the photo, as CC licences require
+  url         TEXT NOT NULL
+);
 ```
+
+Packs without a `photo` table still load; the app shows a leaf icon instead of a thumbnail.
 
 ## `meta` keys
 

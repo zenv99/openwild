@@ -1,5 +1,6 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.ui.SpeciesThumb
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -107,10 +108,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 val tint = if (flags?.isDeadly == true) Danger else Leaf
-                Box(
-                    Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(tint.copy(alpha = 0.14f)),
-                    contentAlignment = Alignment.Center,
-                ) { Icon(Icons.Filled.Eco, null, tint = tint) }
+                SpeciesThumb(pack, i, tint)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(pack.species.commonNames[i] ?: pack.species.scientificNames[i], style = MaterialTheme.typography.titleSmall)

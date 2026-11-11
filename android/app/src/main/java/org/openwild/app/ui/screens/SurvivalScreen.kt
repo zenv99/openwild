@@ -1,5 +1,9 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import org.openwild.app.ui.theme.Leaf
+import org.openwild.app.ui.SpeciesThumb
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -80,6 +84,8 @@ private fun SpeciesRow(vm: AppViewModel, pack: RegionPack, i: Int) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        SpeciesThumb(pack, i, if (pack.safety[i]?.isDeadly == true) Danger else Leaf)
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(sp.commonNames[i] ?: sp.scientificNames[i], style = MaterialTheme.typography.titleSmall)
             Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)

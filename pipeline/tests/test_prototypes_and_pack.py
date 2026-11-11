@@ -118,3 +118,22 @@ def test_regions_locate():
     assert locate(regions, -74.0, 40.7).id == "US"         # New York
     assert locate(regions, -157.8, 21.3).id == "US-HI"     # Honolulu
     assert len(regions) >= 60
+
+
+def test_build_pack_stores_display_photos(tmp_path):
+    from PIL import Image
+
+    img = tmp_path / "a.jpg"
+    Image.new("RGB", (300, 200), (40, 160, 60)).save(img)
+    recs = [SpeciesRecord(scientific_name="Musa acuminata", kingdom="Plantae",
+                          photos=[{"path": str(img), "observer": "A", "license": "cc-by", "url": "https://x/1"},
+                                  {"path": str(img), "observer": "B", "license": "cc0", "url": "https://x/2"},
+                                  {"path": str(tmp_path / "missing.jpg"), "observer": "C", "license": "cc0", "url": "u"}])]
+    out = build_pack(tmp_path / "P.owpack", "P", "P", 1, recs, {}, guide_only=True, photos_per_species=2)
+    con = sqlite3.connect(out)
+    rows = con.execute("SELECT rank, thumb, image, observer, license FROM photo ORDER BY rank").fetchall()
+    assert [r[0] for r in rows] == [0, 1]
+    thumb = Image.open(__import__("io").BytesIO(rows[0][1]))
+    assert thumb.format == "WEBP" and thumb.size == (112, 112)
+    assert Image.open(__import__("io").BytesIO(rows[0][2])).size == (300, 200)
+    assert rows[0][3:] == ("A", "cc-by")

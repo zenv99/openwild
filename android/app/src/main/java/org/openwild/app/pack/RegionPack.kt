@@ -174,6 +174,35 @@ class RegionPack(file: File) : Closeable {
             .toList()
     }
 
+    /** True when the pack carries display photos (packs built before v0.4 don't). */
+    val hasPhotos: Boolean = runCatching {
+        db.rawQuery("SELECT 1 FROM photo LIMIT 1", null).use { it.moveToFirst() }
+    }.getOrDefault(false)
+
+    /** Small square WebP thumbnail for lists, or null. */
+    @Synchronized
+    fun thumbnail(i: Int): ByteArray? {
+        if (!hasPhotos || i !in species.ids.indices) return null
+        return db.rawQuery(
+            "SELECT thumb FROM photo WHERE species_id = ? ORDER BY rank LIMIT 1",
+            arrayOf(species.ids[i].toString()),
+        ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
+    }
+
+    /** A reference photo with the credit its licence requires. */
+    class Photo(val bytes: ByteArray, val observer: String?, val license: String, val url: String)
+
+    @Synchronized
+    fun photos(i: Int): List<Photo> {
+        if (!hasPhotos || i !in species.ids.indices) return emptyList()
+        return db.rawQuery(
+            "SELECT image, observer, license, url FROM photo WHERE species_id = ? ORDER BY rank",
+            arrayOf(species.ids[i].toString()),
+        ).use { c ->
+            buildList { while (c.moveToNext()) add(Photo(c.getBlob(0), if (c.isNull(1)) null else c.getString(1), c.getString(2), c.getString(3))) }
+        }
+    }
+
     override fun close() = db.close()
 
     companion object {

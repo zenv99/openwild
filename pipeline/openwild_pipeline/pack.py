@@ -39,6 +39,11 @@ CREATE TABLE projection (id INTEGER PRIMARY KEY CHECK (id = 1), rows INTEGER NOT
 CREATE TABLE attribution (
   id INTEGER PRIMARY KEY, species_id INTEGER NOT NULL, observer TEXT, license TEXT NOT NULL, url TEXT NOT NULL
 );
+CREATE TABLE photo (
+  id INTEGER PRIMARY KEY, species_id INTEGER NOT NULL REFERENCES species(id), rank INTEGER NOT NULL,
+  thumb BLOB NOT NULL, image BLOB NOT NULL, observer TEXT, license TEXT NOT NULL, url TEXT NOT NULL
+);
+CREATE INDEX photo_species ON photo(species_id, rank);
 """
 
 
@@ -59,6 +64,34 @@ class SpeciesRecord:
     embeddings: np.ndarray | None = None       # (n, D) student fingerprints of reference photos
     text_embedding: np.ndarray | None = None   # (D,) teacher text embedding fallback
     attributions: list[dict] = field(default_factory=list)  # {observer, license, url}
+    photos: list[dict] = field(default_factory=list)  # {path, observer, license, url}: shown in the app
+
+
+THUMB_PX = 112      # list thumbnails
+IMAGE_PX = 320      # tap-to-view photo (reference photos are downloaded at 320 px)
+THUMB_Q = 55
+IMAGE_Q = 60
+
+
+def encode_photo(path) -> tuple[bytes, bytes] | None:
+    """(thumbnail, image) as WebP. Thumbnails are centre-cropped squares."""
+    import io
+
+    from PIL import Image, ImageOps
+
+    try:
+        im = Image.open(path).convert("RGB")
+    except Exception:
+        return None
+    big = im.copy()
+    big.thumbnail((IMAGE_PX, IMAGE_PX))
+    thumb = ImageOps.fit(im, (THUMB_PX, THUMB_PX), method=Image.LANCZOS)
+    out = []
+    for img, q in ((thumb, THUMB_Q), (big, IMAGE_Q)):
+        b = io.BytesIO()
+        img.save(b, "WEBP", quality=q, method=6)
+        out.append(b.getvalue())
+    return out[0], out[1]
 
 
 def _projected(rec: "SpeciesRecord", w, mean, project) -> "SpeciesRecord":
@@ -92,6 +125,7 @@ def build_pack(
     quick_rows: dict | None = None,
     guide_only: bool = False,
     projection: tuple | None = None,
+    photos_per_species: int = 1,
 ) -> Path:
     params = {**config.DEFAULT_PARAMS, **(params or {})}
     if projection is not None:
@@ -152,6 +186,18 @@ def build_pack(
         if rec.text_embedding is not None and (not has_img or len(rec.embeddings) < 10):
             blob, scale = quantize(rec.text_embedding)
             con.execute("INSERT INTO prototype (species_id, vec, scale, kind) VALUES (?,?,?,'text')", (sid, blob, scale))
+        rank = 0
+        for ph in rec.photos:
+            if rank >= photos_per_species:
+                break
+            enc = encode_photo(ph["path"])
+            if enc is None:
+                continue
+            con.execute(
+                "INSERT INTO photo (species_id, rank, thumb, image, observer, license, url) VALUES (?,?,?,?,?,?,?)",
+                (sid, rank, enc[0], enc[1], ph.get("observer"), ph["license"], ph["url"]),
+            )
+            rank += 1
         for a in rec.attributions:
             con.execute(
                 "INSERT INTO attribution (species_id, observer, license, url) VALUES (?,?,?,?)",

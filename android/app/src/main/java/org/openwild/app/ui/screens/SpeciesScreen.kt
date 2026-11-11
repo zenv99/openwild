@@ -1,5 +1,6 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.ui.SpeciesPhotoHeader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -86,6 +87,8 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
     )
 
     ScrollColumn {
+        SpeciesPhotoHeader(pack, index, sp.commonNames[index] ?: sp.scientificNames[index])
+
         // Header, coloured by danger level
         Box(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(headerBrush(content)).padding(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

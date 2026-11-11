@@ -1,5 +1,7 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.ui.theme.Leaf
+import org.openwild.app.ui.SpeciesThumb
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -166,6 +168,8 @@ private fun CandidateRow(vm: AppViewModel, c: Candidate, onClick: () -> Unit) {
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        SpeciesThumb(pack, c.index, if (c.isDeadly) Danger else Leaf, size = 60.dp)
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(sp.commonNames[c.index] ?: sp.scientificNames[c.index], style = MaterialTheme.typography.titleSmall, color = ink)
             Text(sp.scientificNames[c.index], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall, color = ink)

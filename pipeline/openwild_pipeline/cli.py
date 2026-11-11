@@ -382,10 +382,12 @@ def cmd_photo_pack(a):
             wiki_url=dsc.get("wiki_url") or None,
             embeddings=embs[idx] if idx else None,
             attributions=[{"observer": photos[i]["observer"], "license": photos[i]["license"], "url": photos[i]["page"]} for i in idx],
+            photos=[{"path": photos[i]["path"], "observer": photos[i]["observer"], "license": photos[i]["license"],
+                     "url": photos[i]["page"]} for i in idx],
         ))
     out = Path(a.out) if a.out else config.PACKS_DIR / f"{region.id}-v{a.version}.owpack"
     build_pack(out, region.id, region.name, a.version, recs, load_curated(), params=params, guide_only=True,
-               min_photos_for_image_protos=2,
+               min_photos_for_image_protos=2, photos_per_species=a.photos_shown,
                sources=["GBIF.org occurrence media (CC licences)", "Kew WCVP (CC BY)", "Wikipedia (CC BY-SA)", "Wikidata (CC0)"])
     with_photos = sum(1 for r in recs if r.embeddings is not None and len(r.embeddings) >= 2)
     print(out, f"{out.stat().st_size / 1e6:.1f} MB; {with_photos} species identifiable by photo")
@@ -467,6 +469,7 @@ def main(argv=None):
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=2)
     sp.add_argument("--out", default=None)
+    sp.add_argument("--photos-shown", type=int, default=1, help="photos per species stored for display")
     sp = add("guide-pack", cmd_guide_pack, "offline field-guide pack from data/regions/<id> (no photo model needed)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=1)

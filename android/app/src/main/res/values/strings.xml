@@ -183,5 +183,11 @@
     <string name="contribute_inat">Post sightings on iNaturalist</string>
     <string name="source_code">Source code</string>
     <string name="notice_group_level">This safety warning covers its whole genus or family, not this exact species. Treat as unsafe.</string>
+    <string name="photo_credit">Photo: %1$s · %2$s</string>
+    <string name="photo_credit_unknown">unknown photographer</string>
+    <string name="photo_tap_hint">Tap to enlarge</string>
+    <string name="photo_close">Close photo</string>
+    <string name="photo_of">Photo of %1$s</string>
+    <string name="photo_counter">%1$d / %2$d</string>
 </resources>
 
