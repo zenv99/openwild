@@ -1,0 +1,1 @@
+{"model_id": "ow-dinov2s-384-v1", "embedding_dim": 384, "input_size": 224, "source": "timm/vit_small_patch14_dinov2.lvd142m (Apache-2.0)"}
