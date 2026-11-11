@@ -23,6 +23,7 @@ class Identifier(
     private val index: PrototypeIndex,
     private val species: SpeciesTable,
     private val params: ConfidenceParams,
+    private val projection: Projection? = null,
 ) {
     fun identify(embeddings: List<FloatArray>, filter: KingdomFilter, month: Int /* 1..12 */): ConfidenceResult {
         val allowed = when (filter) {
@@ -30,7 +31,8 @@ class Identifier(
             KingdomFilter.PLANTS -> BooleanArray(species.size) { !species.isFungus[it] }
             KingdomFilter.FUNGI -> BooleanArray(species.size) { species.isFungus[it] }
         }
-        val sim = index.similarityBatch(embeddings, params.textProtoPenalty, allowed)
+        val inputs = if (projection != null) embeddings.map { projection.apply(it) } else embeddings
+        val sim = index.similarityBatch(inputs, params.textProtoPenalty, allowed)
         val prior = Confidence.prior(species.obsCounts, species.months[(month - 1).coerceIn(0, 11)])
         val logPrior = DoubleArray(prior.size) { ln(prior[it]) }
         return Confidence.score(sim, logPrior, params)

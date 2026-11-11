@@ -183,6 +183,7 @@ fun noticeText(n: Notice): String = stringResource(
         Notice.MUSHROOM_POOR_SURVIVAL_FOOD -> R.string.notice_mushroom_survival
         Notice.LEGAL_WARNING -> R.string.legal_warning
         Notice.NOT_EXPERT_REVIEWED -> R.string.notice_not_reviewed
+        Notice.GROUP_LEVEL_ONLY -> R.string.notice_group_level
     },
 )
 

@@ -1,7 +1,6 @@
 package org.openwild.app.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +43,7 @@ import org.openwild.app.R
 import org.openwild.app.pack.RegionPack
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.Footer
+import org.openwild.app.ui.MushroomMorph
 import org.openwild.app.ui.Pill
 import org.openwild.app.ui.Screen
 import org.openwild.app.ui.UiState
@@ -75,23 +75,21 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                         fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
                     )
                 }
-                Spacer(Modifier.height(8.dp))
-                // Big shutter-style identify button
+                // Landing art: the fly agaric morphing into abundance (Zen V)
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Box(
-                        Modifier.size(156.dp)
-                            .clip(CircleShape)
-                            .border(6.dp, Color.White.copy(alpha = 0.35f), CircleShape)
-                            .padding(10.dp)
-                            .clip(CircleShape)
+                    MushroomMorph(Modifier.size(260.dp))
+                }
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Row(
+                        Modifier.clip(CircleShape)
                             .background(if (canIdentify) Lime else Color.White.copy(alpha = 0.3f))
-                            .clickable(enabled = canIdentify) { vm.startCapture() },
-                        contentAlignment = Alignment.Center,
+                            .clickable(enabled = canIdentify) { vm.startCapture() }
+                            .padding(horizontal = 28.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = ForestDeep, modifier = Modifier.size(44.dp))
-                            Text(stringResource(R.string.identify), color = ForestDeep, fontWeight = FontWeight.ExtraBold)
-                        }
+                        Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = ForestDeep, modifier = Modifier.size(28.dp))
+                        Spacer(Modifier.width(10.dp))
+                        Text(stringResource(R.string.identify), color = ForestDeep, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.titleLarge)
                     }
                 }
                 Text(

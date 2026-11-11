@@ -187,7 +187,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         pack?.close()
         pack = loaded
-        identifier = loaded?.let { Identifier(it.index, it.species, it.params) }
+        identifier = loaded?.let { Identifier(it.index, it.species, it.params, it.projection) }
         if (loaded != null) ow.packs.activeRegionId = loaded.regionId
         _state.update { it.copy(activeRegionName = loaded?.regionName, activeSpeciesCount = loaded?.species?.size ?: 0) }
     }

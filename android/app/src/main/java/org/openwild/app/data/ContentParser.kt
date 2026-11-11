@@ -47,6 +47,8 @@ object ContentParser {
                 sources = o.optJSONArray("sources").strings(),
                 expertReviewed = o.optJSONObject("review")?.optString("status") == "expert_reviewed",
                 legalWarning = o.str("legal_warning"),
+                level = o.str("level") ?: "species",
+                groupTaxon = o.str("group_taxon"),
             )
         } catch (e: Exception) {
             null

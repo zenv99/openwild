@@ -118,12 +118,177 @@ def load_curated(directory: Path = config.CURATED_DIR, strict: bool = True) -> d
     return entries
 
 
+GROUP_RULES = config.REPO_ROOT / "content" / "group_rules.yaml"
+
+
+def validate_rule(rule: dict) -> list[str]:
+    errs = []
+    for f in ("taxon", "rank", "kingdom", "toxicity", "warning", "onset", "what_to_do", "source"):
+        if not rule.get(f):
+            errs.append(f"missing {f}")
+    if rule.get("rank") not in ("genus", "family"):
+        errs.append("rank must be genus or family")
+    if rule.get("toxicity") not in ("mild", "serious", "deadly"):
+        errs.append("rule toxicity must be mild, serious or deadly (rules only warn)")
+    for k in ("warning", "onset", "what_to_do"):
+        t = rule.get(k) or ""
+        if DOSE_WORDS.search(t) or AMOUNT.search(t) or (rule.get("psychoactive") and PREP_WORDS.search(t)):
+            errs.append(f"{k}: contains dosage/consumption language")
+    return errs
+
+
+def load_group_rules(path: Path = GROUP_RULES, strict: bool = True) -> dict[tuple[str, str], dict]:
+    """{(rank, taxon_lower): rule}. Raises on invalid rules."""
+    rules: dict[tuple[str, str], dict] = {}
+    problems = []
+    if not Path(path).exists():
+        return rules
+    for r in yaml.safe_load(Path(path).read_text()) or []:
+        for e in validate_rule(r):
+            problems.append(f"{r.get('taxon')}: {e}")
+        key = (r.get("rank"), (r.get("taxon") or "").lower())
+        if key in rules:
+            problems.append(f"duplicate rule {key}")
+        rules[key] = r
+    if problems and strict:
+        raise ContentError("\n".join(problems))
+    return rules
+
+
+def group_content(rule: dict) -> dict:
+    """Pack content for a species covered only by a genus/family rule. Never edible."""
+    out = {
+        "edibility": "unknown",
+        "toxicity": rule["toxicity"],
+        "psychoactive": bool(rule.get("psychoactive")),
+        "level": rule["rank"],
+        "group_taxon": rule["taxon"],
+        "if_eaten": {"harms": {"symptoms": rule["warning"], "onset": rule["onset"], "what_to_do": rule["what_to_do"]}},
+        "survival": {"priority": "avoid" if rule["toxicity"] in ("serious", "deadly") else "neutral"},
+        "sources": [rule["source"]],
+        "review": {"status": "unreviewed"},
+    }
+    if out["psychoactive"]:
+        out["legal_warning"] = LEGAL_WARNING
+    return out
+
+
+QUICK_DIR = config.REPO_ROOT / "content" / "quick"
+VERDICTS = {"edible", "edible_cooked", "inedible", "medicinal", "toxic", "deadly", "psychoactive"}
+
+
+def validate_quick(row: dict) -> list[str]:
+    errs = []
+    if not (row.get("scientific_name") or "").strip():
+        return ["missing scientific_name"]
+    v = (row.get("verdict") or "").strip()
+    if v not in VERDICTS:
+        errs.append(f"bad verdict {v!r} (use one of {sorted(VERDICTS)})")
+    if v in ("toxic", "deadly", "psychoactive") and not (row.get("harm") or "").strip():
+        errs.append(f"verdict {v} needs a harm line")
+    for u in filter(None, (x.strip() for x in (row.get("survival") or "").split(";"))):
+        if u not in SURVIVAL_USES:
+            errs.append(f"bad survival use {u!r}")
+    for f in ("benefit", "harm"):
+        t = row.get(f) or ""
+        if DOSE_WORDS.search(t) or AMOUNT.search(t):
+            errs.append(f"{f}: contains dosage/amount language")
+        if v == "psychoactive" and PREP_WORDS.search(t):
+            errs.append(f"{f}: psychoactive entry contains preparation/consumption language")
+    return errs
+
+
+def load_quick(directory: Path = QUICK_DIR, strict: bool = True) -> dict[str, dict]:
+    """Bulk one-liner entries from content/quick/*.csv -> {scientific_name_lower: row}."""
+    import csv
+
+    rows: dict[str, dict] = {}
+    problems = []
+    for f in sorted(Path(directory).glob("*.csv")):
+        lines = [ln for ln in f.read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
+        for r in csv.DictReader(lines):
+            r = {k.strip(): (v or "").strip() for k, v in r.items() if k}
+            for e in validate_quick(r):
+                problems.append(f"{f.name}: {r.get('scientific_name')}: {e}")
+            key = r.get("scientific_name", "").lower()
+            if key in rows:
+                problems.append(f"{f.name}: duplicate {r.get('scientific_name')}")
+            rows[key] = r
+    if problems and strict:
+        raise ContentError("\n".join(problems))
+    return rows
+
+
+def quick_content(row: dict) -> dict:
+    """Pack content for a one-liner entry. Shown with 'not expert reviewed'; eating info still needs High confidence."""
+    v = row["verdict"]
+    benefit, harm = row.get("benefit") or None, row.get("harm") or None
+    source = row.get("source") or f"Wikipedia: {row['scientific_name']}"
+    uses = [u.strip() for u in (row.get("survival") or "").split(";") if u.strip()]
+    out: dict = {
+        "level": "quick",
+        "psychoactive": v == "psychoactive",
+        "if_eaten": {},
+        "survival": {"priority": "neutral", "uses": uses},
+        "sources": [source],
+        "review": {"status": "unreviewed"},
+    }
+    ie = out["if_eaten"]
+    if v == "edible":
+        out.update(edibility="edible", toxicity="mild" if harm else "none")
+        ie["benefits"] = {"nutrition": benefit, "edible_parts": []}
+        if harm:
+            ie["harms"] = {"symptoms": harm}
+        out["survival"]["priority"] = "high_value" if "food" in uses or not uses else "neutral"
+    elif v == "edible_cooked":
+        out.update(edibility="edible_with_preparation", toxicity="mild")
+        ie["benefits"] = {"nutrition": benefit, "preparation_required": "Cook thoroughly before eating."}
+        ie["harms"] = {"symptoms": harm or "Can upset the stomach or irritate the mouth if eaten raw.", "cooking_makes_safe": True}
+        out["survival"]["priority"] = "use_with_caution"
+    elif v in ("inedible", "medicinal"):
+        out.update(edibility="inedible", toxicity="none" if not harm else "mild")
+        if harm:
+            ie["harms"] = {"symptoms": harm}
+        if benefit:
+            ie["benefits"] = {"traditional_uses": [{"text": benefit, "source": source}]}
+    elif v == "toxic":
+        out.update(edibility="toxic", toxicity="serious")
+        ie["harms"] = {"symptoms": harm, "onset": "Varies by species and amount.", "what_to_do": "Seek medical care."}
+        out["survival"]["priority"] = "avoid"
+    elif v == "deadly":
+        out.update(edibility="deadly", toxicity="deadly")
+        ie["harms"] = {"symptoms": harm, "onset": "Can be fast or delayed by many hours; seek care even without symptoms.",
+                       "what_to_do": "Seek emergency medical care immediately."}
+        out["survival"]["priority"] = "avoid"
+    elif v == "psychoactive":
+        out.update(edibility="psychoactive", toxicity="mild", legal_warning=LEGAL_WARNING)
+        ie["harms"] = {"symptoms": harm, "onset": "Usually within an hour.", "what_to_do": "Seek medical care for severe agitation, chest pain or seizures."}
+        out["survival"]["priority"] = "avoid"
+    return out
+
+
+def resolve(curated: dict[str, dict], rules: dict, scientific_name: str, genus: str | None, family: str | None,
+            quick: dict[str, dict] | None = None) -> dict | None:
+    """Species entry > quick one-liner > genus rule > family rule > None."""
+    entry = curated.get(scientific_name.lower())
+    if entry is not None:
+        return finalize(entry)
+    if quick and scientific_name.lower() in quick:
+        return quick_content(quick[scientific_name.lower()])
+    g = genus or scientific_name.split(" ")[0]
+    for key in (("genus", (g or "").lower()), ("family", (family or "").lower())):
+        if key in rules:
+            return group_content(rules[key])
+    return None
+
+
 def finalize(entry: dict | None) -> dict:
     """Content as stored in a pack: fill defaults, add the legal warning for psychoactive species."""
     if entry is None:
         return {"edibility": "unknown", "toxicity": "unknown", "review": {"status": "unreviewed"}}
     out = dict(entry)
     out.setdefault("review", {"status": "unreviewed"})
+    out.setdefault("level", "species")
     if out.get("psychoactive"):
         out["legal_warning"] = LEGAL_WARNING
     return out

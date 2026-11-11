@@ -111,7 +111,8 @@ def test_load_curated_strict_raises(tmp_path):
 def test_regions_locate():
     regions = load_regions()
     assert locate(regions, 121.0, 14.6).id == "PH"         # Manila
-    assert locate(regions, 115.2, -8.65).id == "ID"        # Bali
+    assert locate(regions, 115.2, -8.65).id == "ID-BA"     # Bali
+    assert locate(regions, 106.8, -6.2).id == "ID"         # Jakarta
     assert locate(regions, -122.4, 37.8).id == "US-CA"     # San Francisco
     assert locate(regions, -30.0, 0.0).id == "WORLD"       # mid-Atlantic -> world pack
     assert locate(regions, -74.0, 40.7).id == "US"         # New York

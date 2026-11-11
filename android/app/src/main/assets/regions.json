@@ -28,6 +28,19 @@
    ]
   },
   {
+   "id": "ID-BA",
+   "name": "Bali, Indonesia",
+   "continent": "Asia",
+   "bbox": [
+    [
+     114.4,
+     -8.86,
+     115.72,
+     -8.06
+    ]
+   ]
+  },
+  {
    "id": "ID",
    "name": "Indonesia",
    "continent": "Asia",

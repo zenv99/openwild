@@ -21,6 +21,8 @@ enum class Notice {
     LEGAL_WARNING,
     /** Content not yet expert reviewed. */
     NOT_EXPERT_REVIEWED,
+    /** Only a genus/family-level warning exists for this species. */
+    GROUP_LEVEL_ONLY,
 }
 
 data class Visibility(
@@ -65,6 +67,11 @@ object SafetyPolicy {
         if (content == null || !content.hasSafetyData) {
             eatingAllowed = false
             notices += Notice.NO_SAFETY_DATA
+        }
+        if (content != null && content.isGroupLevel) {
+            // Group rules only ever warn; they never unlock eating information.
+            eatingAllowed = false
+            notices += Notice.GROUP_LEVEL_ONLY
         }
         if (content?.psychoactive == true) notices += Notice.LEGAL_WARNING
         if (isFungus) notices += Notice.MUSHROOM_POOR_SURVIVAL_FOOD

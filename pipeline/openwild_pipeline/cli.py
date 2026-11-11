@@ -22,15 +22,21 @@ def region_dir(region_id: str) -> Path:
     return config.WORK / "regions" / region_id
 
 
+def data_dir(region_id: str) -> Path:
+    return config.DATA_REGIONS / region_id
+
+
 def student_ckpt() -> Path:
     return config.MODELS_DIR / "student.pt"
 
 
 def cmd_content_validate(_):
-    from .content import load_curated
+    from .content import load_curated, load_group_rules, load_quick
 
     entries = load_curated(strict=True)
-    print(f"OK: {len(entries)} curated entries valid")
+    quick = load_quick(strict=True)
+    rules = load_group_rules(strict=True)
+    print(f"OK: {len(entries)} full species entries, {len(quick)} one-liner entries, {len(rules)} genus/family rules")
 
 
 def cmd_regions_export(_):
@@ -61,7 +67,63 @@ def cmd_species(a):
     from .gbif import build_species_list
     from .regions import get_region
 
-    print(build_species_list(get_region(a.region), region_dir(a.region) / "species.csv"))
+    print(build_species_list(get_region(a.region), data_dir(a.region) / "species.csv", workers=a.workers))
+
+
+def cmd_describe(a):
+    """One-line Wikipedia description for every species in the region (English, Indonesian fallback)."""
+    import concurrent.futures as cf
+    import csv
+
+    from .content import wikipedia_summary
+
+    src = data_dir(a.region) / "species.csv"
+    names = [r["scientific_name"] for r in csv.DictReader(open(src, encoding="utf-8"))]
+
+    def one(n):
+        for lang in ("en", "id"):
+            w = wikipedia_summary(n, lang)
+            if w:
+                first = w["description"].split(". ")[0].strip().rstrip(".") + "."
+                return {"scientific_name": n, "description": first[:300], "wiki_url": w["url"] or "", "lang": lang}
+        return None
+
+    with cf.ThreadPoolExecutor(a.workers) as ex:
+        rows = [r for r in ex.map(one, names) if r]
+    out = data_dir(a.region) / "descriptions.csv"
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["scientific_name", "description", "wiki_url", "lang"])
+        w.writeheader()
+        w.writerows(rows)
+    print(f"{a.region}: {len(rows)}/{len(names)} species described -> {out}")
+
+
+def cmd_summary(a):
+    """Coverage summary for a region: how many species, and how many have safety info at each level."""
+    import csv
+
+    from .content import load_curated, load_group_rules, load_quick, resolve
+
+    d = data_dir(a.region)
+    rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
+    desc = d / "descriptions.csv"
+    described = sum(1 for _ in csv.DictReader(open(desc, encoding="utf-8"))) if desc.exists() else 0
+    curated, quick, rules = load_curated(), load_quick(), load_group_rules()
+    levels = {"species": 0, "quick": 0, "genus": 0, "family": 0, "none": 0}
+    for r in rows:
+        c = resolve(curated, rules, r["scientific_name"], r.get("genus"), r.get("family"), quick)
+        levels[c["level"] if c else "none"] += 1
+    summary = {
+        "region": a.region,
+        "species": len(rows),
+        "plants": sum(1 for r in rows if r["kingdom"] == "Plantae"),
+        "fungi": sum(1 for r in rows if r["kingdom"] == "Fungi"),
+        "with_common_name": sum(1 for r in rows if r.get("common_name")),
+        "with_description": described,
+        "safety_info": levels,
+    }
+    (d / "summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
 
 
 def cmd_select(a):
@@ -69,7 +131,7 @@ def cmd_select(a):
     from .regions import get_region
 
     d = region_dir(a.region)
-    print(region_stats_and_photos(get_region(a.region), d / "species.csv", d, a.per_species))
+    print(region_stats_and_photos(get_region(a.region), data_dir(a.region) / "species.csv", d, a.per_species))
 
 
 def cmd_fetch(a):
@@ -146,6 +208,13 @@ def cmd_build(a):
             {"observer": observer, "license": lic, "url": observation_url(obs_uuid)}
         )
 
+    import csv as _csv
+
+    descs = {}
+    dpath = data_dir(a.region) / "descriptions.csv"
+    if dpath.exists():
+        descs = {r["scientific_name"].lower(): r for r in _csv.DictReader(open(dpath, encoding="utf-8"))}
+    names = {r["scientific_name"].lower(): r for r in _csv.DictReader(open(data_dir(a.region) / "species.csv", encoding="utf-8"))}
     records = []
     for row in stats:
         r = dict(zip(cols, row))
@@ -168,7 +237,12 @@ def cmd_build(a):
             embeddings=emb["embs"][idx].astype(np.float32) if idx else None,
             attributions=attributions.get(taxon, []),
         )
-        if a.wiki:
+        key = rec.scientific_name.lower()
+        if key in names and names[key].get("common_names"):
+            rec.common_names = json.loads(names[key]["common_names"])
+        if key in descs:
+            rec.description, rec.wiki_url = descs[key]["description"], descs[key]["wiki_url"] or None
+        elif a.wiki:
             w = wikipedia_summary(rec.scientific_name)
             if w:
                 rec.description, rec.wiki_url = w["description"], w["url"]
@@ -221,7 +295,13 @@ def main(argv=None):
     sp.add_argument("geojson")
     add("inat-download", cmd_inat_download, "download iNaturalist open-data metadata (~4.5 GB)")
     add("inat-index", cmd_inat_index, "index plants & fungi into work/inat.duckdb")
-    sp = add("species", cmd_species, "GBIF species list for a region")
+    sp = add("species", cmd_species, "GBIF species list (with common names) for a region -> data/regions/<id>/")
+    sp.add_argument("region")
+    sp.add_argument("--workers", type=int, default=8)
+    sp = add("describe", cmd_describe, "one-line Wikipedia descriptions for every species in a region")
+    sp.add_argument("region")
+    sp.add_argument("--workers", type=int, default=8)
+    sp = add("summary", cmd_summary, "coverage summary for a region -> data/regions/<id>/summary.json")
     sp.add_argument("region")
     sp = add("select", cmd_select, "select reference photos + region stats")
     sp.add_argument("region")

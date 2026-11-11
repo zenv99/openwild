@@ -3,6 +3,7 @@ package org.openwild.app.pack
 import android.database.sqlite.SQLiteDatabase
 import org.openwild.app.core.ConfidenceParams
 import org.openwild.app.core.Lookalike
+import org.openwild.app.core.Projection
 import org.openwild.app.core.PrototypeIndex
 import org.openwild.app.core.SpeciesContent
 import org.openwild.app.core.SpeciesTable
@@ -25,6 +26,17 @@ class RegionPack(file: File) : Closeable {
     val modelId: String = meta["model_id"] ?: ""
     val dim: Int = meta["embedding_dim"]?.toIntOrNull() ?: 0
     val params: ConfidenceParams = ConfidenceParams.fromMeta(meta)
+
+    /** Optional PCA projection (packs built with tens of thousands of species). */
+    val projection: Projection? = runCatching {
+        db.rawQuery("SELECT rows, cols, matrix, mean FROM projection WHERE id = 1", null).use { c ->
+            if (!c.moveToFirst()) null else {
+                val rows = c.getInt(0)
+                val cols = c.getInt(1)
+                Projection(rows, cols, floats(c.getBlob(2)), floats(c.getBlob(3)))
+            }
+        }
+    }.getOrNull()
 
     val species: SpeciesTable
     private val idToIndex: Map<Long, Int>
@@ -165,6 +177,11 @@ class RegionPack(file: File) : Closeable {
     override fun close() = db.close()
 
     companion object {
+        private fun floats(blob: ByteArray): FloatArray {
+            val buf = java.nio.ByteBuffer.wrap(blob).order(java.nio.ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
+            return FloatArray(buf.remaining()).also { buf.get(it) }
+        }
+
         fun dangerRank(d: String) = when (d) { "deadly" -> 0; "toxic" -> 1; "psychoactive" -> 2; "harmless" -> 3; else -> 4 }
 
         /** Read just the meta table (for listing installed packs without loading them). */

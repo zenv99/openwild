@@ -13,7 +13,11 @@ data class SpeciesContent(
     val sources: List<String> = emptyList(),
     val expertReviewed: Boolean = false,
     val legalWarning: String? = null,
+    /** "species" (full entry), "quick" (one-liner), or "genus"/"family" when only a group-level warning applies. */
+    val level: String = "species",
+    val groupTaxon: String? = null,
 ) {
+    val isGroupLevel: Boolean get() = level == "genus" || level == "family"
     val isDeadly: Boolean get() = toxicity == "deadly" || edibility == "deadly"
     val hasSafetyData: Boolean get() = edibility != "unknown" || toxicity != "unknown"
 

@@ -8,6 +8,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REGIONS_YAML = REPO_ROOT / "regions" / "regions.yaml"
 CURATED_DIR = REPO_ROOT / "content" / "curated"
 ANDROID_ASSETS = REPO_ROOT / "android" / "app" / "src" / "main" / "assets"
+# Small, committed per-region data (species lists, names, descriptions, coverage summary).
+DATA_REGIONS = REPO_ROOT / "data" / "regions"
 
 # All large working files live here (override with OPENWILD_WORK=/path).
 WORK = Path(os.environ.get("OPENWILD_WORK", REPO_ROOT / "work"))

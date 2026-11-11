@@ -24,6 +24,13 @@ regions:
     bbox: [[116.9, 4.5, 126.7, 21.2]]
     max_species: 6000
 
+  - id: ID-BA
+    continent: "Asia"
+    name: "Bali, Indonesia"
+    gbif: {country: ID, gadmGid: IDN.2_1}
+    bbox: [[114.4, -8.86, 115.72, -8.06]]
+    max_species: 25000
+
   - id: ID
     continent: "Asia"
     name: Indonesia

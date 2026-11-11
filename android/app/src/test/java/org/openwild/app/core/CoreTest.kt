@@ -167,3 +167,22 @@ class PrototypeBatchTest {
         }
     }
 }
+
+class ProjectionAndGroupTest {
+    @Test
+    fun projectionMatchesPython() {
+        // Same case computed with pipeline/openwild_pipeline/projection.py
+        val p = Projection(2, 4, floatArrayOf(1f, 0f, 0f, 0f, 0f, 0.6f, 0.8f, 0f), floatArrayOf(0.1f, 0f, 0f, 0f))
+        val z = p.apply(floatArrayOf(0.5f, 0.5f, 0.5f, 0.5f))
+        assertEquals(0.49613893, z[0].toDouble(), 1e-5)
+        assertEquals(0.86824316, z[1].toDouble(), 1e-5)
+    }
+
+    @Test
+    fun groupLevelWarningNeverUnlocksEating() {
+        val genusOnly = SpeciesContent(edibility = "edible", toxicity = "mild", level = "genus", groupTaxon = "Russula")
+        val v = SafetyPolicy.visibility(Tier.HIGH, genusOnly, isFungus = false, photoCount = 3, hasUndersidePhoto = true)
+        assertFalse(v.showBenefits || v.showFeeling)
+        assertTrue(Notice.GROUP_LEVEL_ONLY in v.notices)
+    }
+}

@@ -1,0 +1,53 @@
+name: Region data (species, names, descriptions)
+
+# Pulls every plant & fungus species recorded in a region from GBIF, with common names
+# (English, Indonesian, Balinese, ...) and one-line Wikipedia descriptions, then commits
+# the result to data/regions/<region>/. Runs on GitHub's servers (free), no GPU needed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region id from regions/regions.yaml (e.g. ID-BA for Bali)"
+        required: true
+        default: "ID-BA"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: region-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml
+      - name: Species list + common names (GBIF)
+        run: python -m openwild_pipeline.cli species "${{ inputs.region }}" --workers 8
+      - name: One-line descriptions (Wikipedia)
+        run: python -m openwild_pipeline.cli describe "${{ inputs.region }}" --workers 8
+      - name: Coverage summary
+        run: python -m openwild_pipeline.cli summary "${{ inputs.region }}"
+      - name: Commit data
+        working-directory: .
+        run: |
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git add data/regions/${{ inputs.region }}
+          git commit -m "Region data: ${{ inputs.region }} ($(python3 -c "import json;print(json.load(open('data/regions/${{ inputs.region }}/summary.json'))['species'])") species)" || echo "No changes"
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - uses: actions/upload-artifact@v4
+        with:
+          name: region-${{ inputs.region }}
+          path: data/regions/${{ inputs.region }}

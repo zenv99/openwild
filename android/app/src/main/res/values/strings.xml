@@ -180,5 +180,6 @@
     <string name="contribute_translate">Translate the app</string>
     <string name="contribute_inat">Post sightings on iNaturalist</string>
     <string name="source_code">Source code</string>
+    <string name="notice_group_level">This safety warning covers its whole genus or family, not this exact species. Treat as unsafe.</string>
 </resources>
 

@@ -1,0 +1,167 @@
+# ONE-LINER ENTRIES — NOT YET EXPERT REVIEWED. Bali, Indonesia: food, spice and useful plants.
+# verdict: edible | edible_cooked | inedible | medicinal | toxic | deadly | psychoactive
+# No commas inside fields (use ; or —). survival uses separated by ; (food;water;fire;shelter;cordage;medicinal)
+scientific_name,verdict,benefit,harm,survival
+Salacca zalacca,edible,Snake fruit (salak) — sweet-tart flesh; a Bali specialty,Spiny palm — handle with care,food
+Durio zibethinus,edible,Durian — very rich and high in calories and fat,,food
+Garcinia mangostana,edible,Mangosteen — sweet white segments,,food
+Nephelium lappaceum,edible,Rambutan — juicy sweet flesh; discard the seed,Raw seed is mildly toxic,food
+Lansium parasiticum,edible,Langsat / duku — sweet translucent segments,Seeds are bitter; do not eat,food
+Annona muricata,edible,Soursop — creamy sweet-sour pulp,Seeds are toxic; do not eat,food
+Annona squamosa,edible,Sugar apple — sweet custard-like pulp,Seeds are toxic and irritate eyes,food
+Syzygium aqueum,edible,Water apple — crisp and watery,,food;water
+Syzygium samarangense,edible,Wax apple (jambu air) — crisp and juicy,,food;water
+Syzygium cumini,edible,Java plum — sweet-astringent purple fruit,,food
+Syzygium aromaticum,edible,Clove — flower buds used as spice; antiseptic,Clove oil irritates skin and is toxic to children in large quantity,medicinal
+Syzygium polyanthum,edible,Indonesian bay leaf (salam) — cooking herb,,food
+Myristica fragrans,edible,Nutmeg and mace — spice,Large quantities cause nausea; confusion and palpitations,
+Piper nigrum,edible,Black pepper — spice,,food
+Piper betle,medicinal,Betel leaf — chewed traditionally; antiseptic,Chewing betel quid with areca nut is linked to mouth cancer,medicinal
+Areca catechu,inedible,Areca palm — fronds for thatch; nut chewed traditionally,Areca nut is a stimulant and causes mouth cancer with regular use,shelter
+Zingiber officinale,edible,Ginger — rhizome spice; settles nausea,,food;medicinal
+Curcuma longa,edible,Turmeric — rhizome spice and dye,,food;medicinal
+Alpinia galanga,edible,Galangal — rhizome spice,,food
+Kaempferia galanga,edible,Aromatic ginger (kencur) — rhizome spice,,food
+Cymbopogon citratus,edible,Lemongrass — aromatic herb,,food
+Pandanus amaryllifolius,edible,Pandan — fragrant leaf for cooking,,food
+Citrus hystrix,edible,Kaffir lime — leaves and rind flavour food,,food
+Citrus aurantiifolia,edible,Key lime — juice rich in vitamin C,,food;water
+Citrus maxima,edible,Pomelo — large juicy citrus,,food;water
+Averrhoa bilimbi,edible,Bilimbi (belimbing wuluh) — very sour fruit used in cooking,High in oxalic acid; avoid with kidney disease,food
+Spondias dulcis,edible,Ambarella (kedondong) — crunchy sour fruit,,food
+Spondias pinnata,edible,Hog plum — sour fruit and young leaves eaten,,food
+Ziziphus mauritiana,edible,Indian jujube — sweet small fruit,,food
+Leucaena leucocephala,edible,Lamtoro — young pods and seeds eaten,Contains mimosine; frequent large meals can cause hair loss,food
+Sesbania grandiflora,edible,Agati — flowers and young leaves eaten cooked,,food
+Gnetum gnemon,edible_cooked,Melinjo — seeds made into emping crackers; young leaves eaten,,food
+Parkia speciosa,edible,Petai / stink bean — protein-rich beans,,food
+Archidendron pauciflorum,edible_cooked,Jengkol — beans eaten cooked,Can cause acute kidney injury (jengkolism) — drink plenty of water; avoid with kidney disease,food
+Ipomoea batatas,edible,Sweet potato — tubers and young leaves are excellent food,,food
+Xanthosoma sagittifolium,edible_cooked,Cocoyam — corms and leaves eaten well cooked,Raw plant burns the mouth (oxalates),food
+Amorphophallus paeoniifolius,edible_cooked,Elephant foot yam (suweg) — corm eaten after long cooking,Raw corm burns mouth and throat,food
+Amorphophallus muelleri,edible_cooked,Porang — corm processed into konjac flour,Raw corm burns mouth and throat,food
+Dioscorea alata,edible_cooked,Purple yam (ubi ungu) — starchy tuber,Must be cooked,food
+Dioscorea esculenta,edible_cooked,Lesser yam — starchy tuber,Must be cooked,food
+Dioscorea bulbifera,toxic,,Air potato — wild forms are bitter and toxic; can damage the liver,
+Canna indica,edible_cooked,Canna — starchy rhizome eaten cooked,,food
+Maranta arundinacea,edible_cooked,Arrowroot — rhizome starch,,food
+Pachyrhizus erosus,edible,Jicama (bengkuang) — crisp juicy root,Seeds; pods and leaves contain rotenone and are poisonous,food;water
+Psophocarpus tetragonolobus,edible,Winged bean — pods; leaves; flowers and tubers all edible,,food
+Vigna unguiculata,edible_cooked,Long bean — pods and seeds,,food
+Momordica charantia,edible_cooked,Bitter melon (pare) — young fruit and leaves,Ripe red seeds and large amounts can upset stomach; avoid in pregnancy,food
+Luffa aegyptiaca,edible_cooked,Sponge gourd — young fruit eaten; mature fruit is a scrubber,Bitter fruit can be toxic — discard if very bitter,food
+Benincasa hispida,edible_cooked,Wax gourd — mild vegetable,,food;water
+Sechium edule,edible_cooked,Chayote (labu siam) — fruit and shoots,,food
+Lagenaria siceraria,edible_cooked,Bottle gourd — young fruit,Very bitter fruit contains toxins that cause severe illness — discard,food
+Coccinia grandis,edible_cooked,Ivy gourd — young fruit and shoots,,food
+Trichosanthes cucumerina,edible_cooked,Snake gourd — young fruit,,food
+Cucurbita moschata,edible_cooked,Pumpkin — flesh; flowers; seeds; shoots,,food
+Citrullus lanatus,edible,Watermelon — hydrating,,food;water
+Cucumis sativus,edible,Cucumber — hydrating,,food;water
+Capsicum frutescens,edible,Bird's eye chili (cabai rawit),Very hot; avoid eyes,food
+Capsicum annuum,edible,Chili pepper,,food
+Solanum torvum,edible,Pea eggplant (takokak) — small green fruits cooked,,food
+Solanum melongena,edible_cooked,Eggplant,,food
+Solanum lycopersicum,edible,Tomato — ripe fruit only,Leaves and green parts are toxic,food
+Physalis angulata,edible,Cutleaf groundcherry — ripe yellow fruit inside husk,Unripe green fruit and leaves are toxic,food
+Basella alba,edible,Malabar spinach — leaves and stems,,food
+Amaranthus spinosus,edible_cooked,Spiny amaranth (bayam duri) — leaves cooked,Sharp spines,food
+Amaranthus viridis,edible_cooked,Slender amaranth — leaves cooked,,food
+Amaranthus tricolor,edible_cooked,Edible amaranth (bayam) — leaves cooked,,food
+Talinum paniculatum,edible_cooked,Jewels of Opar (ginseng Jawa) — leaves,,food
+Talinum fruticosum,edible_cooked,Waterleaf — leaves,,food
+Sauropus androgynus,edible_cooked,Katuk — nutritious leaves cooked,Large amounts of raw juice are linked to serious lung disease,food
+Gynura procumbens,edible,Longevity spinach (sambung nyawa),,food;medicinal
+Cosmos caudatus,edible,Kenikir — aromatic leaves eaten raw,,food
+Ocimum basilicum,edible,Thai basil (kemangi),,food
+Ocimum tenuiflorum,edible,Holy basil,,food;medicinal
+Murraya koenigii,edible,Curry leaf,,food
+Etlingera elatior,edible,Torch ginger (kecombrang) — flower buds flavour food,,food
+Nelumbo nucifera,edible_cooked,Lotus — roots; seeds and young leaves,Harvest from clean water only,food
+Eleocharis dulcis,edible,Water chestnut — crisp corms,Cook if from dirty water (parasites),food
+Oryza sativa,edible_cooked,Rice — staple grain,,food
+Zea mays,edible_cooked,Maize — grain,,food
+Saccharum officinarum,edible,Sugarcane — chew stalks for sugar and fluid,,food;water
+Arenga pinnata,edible_cooked,Sugar palm (aren) — sap for sugar; processed seeds (kolang-kaling),Raw fruit flesh contains stinging crystals that burn skin and mouth,food;cordage
+Caryota mitis,inedible,Fishtail palm — pith yields starch,Fruit pulp contains stinging crystals,shelter
+Borassus flabellifer,edible,Palmyra / lontar palm — sap; young seed jelly,,food;water;shelter
+Corypha utan,edible_cooked,Gebang palm — pith starch; leaves weaving,,food;shelter;cordage
+Elaeis guineensis,edible,Oil palm — fruit pulp is oily food,,food
+Gigantochloa apus,edible_cooked,Bamboo tali — shoots cooked; strong cordage strips,Raw shoots release cyanide,food;shelter;cordage
+Dendrocalamus asper,edible_cooked,Giant bamboo (betung) — shoots cooked,Raw shoots release cyanide,food;shelter;water
+Artocarpus camansi,edible_cooked,Breadnut — seeds roasted or boiled,,food
+Ficus racemosa,edible,Cluster fig — ripe figs eaten,Check for insects inside,food
+Mangifera foetida,edible,Horse mango (bacang) — strongly scented fruit,Sap irritates mouth and skin,food
+Mangifera odorata,edible,Kuweni mango,Sap irritates mouth and skin,food
+Bouea macrophylla,edible,Marian plum (gandaria) — fruit and young leaves,,food
+Garcinia dulcis,edible,Mundu — sweet-sour yellow fruit,,food
+Baccaurea racemosa,edible,Menteng — sour-sweet fruit,,food
+Pometia pinnata,edible,Matoa — sweet fruit like lychee,,food
+Dimocarpus longan,edible,Longan,,food
+Litchi chinensis,edible,Lychee,Unripe fruit on an empty stomach can cause low blood sugar in children,food
+Ananas comosus,edible,Pineapple,Unripe fruit irritates the mouth,food;water
+Passiflora edulis,edible,Passion fruit — pulp and seeds,Unripe fruit and leaves contain cyanogenic compounds,food
+Passiflora foetida,edible,Stinking passionflower — ripe yellow fruit only,Unripe green fruit is toxic,food
+Selenicereus undatus,edible,Dragon fruit,,food;water
+Persea americana,edible,Avocado — high fat and calories,Leaves; skin and seed are toxic to animals,food
+Coffea canephora,edible,Robusta coffee — roasted beans; ripe cherry pulp edible,,food
+Coffea arabica,edible,Arabica coffee (Kintamani),,food
+Theobroma cacao,edible,Cacao — sweet pulp around seeds; seeds make chocolate,,food
+Camellia sinensis,edible,Tea plant — leaves brewed,,food
+Vanilla planifolia,edible,Vanilla — cured pods flavour food,,food
+Cinnamomum burmannii,edible,Indonesian cinnamon — bark spice,Large amounts can harm the liver,food
+Hibiscus rosa-sinensis,edible,Hibiscus — flowers and young leaves edible,,food
+Hibiscus sabdariffa,edible,Roselle — calyces make a sour drink,,food
+Talipariti tiliaceum,edible_cooked,Sea hibiscus (waru) — young leaves and flowers; bark makes strong rope,,food;cordage;shelter
+Jasminum sambac,edible,Arabian jasmine — flowers scent drinks,,
+Tagetes erecta,edible,Marigold — petals edible; widely used in Balinese offerings,,
+Ixora coccinea,edible,Jungle geranium — flower nectar is sucked,,
+Clitoria ternatea,edible,Butterfly pea — blue flowers colour food and drink,Seeds are purgative,food
+Moringa oleifera,edible,Moringa (kelor) — extremely nutritious leaves,Roots and root bark are toxic,food
+Morinda citrifolia,edible,Noni — fruit and young leaves,Rare liver injury reported; avoid with kidney disease,food;medicinal
+Phyllanthus acidus,edible,Star gooseberry (cermai) — sour fruit,,food
+Phyllanthus emblica,edible,Indian gooseberry — very high in vitamin C,,food
+Sandoricum koetjape,edible,Santol (kecapi) — sweet-sour pulp,Swallowed seeds can block the intestine,food
+Terminalia catappa,edible,Sea almond (ketapang) — seed kernel tastes like almond,,food;shelter
+Aleurites moluccanus,edible_cooked,Candlenut (kemiri) — spice; oily nuts burn like candles,Raw nuts are strongly purgative and toxic,food;fire
+Avicennia marina,edible_cooked,Grey mangrove — seeds eaten after soaking and boiling,Raw seeds are bitter and upset the stomach,food
+Bruguiera gymnorhiza,edible_cooked,Oriental mangrove — hypocotyls eaten after long soaking and boiling,Raw parts are astringent,food
+Sonneratia caseolaris,edible,Mangrove apple (pidada) — sour fruit,,food
+Nypa fruticans,edible,Nipa palm — sap and young seeds; fronds for thatch,,food;water;shelter
+Ravenala madagascariensis,inedible,Traveller's palm — rainwater collects in leaf bases,Collected water may be stale; purify before drinking,water;shelter
+Imperata cylindrica,edible_cooked,Cogon grass (alang-alang) — young shoots and rhizomes chewed; leaves thatch,Sharp leaf edges,food;shelter;fire
+Cyperus rotundus,edible_cooked,Nutsedge — small tubers edible,,food
+Commelina diffusa,edible_cooked,Climbing dayflower — leaves cooked,,food
+Alternanthera sessilis,edible_cooked,Sessile joyweed — leaves cooked,,food
+Lemna minor,edible_cooked,Duckweed — protein-rich; from clean water only,May carry parasites or pollutants,food
+Nymphaea pubescens,edible_cooked,Water lily — stems; rhizomes and seeds cooked,,food
+Tridax procumbens,medicinal,Coatbuttons — leaf juice used traditionally on cuts,,medicinal
+Aloe vera,medicinal,Aloe — gel soothes burns and wounds,Yellow latex under the skin is a strong laxative,medicinal
+Agave sisalana,inedible,Sisal — leaf fibre makes strong rope,Sap irritates skin,cordage
+Cordyline fruticosa,edible_cooked,Ti plant (andong) — sweet root after long baking; leaves wrap food,,food;shelter
+Canavalia gladiata,edible_cooked,Sword bean — young pods cooked,Raw mature seeds are toxic,food
+Lablab purpureus,edible_cooked,Hyacinth bean — pods and seeds well cooked,Raw seeds are toxic,food
+Arachis hypogaea,edible,Peanut,Allergen,food
+Glycine max,edible_cooked,Soybean — tempeh and tofu,,food
+Sesamum indicum,edible,Sesame — oily seeds,,food
+Monstera deliciosa,edible,Monstera — only fully ripe fruit when scales fall off,Unripe fruit; leaves and stems burn the mouth,food
+Hylocereus polyrhizus,edible,Red dragon fruit,,food;water
+Muntingia calabura,edible,Jamaican cherry (kersen) — sweet tiny fruits,,food
+Psidium guajava,edible,Guava — very high in vitamin C,,food
+Carica papaya,edible,Papaya — ripe fruit; cooked young leaves and flowers,Unripe latex irritates skin,food
+Musa balbisiana,edible_cooked,Wild seeded banana — fruit; heart and stem pith,,food;shelter;water
+Cocos nucifera,edible,Coconut — water; flesh; husk for fire and rope,,food;water;fire;shelter;cordage
+Artocarpus heterophyllus,edible,Jackfruit — fruit and cooked seeds,,food
+Artocarpus altilis,edible_cooked,Breadfruit — starchy staple,,food
+Manihot esculenta,edible_cooked,Cassava — starchy roots and leaves well cooked,Raw roots and leaves release cyanide,food
+Colocasia esculenta,edible_cooked,Taro — corms and leaves well cooked,Raw plant burns the mouth,food
+Tamarindus indica,edible,Tamarind — sweet-sour pod pulp,,food
+Pandanus tectorius,edible,Screw pine — ripe fruit keys; leaves weaving,,food;shelter;cordage
+Centella asiatica,edible,Gotu kola (pegagan) — leaves,,food;medicinal
+Ipomoea aquatica,edible_cooked,Water spinach (kangkung),Cook if from dirty water,food
+Portulaca oleracea,edible,Purslane — juicy leaves,,food;water
+Mimosa pudica,toxic,,Sensitive plant — contains mimosine; not food,
+Casuarina equisetifolia,inedible,Casuarina — dry needles and cones make good tinder,,fire;shelter
+Tectona grandis,inedible,Teak — hard wood; large leaves for shelter,,shelter;fire
+Albizia saman,inedible,Rain tree — shade; pods eaten by livestock,,shelter
+Bambusa vulgaris,edible_cooked,Common bamboo — shoots cooked; canes for shelter and water vessels,Raw shoots release cyanide,food;shelter;water
