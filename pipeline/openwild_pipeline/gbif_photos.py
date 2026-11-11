@@ -54,7 +54,7 @@ def _candidates(params: dict, want: int, seen: set) -> list[dict]:
     out: list[dict] = []
     try:
         # Small pages: we need ~8 photos, and full occurrence records are large.
-        d = get_json(f"{config.GBIF_API}/occurrence/search", {"mediaType": "StillImage", "limit": max(12, want * 2), **params})
+        d = get_json(f"{config.GBIF_API}/occurrence/search", {"mediaType": "StillImage", "limit": max(24, want * 2), **params})
     except Exception:
         return out
     for occ in d.get("results", []):
@@ -77,15 +77,12 @@ def _candidates(params: dict, want: int, seen: set) -> list[dict]:
 
 
 def photo_candidates(taxon_key: int, want: int) -> list[dict]:
-    """Living plants in the field first (what a phone camera sees): iNaturalist research grade, then any
-    field observation, and only then herbarium sheets."""
+    """One fast GBIF query (dataset/basis filters are slow server-side), then living plants in the field
+    first (what a phone camera sees), herbarium sheets last."""
     seen: set = set()
-    out = _candidates({"taxonKey": taxon_key, "datasetKey": INAT_RESEARCH_GRADE}, want, seen)
-    if len(out) < want:
-        out += _candidates({"taxonKey": taxon_key, "basisOfRecord": "HUMAN_OBSERVATION"}, want - len(out), seen)
-    if len(out) < want:
-        out += _candidates({"taxonKey": taxon_key}, want - len(out), seen)
-    return out[:want]
+    got = _candidates({"taxonKey": taxon_key}, max(want * 3, 24), seen)
+    got.sort(key=lambda c: c["kind"] != "field")
+    return got[:want]
 
 
 def _download(url: str, dest: Path) -> bool:
