@@ -34,19 +34,47 @@ def _solr(q: str, fl: str, rows: int = 50) -> list[dict]:
 
 
 def find_data_files() -> list[dict]:
-    """Data objects (id, fileName, formatId, size) of the newest version of the checklist package."""
-    metas = [m for m in _solr(f'title:"{TITLE}"', "identifier,documents,obsoletedBy,dateUploaded")
-             if not m.get("obsoletedBy") and m.get("documents")]
-    metas.sort(key=lambda m: m.get("dateUploaded", ""), reverse=True)
-    files = []
-    for m in metas[:3]:
-        for pid in m["documents"]:
-            got = _solr(f'identifier:"{pid}"', "identifier,fileName,formatId,size", rows=1)
-            if got:
-                files.append(got[0])
-        if files:
-            break
+    """Every data object that looks like part of the checklist (any version), largest first."""
+    seen, files = set(), []
+    metas = _solr(f'title:"{TITLE}"', "identifier,documents,obsoletedBy,dateUploaded", rows=20)
+    print("KNB metadata records:", [(m.get("identifier"), m.get("obsoletedBy"), len(m.get("documents") or [])) for m in metas])
+    pids = [pid for m in metas for pid in (m.get("documents") or [])]
+    for q in ('fileName:*seful*', 'fileName:*WCUPS*', 'fileName:*hecklist_of_Useful*'):
+        try:
+            pids += [d["identifier"] for d in _solr(q, "identifier", rows=50)]
+        except Exception as e:  # noqa: BLE001
+            print(f"solr {q}: {e!r}")
+    for pid in pids:
+        if pid in seen:
+            continue
+        seen.add(pid)
+        got = _solr(f'identifier:"{pid}"', "identifier,fileName,formatId,size,obsoletedBy", rows=1)
+        if got:
+            files.append(got[0])
+    files.sort(key=lambda f: -int(float(f.get("size") or 0)))
     return files
+
+
+def pdf_rows(data: bytes) -> list[dict]:
+    """Fallback: the checklist PDF, via `pdftotext -layout`. Prints a sample so the layout can be checked."""
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as d:
+        pdf, txt = Path(d) / "c.pdf", Path(d) / "c.txt"
+        pdf.write_bytes(data)
+        subprocess.run(["pdftotext", "-layout", str(pdf), str(txt)], check=True)
+        lines = txt.read_text(errors="replace").splitlines()
+    print(f"PDF text: {len(lines)} lines")
+    sample = [ln for ln in lines if re.match(r"^\s*[A-Z][a-z]+ [a-z-]+", ln)]
+    for ln in lines[300:340] + sample[2000:2040]:
+        print("PDFLINE|" + ln[:220])
+    return parse_pdf_lines(lines)
+
+
+def parse_pdf_lines(lines: list[str]) -> list[dict]:
+    """Placeholder until the layout is confirmed: returns nothing."""
+    return []
 
 
 def download_object(pid: str) -> bytes:
@@ -144,12 +172,16 @@ def write(rows: list[dict], out_csv: Path) -> int:
 
 def run(out_csv: Path) -> int:
     files = find_data_files()
-    print("KNB files:", [(f.get("fileName"), f.get("formatId"), f.get("size")) for f in files])
-    tables = [f for f in files if str(f.get("fileName", "")).lower().endswith((".csv", ".xlsx", ".xls", ".txt"))]
-    tables.sort(key=lambda f: -int(float(f.get("size") or 0)))
+    print("KNB files:", [(f.get("fileName"), f.get("formatId"), f.get("size"), f.get("obsoletedBy")) for f in files])
+    tables = [f for f in files if str(f.get("fileName", "")).lower().endswith((".csv", ".xlsx", ".xls", ".txt", ".tsv"))]
     for f in tables:
         rows = to_rows(read_table(f["fileName"], download_object(f["identifier"])))
         if len(rows) > 1000:
             return write(rows, out_csv)
         print(f"{f['fileName']}: only {len(rows)} usable rows, trying next file")
+    pdfs = [f for f in files if str(f.get("fileName", "")).lower().endswith(".pdf")]
+    for f in pdfs[:1]:
+        rows = pdf_rows(download_object(f["identifier"]))
+        if len(rows) > 1000:
+            return write(rows, out_csv)
     raise RuntimeError("No usable table found in the KNB package")

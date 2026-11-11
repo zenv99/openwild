@@ -36,6 +36,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy pyyaml pytest pillow pandas openpyxl
+      - run: sudo apt-get install -y -q poppler-utils >/dev/null || true
       - run: python -m openwild_pipeline.cli wikidata
       - name: Kew useful plants (CC BY 4.0)
         run: python -m openwild_pipeline.cli kew || echo "::warning::Kew useful plants import failed; keeping the previous file"
