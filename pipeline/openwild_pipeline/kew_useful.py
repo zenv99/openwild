@@ -55,20 +55,27 @@ def find_data_files() -> list[dict]:
     return files
 
 
-def pdf_rows(data: bytes) -> list[dict]:
-    """Fallback: the checklist PDF, via `pdftotext -layout`. Prints a sample so the layout can be checked."""
-    import subprocess
-    import tempfile
+def pdf_lines(data: bytes) -> list[list[tuple[float, str]]]:
+    """Every text line of the PDF as [(x position, word)], using PyMuPDF word boxes."""
+    import fitz  # PyMuPDF
 
-    with tempfile.TemporaryDirectory() as d:
-        pdf, txt = Path(d) / "c.pdf", Path(d) / "c.txt"
-        pdf.write_bytes(data)
-        subprocess.run(["pdftotext", "-layout", str(pdf), str(txt)], check=True)
-        lines = txt.read_text(errors="replace").splitlines()
+    doc = fitz.open(stream=data, filetype="pdf")
+    out = []
+    for page in doc:
+        rows: dict[tuple[int, int], list] = {}
+        for x0, y0, x1, y1, w, b, ln, wn in page.get_text("words"):
+            rows.setdefault((round(y0 / 2), 0), []).append((x0, w))
+        for key in sorted(rows):
+            out.append(sorted(rows[key]))
+    return out
+
+
+def pdf_rows(data: bytes) -> list[dict]:
+    """Fallback: the checklist PDF. Prints a sample with x positions so the layout can be checked."""
+    lines = pdf_lines(data)
     print(f"PDF text: {len(lines)} lines")
-    sample = [ln for ln in lines if re.match(r"^\s*[A-Z][a-z]+ [a-z-]+", ln)]
-    for ln in lines[300:340] + sample[2000:2040]:
-        print("PDFLINE|" + ln[:220])
+    for ln in lines[200:230] + lines[20000:20030]:
+        print("PDFLINE|" + " ".join(f"{int(x)}:{w}" for x, w in ln)[:300])
     return parse_pdf_lines(lines)
 
 
