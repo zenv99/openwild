@@ -43,8 +43,8 @@ jobs:
       - name: Install (CPU)
         run: |
           pip install --upgrade pip
-          pip install ai-edge-torch timm pillow numpy pyyaml
-          python -c "import torch, timm, ai_edge_torch; print('torch', torch.__version__, 'timm', timm.__version__)"
+          pip install litert-torch ai-edge-quantizer timm pillow numpy pyyaml
+          python -c "import torch, timm, litert_torch; print('torch', torch.__version__, 'timm', timm.__version__)"
       - name: Export free model (DINOv2-small -> LiteRT)
         if: inputs.export_model == 'true'
         run: python -m openwild_pipeline.cli free-model

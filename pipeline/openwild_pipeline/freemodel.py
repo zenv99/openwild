@@ -41,35 +41,57 @@ def build():
 
 
 def export(out_dir: Path = config.ANDROID_ASSETS) -> Path:
-    import ai_edge_torch
+    """PyTorch -> LiteRT (.tflite) with litert-torch, then int8 weight quantisation with ai-edge-quantizer."""
+    import litert_torch
     import torch
 
     model = build()
     sample = (torch.rand(1, config.INPUT_SIZE, config.INPUT_SIZE, 3),)
-    edge = None
-    try:  # dynamic-range int8 weights: ~4x smaller
-        from ai_edge_torch.quantize.pt2e_quantizer import PT2EQuantizer, get_symmetric_quantization_config
-        from ai_edge_torch.quantize.quant_config import QuantConfig
-        from torch.ao.quantization.quantize_pt2e import convert_pt2e, prepare_pt2e
-
-        q = PT2EQuantizer().set_global(get_symmetric_quantization_config(is_per_channel=True, is_dynamic=True))
-        g = torch.export.export_for_training(model, sample).module()
-        g = prepare_pt2e(g, q)
-        g(*sample)
-        g = convert_pt2e(g, fold_quantize=False)
-        edge = ai_edge_torch.convert(g, sample, quant_config=QuantConfig(pt2e_quantizer=q))
-    except Exception as e:  # noqa: BLE001
-        print(f"int8 export failed ({e!r}); exporting float32")
-    if edge is None:
-        edge = ai_edge_torch.convert(model, sample)
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / "embedder.tflite"
-    edge.export(str(out))
+    float_path = config.WORK / "embedder_float.tflite"
+    float_path.parent.mkdir(parents=True, exist_ok=True)
+    litert_torch.convert(model, sample).export(str(float_path))
+    print(f"float model {float_path.stat().st_size / 1e6:.1f} MB")
+    try:  # dynamic-range int8 weights: ~4x smaller, near-identical embeddings
+        from ai_edge_quantizer import quantizer, recipe
+
+        qt = quantizer.Quantizer(str(float_path))
+        qt.load_quantization_recipe(recipe.dynamic_wi8_afp32())
+        qt.quantize().export_model(str(out), overwrite=True)
+    except Exception as e:  # noqa: BLE001
+        print(f"int8 quantisation failed ({e!r}); shipping float32")
+        out.write_bytes(float_path.read_bytes())
     (out_dir / "embedder.json").write_text(json.dumps(
         {"model_id": config.MODEL_ID, "embedding_dim": config.EMBED_DIM, "input_size": config.INPUT_SIZE,
          "source": f"timm/{TIMM_NAME} (Apache-2.0)"}))
     print(out, f"{out.stat().st_size / 1e6:.1f} MB")
+    _parity(model, out)
     return out
+
+
+def _parity(model, tflite: Path) -> None:
+    """PyTorch vs LiteRT cosine similarity on random inputs (should be > 0.98)."""
+    import torch
+
+    try:
+        from ai_edge_litert.interpreter import Interpreter
+    except Exception as e:  # noqa: BLE001
+        print(f"parity check skipped: {e!r}")
+        return
+    it = Interpreter(model_path=str(tflite))
+    it.allocate_tensors()
+    i, o = it.get_input_details()[0], it.get_output_details()[0]
+    sims = []
+    for _ in range(4):
+        x = np.random.rand(1, config.INPUT_SIZE, config.INPUT_SIZE, 3).astype(np.float32)
+        with torch.no_grad():
+            a = model(torch.from_numpy(x)).numpy()[0]
+        it.set_tensor(i["index"], x)
+        it.invoke()
+        b = it.get_tensor(o["index"])[0]
+        sims.append(float(a @ b / (np.linalg.norm(a) * np.linalg.norm(b))))
+    print(f"parity cosine PyTorch vs LiteRT: {np.mean(sims):.4f}")
 
 
 def preprocess(path: Path) -> np.ndarray:
