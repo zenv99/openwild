@@ -40,6 +40,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Reuse photos downloaded in earlier runs
+        uses: actions/cache@v4
+        with:
+          path: |
+            work/photos_gbif/${{ inputs.region }}/img
+            work/cache/http
+          key: photos-${{ inputs.region }}-${{ github.run_id }}
+          restore-keys: photos-${{ inputs.region }}-
       - name: Install (CPU)
         run: |
           pip install --upgrade pip
