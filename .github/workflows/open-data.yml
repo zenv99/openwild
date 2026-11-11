@@ -1,18 +1,28 @@
-name: Open datasets (Wikidata mushroom edibility)
+name: Open datasets (Wikidata + Wikipedia data buckets)
 
-# Pulls mushroom edibility for every species Wikidata knows (CC0) into
-# content/quick/auto_wikidata_fungi.csv, validates it, and commits it.
+# Weekly: pulls open edible / poisonous / medicinal / psychoactive data into content/:
+#   content/quick/auto_wikidata_fungi.csv   mushroom edibility (Wikidata P789, CC0)
+#   content/quick/auto_buckets.csv          Wikipedia categories (en + id) -> species via Wikidata
+#   content/auto_group_rules.yaml           genus-level warnings from the same buckets
+# Validates everything, then commits.
 on:
   workflow_dispatch:
+    inputs:
+      rebuild_bali:
+        description: "Rebuild the bundled Bali photo pack afterwards (true/false)"
+        required: false
+        default: "false"
   schedule:
     - cron: "17 19 * * 6"   # weekly, Sunday 03:17 Bali time
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
-  wikidata:
+  opendata:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     defaults:
       run:
         working-directory: pipeline
@@ -21,16 +31,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy pyyaml pytest
+      - run: pip install numpy pyyaml pytest pillow
       - run: python -m openwild_pipeline.cli wikidata
+      - run: python -m openwild_pipeline.cli buckets
       - run: python -m openwild_pipeline.cli content-validate
       - run: pytest -q
+      - name: Coverage for Bali
+        run: python -m openwild_pipeline.cli summary ID-BA || true
       - name: Commit
         working-directory: .
         run: |
           git config user.name "openwild-data-bot"
           git config user.email "openwild-data-bot@users.noreply.github.com"
-          git add content/quick/auto_wikidata_fungi.csv
-          git commit -m "Open data: Wikidata mushroom edibility ($(grep -vc '^#' content/quick/auto_wikidata_fungi.csv) rows)" || echo "No changes"
+          git add content/quick/auto_wikidata_fungi.csv content/quick/auto_buckets.csv content/auto_group_rules.yaml
+          git commit -m "Open data: $(grep -vc '^#' content/quick/auto_buckets.csv) bucket one-liners, $(grep -c '^- taxon' content/auto_group_rules.yaml) genus warnings, $(grep -vc '^#' content/quick/auto_wikidata_fungi.csv) mushroom rows" || echo "No changes"
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Rebuild Bali photo pack
+        if: inputs.rebuild_bali == 'true'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run photo-model.yml --ref main -f region=ID-BA -f per_species=8 -f export_model=true

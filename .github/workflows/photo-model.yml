@@ -52,7 +52,7 @@ jobs:
         run: python -m openwild_pipeline.cli photos "${{ inputs.region }}" --per-species "${{ inputs.per_species }}" --workers 16
       - name: Fingerprint photos + build region pack
         run: |
-          python -m openwild_pipeline.cli photo-pack "${{ inputs.region }}" --version 2 \
+          python -m openwild_pipeline.cli photo-pack "${{ inputs.region }}" --version "$(date -u +%Y%m%d%H)" --photos-shown 1 \
             --out ../android/app/src/main/assets/packs/${{ inputs.region }}.owpack
       - name: Commit model + pack
         working-directory: .

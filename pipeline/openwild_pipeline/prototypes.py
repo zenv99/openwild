@@ -15,8 +15,11 @@ def l2n(x: np.ndarray, axis: int = -1) -> np.ndarray:
 
 
 def n_prototypes(n_photos: int, max_k: int = config.MAX_PROTOTYPES) -> int:
-    """~1 prototype per 8 photos, between 1 and max_k."""
-    return int(max(1, min(max_k, n_photos // 8)))
+    """Few photos: keep each one (nearest-photo matching handles odd angles best).
+    More photos: cluster to ~1 prototype per 4 photos, at least 4, at most max_k."""
+    if n_photos <= 4:
+        return max(1, n_photos)
+    return int(min(max_k, max(4, n_photos // 4)))
 
 
 def spherical_kmeans(x: np.ndarray, k: int, iters: int = 25, seed: int = 0) -> np.ndarray:

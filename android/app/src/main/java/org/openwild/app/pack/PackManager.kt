@@ -53,6 +53,9 @@ class PackManager(private val context: Context) {
      * bundled version is newer than the installed one. Lets the field guide work with no internet at all.
      */
     fun installBundled() {
+        // Bundled packs only change when the app is updated: copy them once per app version, not on every launch.
+        val installStamp = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime }.getOrDefault(0L)
+        if (installStamp != 0L && prefs.getLong("bundled_for_install", -1L) == installStamp) return
         val names = context.assets.list("packs").orEmpty().filter { it.endsWith(".owpack") }
         for (name in names) {
             val tmp = File(dir, "$name.bundled")
@@ -75,6 +78,7 @@ class PackManager(private val context: Context) {
                 tmp.delete()
             }
         }
+        prefs.edit().putLong("bundled_for_install", installStamp).apply()
     }
 
     /**

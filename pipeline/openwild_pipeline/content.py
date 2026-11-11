@@ -118,6 +118,7 @@ def load_curated(directory: Path = config.CURATED_DIR, strict: bool = True) -> d
     return entries
 
 
+AUTO_GROUP_RULES = config.REPO_ROOT / "content" / "auto_group_rules.yaml"
 GROUP_RULES = config.REPO_ROOT / "content" / "group_rules.yaml"
 
 
@@ -137,19 +138,25 @@ def validate_rule(rule: dict) -> list[str]:
     return errs
 
 
-def load_group_rules(path: Path = GROUP_RULES, strict: bool = True) -> dict[tuple[str, str], dict]:
-    """{(rank, taxon_lower): rule}. Raises on invalid rules."""
+def load_group_rules(path: Path = GROUP_RULES, strict: bool = True, auto_path: Path | None = None) -> dict[tuple[str, str], dict]:
+    """{(rank, taxon_lower): rule}. Auto-generated rules (content/auto_group_rules.yaml) load first;
+    hand-written rules override them. Raises on invalid rules."""
     rules: dict[tuple[str, str], dict] = {}
     problems = []
-    if not Path(path).exists():
-        return rules
-    for r in yaml.safe_load(Path(path).read_text()) or []:
-        for e in validate_rule(r):
-            problems.append(f"{r.get('taxon')}: {e}")
-        key = (r.get("rank"), (r.get("taxon") or "").lower())
-        if key in rules:
-            problems.append(f"duplicate rule {key}")
-        rules[key] = r
+    if auto_path is None and Path(path) == GROUP_RULES:
+        auto_path = AUTO_GROUP_RULES
+    for f, is_auto in ((auto_path, True), (Path(path), False)):
+        if not f or not Path(f).exists():
+            continue
+        seen: set = set()
+        for r in yaml.safe_load(Path(f).read_text()) or []:
+            for e in validate_rule(r):
+                problems.append(f"{Path(f).name}: {r.get('taxon')}: {e}")
+            key = (r.get("rank"), (r.get("taxon") or "").lower())
+            if key in seen:
+                problems.append(f"duplicate rule {key}")
+            seen.add(key)
+            rules[key] = r
     if problems and strict:
         raise ContentError("\n".join(problems))
     return rules

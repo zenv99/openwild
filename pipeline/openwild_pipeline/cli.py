@@ -115,6 +115,15 @@ def cmd_wikidata(_):
     print(f"Wikidata: {n} mushroom species with edibility")
 
 
+def cmd_buckets(_):
+    from .buckets import collect, write_outputs
+    from .content import AUTO_GROUP_RULES
+
+    species, genera = collect()
+    n, r = write_outputs(species, genera, config.REPO_ROOT / "content" / "quick" / "auto_buckets.csv", AUTO_GROUP_RULES)
+    print(f"Buckets: {n} species one-liners, {r} genus warnings")
+
+
 def cmd_summary(a):
     """Coverage summary for a region: how many species, and how many have safety info at each level."""
     import csv
@@ -294,6 +303,18 @@ def cmd_guide_pack(a):
 
     region = get_region(a.region)
     d = data_dir(a.region)
+    def display_order(idx: list[int]) -> list[int]:
+        """Field photos before herbarium sheets; within each, the most typical photo (closest to the
+        species' average fingerprint) first, so the cover photo shows the plant as people usually see it."""
+        if not idx:
+            return idx
+        e = embs[idx]
+        centre = e.mean(axis=0)
+        sim = e @ centre / (np.linalg.norm(e, axis=1) * (np.linalg.norm(centre) + 1e-9) + 1e-9)
+        field = [photos[i].get("kind", "field") != "specimen" for i in idx]
+        order = sorted(range(len(idx)), key=lambda j: (not field[j], -float(sim[j])))
+        return [idx[j] for j in order]
+
     descs = {}
     if (d / "descriptions.csv").exists():
         descs = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
@@ -383,7 +404,7 @@ def cmd_photo_pack(a):
             embeddings=embs[idx] if idx else None,
             attributions=[{"observer": photos[i]["observer"], "license": photos[i]["license"], "url": photos[i]["page"]} for i in idx],
             photos=[{"path": photos[i]["path"], "observer": photos[i]["observer"], "license": photos[i]["license"],
-                     "url": photos[i]["page"]} for i in idx],
+                     "url": photos[i]["page"]} for i in display_order(idx)],
         ))
     out = Path(a.out) if a.out else config.PACKS_DIR / f"{region.id}-v{a.version}.owpack"
     build_pack(out, region.id, region.name, a.version, recs, load_curated(), params=params, guide_only=True,
@@ -431,6 +452,7 @@ def main(argv=None):
     sp = add("wcvp", cmd_wcvp, "add Kew WCVP plant species for the region's WGSRPD areas")
     sp.add_argument("region")
     add("wikidata", cmd_wikidata, "auto one-liners: mushroom edibility from Wikidata (CC0)")
+    add("buckets", cmd_buckets, "auto one-liners: edible/poisonous/medicinal lists from Wikipedia categories + Wikidata")
     sp = add("summary", cmd_summary, "coverage summary for a region -> data/regions/<id>/summary.json")
     sp.add_argument("region")
     sp = add("select", cmd_select, "select reference photos + region stats")

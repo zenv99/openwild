@@ -67,10 +67,10 @@ class SpeciesRecord:
     photos: list[dict] = field(default_factory=list)  # {path, observer, license, url}: shown in the app
 
 
-THUMB_PX = 112      # list thumbnails
-IMAGE_PX = 320      # tap-to-view photo (reference photos are downloaded at 320 px)
-THUMB_Q = 55
-IMAGE_Q = 60
+THUMB_PX = 160      # list thumbnails (sharp at 52 dp on 3x screens)
+IMAGE_PX = 448      # tap-to-view photo
+THUMB_Q = 62
+IMAGE_Q = 56
 
 
 def encode_photo(path) -> tuple[bytes, bytes] | None:
@@ -126,6 +126,7 @@ def build_pack(
     guide_only: bool = False,
     projection: tuple | None = None,
     photos_per_species: int = 1,
+    photos_per_key_species: int = 3,
 ) -> Path:
     params = {**config.DEFAULT_PARAMS, **(params or {})}
     if projection is not None:
@@ -159,6 +160,12 @@ def build_pack(
             (int(w.shape[0]), int(w.shape[1]), w.astype("<f4").tobytes(), mean.astype("<f4").tobytes()),
         )
 
+    rules_for_photos = load_group_rules() if group_rules is None else group_rules
+    quick_for_photos = load_quick() if quick_rows is None else quick_rows
+    # Species with real eating/poison info get extra photos (people will study them closely).
+    safety_names = set(curated) | set(quick_for_photos)
+    genus_rules = {t for (rank, t) in rules_for_photos if rank == "genus"}
+    safety_names |= {r.scientific_name.lower() for r in species if (r.genus or "").lower() in genus_rules}
     name_to_id: dict[str, int] = {}
     skipped = 0
     sid = 0
@@ -187,8 +194,10 @@ def build_pack(
             blob, scale = quantize(rec.text_embedding)
             con.execute("INSERT INTO prototype (species_id, vec, scale, kind) VALUES (?,?,?,'text')", (sid, blob, scale))
         rank = 0
+        key_species = rec.scientific_name.lower() in safety_names
+        limit = max(photos_per_species, photos_per_key_species) if key_species else photos_per_species
         for ph in rec.photos:
-            if rank >= photos_per_species:
+            if rank >= limit:
                 break
             enc = encode_photo(ph["path"])
             if enc is None:

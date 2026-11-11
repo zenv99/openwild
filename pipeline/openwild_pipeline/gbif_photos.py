@@ -1,7 +1,7 @@
 """Reference photos per species from GBIF occurrence media (iNaturalist, herbaria, other datasets).
 
 Only openly licensed images (CC0, CC BY, CC BY-SA, CC BY-NC, CC BY-NC-SA). ND licences are skipped.
-Images are downscaled to 320 px on save, so a region's photos stay small.
+Images are downscaled to 512 px on save, so a region's photos stay small.
 """
 from __future__ import annotations
 
@@ -47,26 +47,43 @@ def species_key(name: str, key: str | None) -> int | None:
     return m.get("usageKey") if m.get("matchType") != "NONE" else None
 
 
-def photo_candidates(taxon_key: int, want: int) -> list[dict]:
+INAT_RESEARCH_GRADE = "50c9509d-22c7-4a22-a47d-8c48425ef4a7"  # GBIF dataset: iNaturalist research-grade observations
+
+
+def _candidates(params: dict, want: int, seen: set) -> list[dict]:
     out: list[dict] = []
     try:
-        d = get_json(f"{config.GBIF_API}/occurrence/search",
-                     {"taxonKey": taxon_key, "mediaType": "StillImage", "limit": 60})
+        d = get_json(f"{config.GBIF_API}/occurrence/search", {"mediaType": "StillImage", "limit": 80, **params})
     except Exception:
         return out
     for occ in d.get("results", []):
         for m in occ.get("media", [])[:1]:  # one image per observation = more variety
             lic = normalize_license_url(m.get("license") or occ.get("license"))
-            if lic not in config.ALLOWED_LICENSES or not m.get("identifier"):
+            url = m.get("identifier")
+            if lic not in config.ALLOWED_LICENSES or not url or url in seen:
                 continue
+            seen.add(url)
             out.append({
-                "url": smaller_url(m["identifier"]),
+                "url": smaller_url(url),
                 "license": lic,
                 "observer": m.get("rightsHolder") or m.get("creator") or occ.get("recordedBy") or "",
                 "page": m.get("references") or f"https://www.gbif.org/occurrence/{occ.get('key')}",
+                "kind": "field" if occ.get("basisOfRecord") == "HUMAN_OBSERVATION" else "specimen",
             })
         if len(out) >= want:
             break
+    return out[:want]
+
+
+def photo_candidates(taxon_key: int, want: int) -> list[dict]:
+    """Living plants in the field first (what a phone camera sees): iNaturalist research grade, then any
+    field observation, and only then herbarium sheets."""
+    seen: set = set()
+    out = _candidates({"taxonKey": taxon_key, "datasetKey": INAT_RESEARCH_GRADE}, want, seen)
+    if len(out) < want:
+        out += _candidates({"taxonKey": taxon_key, "basisOfRecord": "HUMAN_OBSERVATION"}, want - len(out), seen)
+    if len(out) < want:
+        out += _candidates({"taxonKey": taxon_key}, want - len(out), seen)
     return out[:want]
 
 
@@ -80,9 +97,9 @@ def _download(url: str, dest: Path) -> bool:
         with urllib.request.urlopen(req, timeout=40) as r:
             data = r.read()
         im = Image.open(io.BytesIO(data)).convert("RGB")
-        im.thumbnail((320, 320))
+        im.thumbnail((512, 512))
         dest.parent.mkdir(parents=True, exist_ok=True)
-        im.save(dest, "JPEG", quality=88)
+        im.save(dest, "JPEG", quality=90)
         return True
     except Exception:
         return False
@@ -104,7 +121,7 @@ def fetch_region_photos(species_csv: Path, out_dir: Path, per_species: int = 8, 
         for i, c in enumerate(photo_candidates(key, per_species)):
             dest = out_dir / "img" / f"{key}_{i}.jpg"
             if _download(c["url"], dest):
-                got.append({"scientific_name": r["scientific_name"], "path": str(dest), **{k: c[k] for k in ("license", "observer", "page")}})
+                got.append({"scientific_name": r["scientific_name"], "path": str(dest), **{k: c[k] for k in ("license", "observer", "page", "kind")}})
         return got
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -116,7 +133,7 @@ def fetch_region_photos(species_csv: Path, out_dir: Path, per_species: int = 8, 
                 print(f"{n}/{len(rows)} species, {len(results)} photos", flush=True)
     path = out_dir / "photos.csv"
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["scientific_name", "path", "license", "observer", "page"])
+        w = csv.DictWriter(f, fieldnames=["scientific_name", "path", "license", "observer", "page", "kind"])
         w.writeheader()
         w.writerows(results)
     print(f"{len(results)} photos for {len({r['scientific_name'] for r in results})} species")

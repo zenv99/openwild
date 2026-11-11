@@ -30,7 +30,9 @@ def test_kmeans_finds_two_modes():
 
 def test_n_prototypes_bounds():
     assert n_prototypes(1) == 1
-    assert n_prototypes(16) == 2
+    assert n_prototypes(3) == 3
+    assert n_prototypes(8) == 4
+    assert n_prototypes(16) == 4
     assert n_prototypes(1000) == config.MAX_PROTOTYPES
 
 
@@ -134,6 +136,6 @@ def test_build_pack_stores_display_photos(tmp_path):
     rows = con.execute("SELECT rank, thumb, image, observer, license FROM photo ORDER BY rank").fetchall()
     assert [r[0] for r in rows] == [0, 1]
     thumb = Image.open(__import__("io").BytesIO(rows[0][1]))
-    assert thumb.format == "WEBP" and thumb.size == (112, 112)
+    assert thumb.format == "WEBP" and thumb.size == (160, 160)
     assert Image.open(__import__("io").BytesIO(rows[0][2])).size == (300, 200)
     assert rows[0][3:] == ("A", "cc-by")
