@@ -204,15 +204,19 @@ def load_quick(directory: Path = QUICK_DIR, strict: bool = True) -> dict[str, di
 
     rows: dict[str, dict] = {}
     problems = []
-    for f in sorted(Path(directory).glob("*.csv")):
+    # auto_* files (generated from open datasets) load first; hand-written files override them.
+    files = sorted(Path(directory).glob("*.csv"), key=lambda p: (not p.name.startswith("auto_"), p.name))
+    for f in files:
         lines = [ln for ln in f.read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
         for r in csv.DictReader(lines):
             r = {k.strip(): (v or "").strip() for k, v in r.items() if k}
             for e in validate_quick(r):
                 problems.append(f"{f.name}: {r.get('scientific_name')}: {e}")
             key = r.get("scientific_name", "").lower()
-            if key in rows:
+            if key in rows and not rows[key].get("_auto"):
                 problems.append(f"{f.name}: duplicate {r.get('scientific_name')}")
+            if f.name.startswith("auto_"):
+                r["_auto"] = "1"
             rows[key] = r
     if problems and strict:
         raise ContentError("\n".join(problems))
@@ -291,6 +295,35 @@ def finalize(entry: dict | None) -> dict:
     out.setdefault("level", "species")
     if out.get("psychoactive"):
         out["legal_warning"] = LEGAL_WARNING
+    return out
+
+
+def wikipedia_intros(titles: list[str], lang: str = "en") -> dict[str, dict]:
+    """Batched first-sentence intros for up to 50 titles per request (MediaWiki API). {title: {description, url}}."""
+    from .http import get_json
+
+    out: dict[str, dict] = {}
+    for i in range(0, len(titles), 20):
+        batch = titles[i : i + 20]
+        try:
+            d = get_json(
+                f"https://{lang}.wikipedia.org/w/api.php",
+                {"action": "query", "format": "json", "prop": "extracts|info", "exintro": 1, "explaintext": 1,
+                 "exsentences": 1, "exlimit": 20, "redirects": 1, "inprop": "url", "titles": "|".join(batch)},
+            )
+        except Exception:
+            continue
+        q = d.get("query", {})
+        back = {r["to"]: r["from"] for r in q.get("redirects", [])}
+        back.update({n["to"]: n["from"] for n in q.get("normalized", [])})
+        for page in q.get("pages", {}).values():
+            text = (page.get("extract") or "").strip()
+            if not text or "may refer to" in text:
+                continue
+            title = page.get("title")
+            original = back.get(title, title)
+            original = back.get(original, original)
+            out[original] = {"description": text[:300], "url": page.get("fullurl", "")}
     return out
 
 

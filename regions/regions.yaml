@@ -18,6 +18,7 @@ regions:
     max_species: 3000
 
   - id: PH
+    wgsrpd: [PHI]
     continent: "Asia"
     name: Philippines
     gbif: {country: PH}
@@ -25,6 +26,7 @@ regions:
     max_species: 6000
 
   - id: ID-BA
+    wgsrpd: [LSI]
     continent: "Asia"
     name: "Bali, Indonesia"
     gbif: {country: ID, gadmGid: IDN.2_1}
@@ -32,6 +34,7 @@ regions:
     max_species: 25000
 
   - id: ID
+    wgsrpd: [JAW, SUM, LSI, SUL, MOL, BOR, NWG]
     continent: "Asia"
     name: Indonesia
     gbif: {country: ID}
@@ -39,6 +42,7 @@ regions:
     max_species: 8000
 
   - id: TH
+    wgsrpd: [THA]
     continent: "Asia"
     name: Thailand
     gbif: {country: TH}
@@ -46,6 +50,7 @@ regions:
     max_species: 6000
 
   - id: MY
+    wgsrpd: [MLY, BOR]
     continent: "Asia"
     name: Malaysia
     gbif: {country: MY}
@@ -60,6 +65,7 @@ regions:
     max_species: 8000
 
   - id: GB
+    wgsrpd: [GRB]
     continent: "Europe"
     name: United Kingdom
     gbif: {country: GB}
@@ -67,6 +73,7 @@ regions:
     max_species: 5000
 
   - id: DE
+    wgsrpd: [GER]
     continent: "Europe"
     name: Germany
     gbif: {country: DE}
@@ -74,6 +81,7 @@ regions:
     max_species: 5000
 
   - id: US-CA
+    wgsrpd: [CAL]
     continent: "North & Central America"
     name: California, USA
     gbif: {country: US, gadmGid: USA.5_1}
@@ -81,69 +89,69 @@ regions:
     max_species: 6000
 
   # ---------- Asia & Pacific ----------
-  - {id: VN, continent: "Asia", name: Vietnam, gbif: {country: VN}, bbox: [[102.1, 8.2, 109.5, 23.4]], max_species: 6000}
-  - {id: KH, continent: "Asia", name: Cambodia, gbif: {country: KH}, bbox: [[102.3, 10.4, 107.7, 14.7]], max_species: 5000}
-  - {id: LA, continent: "Asia", name: Laos, gbif: {country: LA}, bbox: [[100.1, 13.9, 107.7, 22.5]], max_species: 5000}
-  - {id: MM, continent: "Asia", name: Myanmar, gbif: {country: MM}, bbox: [[92.2, 9.6, 101.2, 28.6]], max_species: 5000}
-  - {id: SG, continent: "Asia", name: Singapore, gbif: {country: SG}, bbox: [[103.6, 1.15, 104.1, 1.48]], max_species: 3000}
+  - {id: VN, continent: "Asia", name: Vietnam, wgsrpd: [VIE], gbif: {country: VN}, bbox: [[102.1, 8.2, 109.5, 23.4]], max_species: 6000}
+  - {id: KH, continent: "Asia", name: Cambodia, wgsrpd: [CBD], gbif: {country: KH}, bbox: [[102.3, 10.4, 107.7, 14.7]], max_species: 5000}
+  - {id: LA, continent: "Asia", name: Laos, wgsrpd: [LAO], gbif: {country: LA}, bbox: [[100.1, 13.9, 107.7, 22.5]], max_species: 5000}
+  - {id: MM, continent: "Asia", name: Myanmar, wgsrpd: [MYA], gbif: {country: MM}, bbox: [[92.2, 9.6, 101.2, 28.6]], max_species: 5000}
+  - {id: SG, continent: "Asia", name: Singapore, wgsrpd: [MLY], gbif: {country: SG}, bbox: [[103.6, 1.15, 104.1, 1.48]], max_species: 3000}
   - {id: BN, continent: "Asia", name: Brunei, gbif: {country: BN}, bbox: [[114.0, 4.0, 115.4, 5.1]], max_species: 3000}
   - {id: TL, continent: "Asia", name: Timor-Leste, gbif: {country: TL}, bbox: [[124.0, -9.5, 127.4, -8.1]], max_species: 3000}
-  - {id: PG, continent: "Oceania", name: Papua New Guinea, gbif: {country: PG}, bbox: [[140.8, -11.7, 156.0, -1.3]], max_species: 6000}
-  - {id: IN, continent: "Asia", name: India, gbif: {country: IN}, bbox: [[68.1, 6.7, 97.4, 35.7]], max_species: 8000}
-  - {id: LK, continent: "Asia", name: Sri Lanka, gbif: {country: LK}, bbox: [[79.6, 5.9, 81.9, 9.9]], max_species: 5000}
-  - {id: NP, continent: "Asia", name: Nepal, gbif: {country: NP}, bbox: [[80.0, 26.3, 88.2, 30.5]], max_species: 5000}
-  - {id: BD, continent: "Asia", name: Bangladesh, gbif: {country: BD}, bbox: [[88.0, 20.6, 92.7, 26.6]], max_species: 4000}
+  - {id: PG, continent: "Oceania", name: Papua New Guinea, wgsrpd: [NWG], gbif: {country: PG}, bbox: [[140.8, -11.7, 156.0, -1.3]], max_species: 6000}
+  - {id: IN, continent: "Asia", name: India, wgsrpd: [IND], gbif: {country: IN}, bbox: [[68.1, 6.7, 97.4, 35.7]], max_species: 8000}
+  - {id: LK, continent: "Asia", name: Sri Lanka, wgsrpd: [SRL], gbif: {country: LK}, bbox: [[79.6, 5.9, 81.9, 9.9]], max_species: 5000}
+  - {id: NP, continent: "Asia", name: Nepal, wgsrpd: [NEP], gbif: {country: NP}, bbox: [[80.0, 26.3, 88.2, 30.5]], max_species: 5000}
+  - {id: BD, continent: "Asia", name: Bangladesh, wgsrpd: [BAN], gbif: {country: BD}, bbox: [[88.0, 20.6, 92.7, 26.6]], max_species: 4000}
   - {id: CN, continent: "Asia", name: China, gbif: {country: CN}, bbox: [[73.5, 18.1, 134.8, 53.6]], max_species: 8000}
-  - {id: JP, continent: "Asia", name: Japan, gbif: {country: JP}, bbox: [[122.9, 24.0, 146.0, 45.6]], max_species: 7000}
+  - {id: JP, continent: "Asia", name: Japan, wgsrpd: [JAP], gbif: {country: JP}, bbox: [[122.9, 24.0, 146.0, 45.6]], max_species: 7000}
   - {id: KR, continent: "Asia", name: South Korea, gbif: {country: KR}, bbox: [[124.6, 33.1, 131.9, 38.6]], max_species: 5000}
-  - {id: TW, continent: "Asia", name: Taiwan, gbif: {country: TW}, bbox: [[119.3, 21.9, 122.1, 25.3]], max_species: 5000}
-  - {id: NZ, continent: "Oceania", name: New Zealand, gbif: {country: NZ}, bbox: [[166.4, -47.3, 178.6, -34.4]], max_species: 5000}
-  - {id: FJ, continent: "Oceania", name: Fiji, gbif: {country: FJ}, bbox: [[177.0, -19.2, 180.0, -16.0]], max_species: 3000}
+  - {id: TW, continent: "Asia", name: Taiwan, wgsrpd: [TAI], gbif: {country: TW}, bbox: [[119.3, 21.9, 122.1, 25.3]], max_species: 5000}
+  - {id: NZ, continent: "Oceania", name: New Zealand, wgsrpd: [NZN, NZS], gbif: {country: NZ}, bbox: [[166.4, -47.3, 178.6, -34.4]], max_species: 5000}
+  - {id: FJ, continent: "Oceania", name: Fiji, wgsrpd: [FIJ], gbif: {country: FJ}, bbox: [[177.0, -19.2, 180.0, -16.0]], max_species: 3000}
   - {id: AE, continent: "Asia", name: United Arab Emirates, gbif: {country: AE}, bbox: [[51.6, 22.6, 56.4, 26.1]], max_species: 2000}
   - {id: IL, continent: "Asia", name: Israel, gbif: {country: IL}, bbox: [[34.3, 29.5, 35.9, 33.3]], max_species: 4000}
   - {id: TR, continent: "Asia", name: Turkey, gbif: {country: TR}, bbox: [[26.0, 35.8, 44.8, 42.1]], max_species: 6000}
 
   # ---------- Americas ----------
   - {id: US, continent: "North & Central America", name: United States, gbif: {country: US}, bbox: [[-124.8, 24.5, -66.9, 49.4]], max_species: 8000}
-  - {id: US-HI, continent: "Oceania", name: "Hawaii, USA", gbif: {country: US, gadmGid: USA.12_1}, bbox: [[-160.3, 18.9, -154.8, 22.3]], max_species: 4000}
+  - {id: US-HI, continent: "Oceania", name: "Hawaii, USA", wgsrpd: [HAW], gbif: {country: US, gadmGid: USA.12_1}, bbox: [[-160.3, 18.9, -154.8, 22.3]], max_species: 4000}
   - {id: US-AK, continent: "North & Central America", name: "Alaska, USA", gbif: {country: US, gadmGid: USA.2_1}, bbox: [[-170.0, 51.2, -130.0, 71.5]], max_species: 3000}
   - {id: CA, continent: "North & Central America", name: Canada, gbif: {country: CA}, bbox: [[-141.0, 41.7, -52.6, 83.1]], max_species: 6000}
   - {id: MX, continent: "North & Central America", name: Mexico, gbif: {country: MX}, bbox: [[-117.1, 14.5, -86.7, 32.7]], max_species: 8000}
-  - {id: GT, continent: "North & Central America", name: Guatemala, gbif: {country: GT}, bbox: [[-92.3, 13.7, -88.2, 17.8]], max_species: 5000}
-  - {id: CR, continent: "North & Central America", name: Costa Rica, gbif: {country: CR}, bbox: [[-85.95, 8.0, -82.5, 11.2]], max_species: 6000}
-  - {id: CO, continent: "South America", name: Colombia, gbif: {country: CO}, bbox: [[-79.0, -4.2, -66.9, 12.5]], max_species: 8000}
-  - {id: EC, continent: "South America", name: Ecuador, gbif: {country: EC}, bbox: [[-81.1, -5.0, -75.2, 1.5]], max_species: 7000}
-  - {id: PE, continent: "South America", name: Peru, gbif: {country: PE}, bbox: [[-81.4, -18.4, -68.7, -0.04]], max_species: 7000}
+  - {id: GT, continent: "North & Central America", name: Guatemala, wgsrpd: [GUA], gbif: {country: GT}, bbox: [[-92.3, 13.7, -88.2, 17.8]], max_species: 5000}
+  - {id: CR, continent: "North & Central America", name: Costa Rica, wgsrpd: [COS], gbif: {country: CR}, bbox: [[-85.95, 8.0, -82.5, 11.2]], max_species: 6000}
+  - {id: CO, continent: "South America", name: Colombia, wgsrpd: [CLM], gbif: {country: CO}, bbox: [[-79.0, -4.2, -66.9, 12.5]], max_species: 8000}
+  - {id: EC, continent: "South America", name: Ecuador, wgsrpd: [ECU], gbif: {country: EC}, bbox: [[-81.1, -5.0, -75.2, 1.5]], max_species: 7000}
+  - {id: PE, continent: "South America", name: Peru, wgsrpd: [PER], gbif: {country: PE}, bbox: [[-81.4, -18.4, -68.7, -0.04]], max_species: 7000}
   - {id: BR, continent: "South America", name: Brazil, gbif: {country: BR}, bbox: [[-74.0, -33.8, -34.8, 5.3]], max_species: 8000}
   - {id: AR, continent: "South America", name: Argentina, gbif: {country: AR}, bbox: [[-73.6, -55.1, -53.6, -21.8]], max_species: 6000}
   - {id: CL, continent: "South America", name: Chile, gbif: {country: CL}, bbox: [[-75.7, -55.9, -66.4, -17.5]], max_species: 5000}
 
   # ---------- Europe ----------
-  - {id: FR, continent: "Europe", name: France, gbif: {country: FR}, bbox: [[-5.1, 41.3, 9.6, 51.1]], max_species: 6000}
-  - {id: ES, continent: "Europe", name: Spain, gbif: {country: ES}, bbox: [[-9.4, 36.0, 3.3, 43.8]], max_species: 6000}
-  - {id: PT, continent: "Europe", name: Portugal, gbif: {country: PT}, bbox: [[-9.5, 36.9, -6.2, 42.2]], max_species: 5000}
-  - {id: IT, continent: "Europe", name: Italy, gbif: {country: IT}, bbox: [[6.6, 36.6, 18.5, 47.1]], max_species: 6000}
-  - {id: NL, continent: "Europe", name: Netherlands, gbif: {country: NL}, bbox: [[3.3, 50.75, 7.2, 53.6]], max_species: 4000}
-  - {id: BE, continent: "Europe", name: Belgium, gbif: {country: BE}, bbox: [[2.5, 49.5, 6.4, 51.5]], max_species: 4000}
-  - {id: CH, continent: "Europe", name: Switzerland, gbif: {country: CH}, bbox: [[5.9, 45.8, 10.5, 47.8]], max_species: 5000}
-  - {id: AT, continent: "Europe", name: Austria, gbif: {country: AT}, bbox: [[9.5, 46.4, 17.2, 49.0]], max_species: 5000}
-  - {id: PL, continent: "Europe", name: Poland, gbif: {country: PL}, bbox: [[14.1, 49.0, 24.2, 54.9]], max_species: 5000}
+  - {id: FR, continent: "Europe", name: France, wgsrpd: [FRA], gbif: {country: FR}, bbox: [[-5.1, 41.3, 9.6, 51.1]], max_species: 6000}
+  - {id: ES, continent: "Europe", name: Spain, wgsrpd: [SPA], gbif: {country: ES}, bbox: [[-9.4, 36.0, 3.3, 43.8]], max_species: 6000}
+  - {id: PT, continent: "Europe", name: Portugal, wgsrpd: [POR], gbif: {country: PT}, bbox: [[-9.5, 36.9, -6.2, 42.2]], max_species: 5000}
+  - {id: IT, continent: "Europe", name: Italy, wgsrpd: [ITA], gbif: {country: IT}, bbox: [[6.6, 36.6, 18.5, 47.1]], max_species: 6000}
+  - {id: NL, continent: "Europe", name: Netherlands, wgsrpd: [NET], gbif: {country: NL}, bbox: [[3.3, 50.75, 7.2, 53.6]], max_species: 4000}
+  - {id: BE, continent: "Europe", name: Belgium, wgsrpd: [BGM], gbif: {country: BE}, bbox: [[2.5, 49.5, 6.4, 51.5]], max_species: 4000}
+  - {id: CH, continent: "Europe", name: Switzerland, wgsrpd: [SWI], gbif: {country: CH}, bbox: [[5.9, 45.8, 10.5, 47.8]], max_species: 5000}
+  - {id: AT, continent: "Europe", name: Austria, wgsrpd: [AUT], gbif: {country: AT}, bbox: [[9.5, 46.4, 17.2, 49.0]], max_species: 5000}
+  - {id: PL, continent: "Europe", name: Poland, wgsrpd: [POL], gbif: {country: PL}, bbox: [[14.1, 49.0, 24.2, 54.9]], max_species: 5000}
   - {id: CZ, continent: "Europe", name: Czechia, gbif: {country: CZ}, bbox: [[12.1, 48.5, 18.9, 51.1]], max_species: 4000}
-  - {id: SE, continent: "Europe", name: Sweden, gbif: {country: SE}, bbox: [[11.1, 55.3, 24.2, 69.1]], max_species: 4000}
-  - {id: "NO", continent: "Europe", name: Norway, gbif: {country: "NO"}, bbox: [[4.6, 57.9, 31.1, 71.2]], max_species: 4000}
-  - {id: FI, continent: "Europe", name: Finland, gbif: {country: FI}, bbox: [[20.5, 59.8, 31.6, 70.1]], max_species: 4000}
-  - {id: DK, continent: "Europe", name: Denmark, gbif: {country: DK}, bbox: [[8.0, 54.5, 12.7, 57.8]], max_species: 4000}
-  - {id: IE, continent: "Europe", name: Ireland, gbif: {country: IE}, bbox: [[-10.5, 51.4, -6.0, 55.4]], max_species: 3000}
-  - {id: GR, continent: "Europe", name: Greece, gbif: {country: GR}, bbox: [[19.4, 34.8, 28.3, 41.8]], max_species: 5000}
+  - {id: SE, continent: "Europe", name: Sweden, wgsrpd: [SWE], gbif: {country: SE}, bbox: [[11.1, 55.3, 24.2, 69.1]], max_species: 4000}
+  - {id: "NO", continent: "Europe", name: Norway, wgsrpd: [NOR], gbif: {country: "NO"}, bbox: [[4.6, 57.9, 31.1, 71.2]], max_species: 4000}
+  - {id: FI, continent: "Europe", name: Finland, wgsrpd: [FIN], gbif: {country: FI}, bbox: [[20.5, 59.8, 31.6, 70.1]], max_species: 4000}
+  - {id: DK, continent: "Europe", name: Denmark, wgsrpd: [DEN], gbif: {country: DK}, bbox: [[8.0, 54.5, 12.7, 57.8]], max_species: 4000}
+  - {id: IE, continent: "Europe", name: Ireland, wgsrpd: [IRE], gbif: {country: IE}, bbox: [[-10.5, 51.4, -6.0, 55.4]], max_species: 3000}
+  - {id: GR, continent: "Europe", name: Greece, wgsrpd: [GRC], gbif: {country: GR}, bbox: [[19.4, 34.8, 28.3, 41.8]], max_species: 5000}
   - {id: UA, continent: "Europe", name: Ukraine, gbif: {country: UA}, bbox: [[22.1, 44.4, 40.2, 52.4]], max_species: 4000}
   - {id: RU, continent: "Europe", name: Russia, gbif: {country: RU}, bbox: [[27.0, 41.2, 180.0, 77.7]], max_species: 7000}
 
   # ---------- Africa ----------
   - {id: ZA, continent: "Africa", name: South Africa, gbif: {country: ZA}, bbox: [[16.5, -34.8, 32.9, -22.1]], max_species: 8000}
-  - {id: KE, continent: "Africa", name: Kenya, gbif: {country: KE}, bbox: [[33.9, -4.7, 41.9, 5.0]], max_species: 5000}
-  - {id: TZ, continent: "Africa", name: Tanzania, gbif: {country: TZ}, bbox: [[29.3, -11.7, 40.4, -1.0]], max_species: 5000}
-  - {id: NG, continent: "Africa", name: Nigeria, gbif: {country: NG}, bbox: [[2.7, 4.3, 14.7, 13.9]], max_species: 4000}
-  - {id: GH, continent: "Africa", name: Ghana, gbif: {country: GH}, bbox: [[-3.3, 4.7, 1.2, 11.2]], max_species: 4000}
-  - {id: EG, continent: "Africa", name: Egypt, gbif: {country: EG}, bbox: [[24.7, 22.0, 36.9, 31.7]], max_species: 3000}
-  - {id: MA, continent: "Africa", name: Morocco, gbif: {country: MA}, bbox: [[-13.2, 27.7, -1.0, 35.9]], max_species: 4000}
-  - {id: MG, continent: "Africa", name: Madagascar, gbif: {country: MG}, bbox: [[43.2, -25.6, 50.5, -11.9]], max_species: 5000}
+  - {id: KE, continent: "Africa", name: Kenya, wgsrpd: [KEN], gbif: {country: KE}, bbox: [[33.9, -4.7, 41.9, 5.0]], max_species: 5000}
+  - {id: TZ, continent: "Africa", name: Tanzania, wgsrpd: [TAN], gbif: {country: TZ}, bbox: [[29.3, -11.7, 40.4, -1.0]], max_species: 5000}
+  - {id: NG, continent: "Africa", name: Nigeria, wgsrpd: [NGA], gbif: {country: NG}, bbox: [[2.7, 4.3, 14.7, 13.9]], max_species: 4000}
+  - {id: GH, continent: "Africa", name: Ghana, wgsrpd: [GHA], gbif: {country: GH}, bbox: [[-3.3, 4.7, 1.2, 11.2]], max_species: 4000}
+  - {id: EG, continent: "Africa", name: Egypt, wgsrpd: [EGY], gbif: {country: EG}, bbox: [[24.7, 22.0, 36.9, 31.7]], max_species: 3000}
+  - {id: MA, continent: "Africa", name: Morocco, wgsrpd: [MOR], gbif: {country: MA}, bbox: [[-13.2, 27.7, -1.0, 35.9]], max_species: 4000}
+  - {id: MG, continent: "Africa", name: Madagascar, wgsrpd: [MDG], gbif: {country: MG}, bbox: [[43.2, -25.6, 50.5, -11.9]], max_species: 5000}

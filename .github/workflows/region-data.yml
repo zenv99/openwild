@@ -34,6 +34,8 @@ jobs:
       - run: pip install numpy pyyaml
       - name: Species list + common names (GBIF)
         run: python -m openwild_pipeline.cli species "${{ inputs.region }}" --workers 8
+      - name: Every plant species Kew lists for the region (WCVP)
+        run: python -m openwild_pipeline.cli wcvp "${{ inputs.region }}"
       - name: One-line descriptions (Wikipedia)
         run: python -m openwild_pipeline.cli describe "${{ inputs.region }}" --workers 8
       - name: Coverage summary

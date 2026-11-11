@@ -15,9 +15,22 @@ NAME_LANGS = ["eng", "ind", "ban", "jav", "tgl", "tha", "vie", "msa", "spa", "po
 
 
 def species_counts(region: Region, kingdom: str, max_species: int) -> list[tuple[int, int]]:
-    """Return [(gbif_species_key, occurrence_count)] sorted by count, using facet paging."""
+    """[(gbif_species_key, occurrence_count)] by count. For small regions, also searches the map box
+    (catches records without an admin-area tag) and merges the two."""
+    merged: dict[int, int] = {}
+    for k, c in _facet_counts(region.gbif, kingdom, max_species):
+        merged[k] = max(merged.get(k, 0), c)
+    if region.bbox and region.area < 50:
+        for b in region.bbox:
+            wkt = f"POLYGON(({b[0]} {b[1]},{b[2]} {b[1]},{b[2]} {b[3]},{b[0]} {b[3]},{b[0]} {b[1]}))"
+            for k, c in _facet_counts({"geometry": wkt}, kingdom, max_species):
+                merged[k] = max(merged.get(k, 0), c)
+    return sorted(merged.items(), key=lambda kc: -kc[1])[:max_species]
+
+
+def _facet_counts(filters: dict, kingdom: str, max_species: int) -> list[tuple[int, int]]:
     params = {
-        **region.gbif,
+        **filters,
         "taxonKey": config.GBIF_KINGDOM_KEYS[kingdom],
         "hasCoordinate": "true",
         "hasGeospatialIssue": "false",

@@ -71,31 +71,48 @@ def cmd_species(a):
 
 
 def cmd_describe(a):
-    """One-line Wikipedia description for every species in the region (English, Indonesian fallback)."""
-    import concurrent.futures as cf
+    """One-line Wikipedia description for every species in the region (English, then Indonesian), batched."""
     import csv
 
-    from .content import wikipedia_summary
+    from .content import wikipedia_intros
 
     src = data_dir(a.region) / "species.csv"
     names = [r["scientific_name"] for r in csv.DictReader(open(src, encoding="utf-8"))]
-
-    def one(n):
-        for lang in ("en", "id"):
-            w = wikipedia_summary(n, lang)
-            if w:
-                first = w["description"].split(". ")[0].strip().rstrip(".") + "."
-                return {"scientific_name": n, "description": first[:300], "wiki_url": w["url"] or "", "lang": lang}
-        return None
-
-    with cf.ThreadPoolExecutor(a.workers) as ex:
-        rows = [r for r in ex.map(one, names) if r]
+    rows: dict[str, dict] = {}
+    remaining = names
+    for lang in ("en", "id"):
+        found = wikipedia_intros(remaining, lang)
+        for n, w in found.items():
+            if n in remaining and n not in rows:
+                rows[n] = {"scientific_name": n, "description": w["description"], "wiki_url": w["url"], "lang": lang}
+        remaining = [n for n in remaining if n not in rows]
     out = data_dir(a.region) / "descriptions.csv"
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["scientific_name", "description", "wiki_url", "lang"])
         w.writeheader()
-        w.writerows(rows)
+        w.writerows(rows[n] for n in names if n in rows)
     print(f"{a.region}: {len(rows)}/{len(names)} species described -> {out}")
+
+
+def cmd_wcvp(a):
+    """Add every accepted plant species Kew's WCVP records for the region's WGSRPD areas."""
+    from .opendata import merge_wcvp_into_species_csv, wcvp_species
+    from .regions import get_region
+
+    region = get_region(a.region)
+    if not region.wgsrpd:
+        print(f"{a.region}: no wgsrpd areas set in regions.yaml; skipping")
+        return
+    rows = wcvp_species(region.wgsrpd)
+    added = merge_wcvp_into_species_csv(data_dir(a.region) / "species.csv", rows)
+    print(f"{a.region}: WCVP lists {len(rows)} species in {region.wgsrpd}; {added} new species added")
+
+
+def cmd_wikidata(_):
+    from .opendata import wikidata_fungi_edibility
+
+    n = wikidata_fungi_edibility(config.REPO_ROOT / "content" / "quick" / "auto_wikidata_fungi.csv")
+    print(f"Wikidata: {n} mushroom species with edibility")
 
 
 def cmd_summary(a):
@@ -301,6 +318,9 @@ def main(argv=None):
     sp = add("describe", cmd_describe, "one-line Wikipedia descriptions for every species in a region")
     sp.add_argument("region")
     sp.add_argument("--workers", type=int, default=8)
+    sp = add("wcvp", cmd_wcvp, "add Kew WCVP plant species for the region's WGSRPD areas")
+    sp.add_argument("region")
+    add("wikidata", cmd_wikidata, "auto one-liners: mushroom edibility from Wikidata (CC0)")
     sp = add("summary", cmd_summary, "coverage summary for a region -> data/regions/<id>/summary.json")
     sp.add_argument("region")
     sp = add("select", cmd_select, "select reference photos + region stats")

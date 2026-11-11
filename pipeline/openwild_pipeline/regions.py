@@ -18,6 +18,7 @@ class Region:
     bbox: list[list[float]] = field(default_factory=list)
     max_species: int = 5000
     continent: str = ""
+    wgsrpd: list[str] = field(default_factory=list)  # Kew/TDWG level-3 area codes for WCVP plant lists
 
     def contains(self, lon: float, lat: float) -> bool:
         return any(b[0] <= lon <= b[2] and b[1] <= lat <= b[3] for b in self.bbox)

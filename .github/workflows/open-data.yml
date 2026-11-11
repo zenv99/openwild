@@ -1,0 +1,36 @@
+name: Open datasets (Wikidata mushroom edibility)
+
+# Pulls mushroom edibility for every species Wikidata knows (CC0) into
+# content/quick/auto_wikidata_fungi.csv, validates it, and commits it.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 19 * * 6"   # weekly, Sunday 03:17 Bali time
+
+permissions:
+  contents: write
+
+jobs:
+  wikidata:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml pytest
+      - run: python -m openwild_pipeline.cli wikidata
+      - run: python -m openwild_pipeline.cli content-validate
+      - run: pytest -q
+      - name: Commit
+        working-directory: .
+        run: |
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git add content/quick/auto_wikidata_fungi.csv
+          git commit -m "Open data: Wikidata mushroom edibility ($(grep -vc '^#' content/quick/auto_wikidata_fungi.csv) rows)" || echo "No changes"
+          git pull --rebase origin main
+          git push origin HEAD:main
