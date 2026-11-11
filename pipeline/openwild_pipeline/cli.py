@@ -319,27 +319,6 @@ def cmd_guide_pack(a):
 
     region = get_region(a.region)
     d = data_dir(a.region)
-    def display_order(idx: list[int]) -> list[int]:
-        """Cover first: the most typical field photo (closest to the species' average fingerprint).
-        Then pick for variety: each next photo is the one least like those already chosen, so swiping shows
-        different views (flower, leaf, whole plant) rather than near-duplicates. Herbarium sheets go last."""
-        if not idx:
-            return idx
-        e = embs[idx].astype(np.float32)
-        e = e / (np.linalg.norm(e, axis=1, keepdims=True) + 1e-9)
-        typical = e @ e.mean(axis=0)
-        field = [photos[i].get("kind", "field") != "specimen" for i in idx]
-        pool = [j for j in range(len(idx)) if field[j]] or list(range(len(idx)))
-        chosen = [max(pool, key=lambda j: typical[j])]
-        rest = [j for j in pool if j not in chosen]
-        while rest:
-            sims = e[rest] @ e[chosen].T
-            nxt = rest[int(np.argmin(sims.max(axis=1)))]
-            chosen.append(nxt)
-            rest.remove(nxt)
-        chosen += [j for j in range(len(idx)) if j not in chosen]
-        return [idx[j] for j in chosen]
-
     descs = {}
     if (d / "descriptions.csv").exists():
         descs = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
@@ -406,6 +385,27 @@ def cmd_photo_pack(a):
         params = {k: v for k, v in cal.items() if k in config.DEFAULT_PARAMS}
     except Exception as e:  # noqa: BLE001
         print(f"calibration skipped: {e!r}")
+
+    def display_order(idx: list[int]) -> list[int]:
+        """Cover first: the most typical field photo (closest to the species' average fingerprint).
+        Then pick for variety: each next photo is the one least like those already chosen, so swiping shows
+        different views (flower, leaf, whole plant) rather than near-duplicates. Herbarium sheets go last."""
+        if not idx:
+            return idx
+        e = embs[idx].astype(np.float32)
+        e = e / (np.linalg.norm(e, axis=1, keepdims=True) + 1e-9)
+        typical = e @ e.mean(axis=0)
+        field = [photos[i].get("kind", "field") != "specimen" for i in idx]
+        pool = [j for j in range(len(idx)) if field[j]] or list(range(len(idx)))
+        chosen = [max(pool, key=lambda j: typical[j])]
+        rest = [j for j in pool if j not in chosen]
+        while rest:
+            sims = e[rest] @ e[chosen].T
+            nxt = rest[int(np.argmin(sims.max(axis=1)))]
+            chosen.append(nxt)
+            rest.remove(nxt)
+        chosen += [j for j in range(len(idx)) if j not in chosen]
+        return [idx[j] for j in chosen]
 
     descs = {}
     if (d / "descriptions.csv").exists():

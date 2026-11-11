@@ -29,4 +29,11 @@ jobs:
               t=time.time(); ok=g._download(x["url"], Path(f"/tmp/p{i}.jpg")); print("download", ok, f"{time.time()-t:.1f}s")
           PY
       - name: Time 60 species
-        run: time python -m openwild_pipeline.cli photos ID-BA --per-species 8 --workers 16 --max-species 60
+        run: |
+          time python -m openwild_pipeline.cli photos ID-BA --per-species 8 --workers 16 --max-species 60
+          python -c "
+          import csv, collections
+          rows = list(csv.DictReader(open('../work/photos_gbif/ID-BA/photos.csv')))
+          c = collections.Counter(r['scientific_name'] for r in rows)
+          print('PROBE photos', len(rows), 'species', len(c), 'per-species', sorted(c.values()))
+          print('PROBE kinds', collections.Counter(r['kind'] for r in rows))"

@@ -9,6 +9,7 @@ import concurrent.futures as cf
 import csv
 import io
 import re
+import time
 import urllib.request
 from pathlib import Path
 
@@ -50,39 +51,43 @@ def species_key(name: str, key: str | None) -> int | None:
 INAT_RESEARCH_GRADE = "50c9509d-22c7-4a22-a47d-8c48425ef4a7"  # GBIF dataset: iNaturalist research-grade observations
 
 
-def _candidates(params: dict, want: int, seen: set) -> list[dict]:
+def _candidates(params: dict, want: int, seen: set, pages: int = 2) -> list[dict]:
+    """Up to `want` usable photos: 100 observations per page, at most 2 photos from each (variety),
+    a second page only if the first was not enough."""
     out: list[dict] = []
-    try:
-        # Small pages: we need ~8 photos, and full occurrence records are large.
-        d = get_json(f"{config.GBIF_API}/occurrence/search", {"mediaType": "StillImage", "limit": max(24, want * 2), **params})
-    except Exception:
-        return out
-    for occ in d.get("results", []):
-        for m in occ.get("media", [])[:1]:  # one image per observation = more variety
-            lic = normalize_license_url(m.get("license") or occ.get("license"))
-            url = m.get("identifier")
-            if lic not in config.ALLOWED_LICENSES or not url or url in seen:
-                continue
-            seen.add(url)
-            out.append({
-                "url": smaller_url(url),
-                "license": lic,
-                "observer": m.get("rightsHolder") or m.get("creator") or occ.get("recordedBy") or "",
-                "page": m.get("references") or f"https://www.gbif.org/occurrence/{occ.get('key')}",
-                "kind": "field" if occ.get("basisOfRecord") == "HUMAN_OBSERVATION" else "specimen",
-            })
-        if len(out) >= want:
+    offset = 0
+    for _ in range(pages):
+        try:
+            d = get_json(f"{config.GBIF_API}/occurrence/search",
+                         {"mediaType": "StillImage", "limit": 100, "offset": offset, **params})
+        except Exception:
             break
-    return out[:want]
+        for occ in d.get("results", []):
+            for m in occ.get("media", [])[:2]:
+                lic = normalize_license_url(m.get("license") or occ.get("license"))
+                url = m.get("identifier")
+                if lic not in config.ALLOWED_LICENSES or not url or url in seen or m.get("type", "StillImage") != "StillImage":
+                    continue
+                seen.add(url)
+                out.append({
+                    "url": smaller_url(url),
+                    "license": lic,
+                    "observer": m.get("rightsHolder") or m.get("creator") or occ.get("recordedBy") or "",
+                    "page": m.get("references") or f"https://www.gbif.org/occurrence/{occ.get('key')}",
+                    "kind": "field" if occ.get("basisOfRecord") == "HUMAN_OBSERVATION" else "specimen",
+                })
+        if len(out) >= want or d.get("endOfRecords", True):
+            break
+        offset += 100
+    return out
 
 
 def photo_candidates(taxon_key: int, want: int) -> list[dict]:
-    """One fast GBIF query (dataset/basis filters are slow server-side), then living plants in the field
-    first (what a phone camera sees), herbarium sheets last."""
-    seen: set = set()
-    got = _candidates({"taxonKey": taxon_key}, max(want * 3, 24), seen)
+    """Field photos (what a phone camera sees) first, herbarium sheets last. Returns spares so failed
+    downloads can be replaced."""
+    got = _candidates({"taxonKey": taxon_key}, want, set())
     got.sort(key=lambda c: c["kind"] != "field")
-    return got[:want]
+    return got
 
 
 def _download(url: str, dest: Path) -> bool:
@@ -90,10 +95,18 @@ def _download(url: str, dest: Path) -> bool:
 
     if dest.exists():
         return True
+    data = None
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=40) as r:
+                data = r.read()
+            break
+        except Exception:
+            if attempt:
+                return False
+            time.sleep(2)
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=40) as r:
-            data = r.read()
         im = Image.open(io.BytesIO(data)).convert("RGB")
         im.thumbnail((512, 512))
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -116,7 +129,9 @@ def fetch_region_photos(species_csv: Path, out_dir: Path, per_species: int = 8, 
         if not key:
             return []
         got = []
-        for i, c in enumerate(photo_candidates(key, per_species)):
+        for i, c in enumerate(photo_candidates(key, per_species * 2)):  # spares replace failed downloads
+            if len(got) >= per_species:
+                break
             dest = out_dir / "img" / f"{key}_{i}.jpg"
             if _download(c["url"], dest):
                 got.append({"scientific_name": r["scientific_name"], "path": str(dest), **{k: c[k] for k in ("license", "observer", "page", "kind")}})
