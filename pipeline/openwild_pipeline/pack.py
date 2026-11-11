@@ -217,6 +217,7 @@ def build_pack(
     # Species entry > genus rule > family rule; species with none get "unknown" (treated as unsafe).
     rules = load_group_rules() if group_rules is None else group_rules
     quick = load_quick() if quick_rows is None else quick_rows
+    quick_by_gbif = {str(r["gbif_key"]): r for r in quick.values() if r.get("gbif_key")}
     covered = {"species": 0, "quick": 0, "genus": 0, "family": 0, "none": 0}
     done: set[str] = set()
     for rec in species:
@@ -226,9 +227,14 @@ def build_pack(
         done.add(key)
         entry = curated.get(key)
         q = quick.get(key)
+        rows = quick
+        if q is None and rec.gbif_key and str(rec.gbif_key) in quick_by_gbif:
+            # Same species under another name (synonym): match on the GBIF taxon key instead.
+            q = quick_by_gbif[str(rec.gbif_key)]
+            rows = {key: q}
         # A one-liner tagged for another kingdom (e.g. a fruit category that swept up a fungal disease) is ignored.
         row_ok = not q or not q.get("kingdom") or q["kingdom"] == rec.kingdom
-        content = resolve(curated, rules, rec.scientific_name, rec.genus, rec.family, quick if row_ok else {})
+        content = resolve(curated, rules, rec.scientific_name, rec.genus, rec.family, rows if row_ok else {})
         covered[content["level"] if content else "none"] += 1
         con.execute("INSERT INTO content VALUES (?, ?)", (name_to_id[key], json.dumps(content or finalize(None))))
         for lk in (entry or {}).get("lookalikes") or []:

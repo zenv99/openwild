@@ -90,3 +90,17 @@ def test_pack_ignores_row_from_other_kingdom(tmp_path):
     out = build_pack(tmp_path / "K.owpack", "K", "K", 1, recs, {}, guide_only=True, group_rules={}, quick_rows=quick)
     content = json.loads(sqlite3.connect(out).execute("SELECT json FROM content").fetchone()[0])
     assert content.get("edibility") != "edible"
+
+
+def test_pack_matches_synonym_by_gbif_key(tmp_path):
+    import json
+    import sqlite3
+
+    from openwild_pipeline.pack import SpeciesRecord, build_pack
+
+    quick = {"cocos nucifera": {"scientific_name": "Cocos nucifera", "verdict": "edible", "benefit": "Listed as edible fruit",
+                                "harm": "", "survival": "food", "kingdom": "Plantae", "gbif_key": "2735117"}}
+    recs = [SpeciesRecord(scientific_name="Cocos nucifera var. synonymus", kingdom="Plantae", gbif_key=2735117)]
+    out = build_pack(tmp_path / "S.owpack", "S", "S", 1, recs, {}, guide_only=True, group_rules={}, quick_rows=quick)
+    content = json.loads(sqlite3.connect(out).execute("SELECT json FROM content").fetchone()[0])
+    assert content["edibility"] == "edible" and content["level"] == "quick"

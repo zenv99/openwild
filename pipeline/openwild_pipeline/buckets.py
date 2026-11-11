@@ -178,14 +178,17 @@ WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
 def _sparql_facts(chunk: list[str]) -> dict[str, dict]:
     values = " ".join(f"wd:{q}" for q in chunk)
     query = (
-        "SELECT ?item ?name ?rank ?prod WHERE { VALUES ?item { " + values + " } "
-        "OPTIONAL { ?item wdt:P225 ?name } OPTIONAL { ?item wdt:P105 ?rank } OPTIONAL { ?item wdt:P1582 ?prod } }"
+        "SELECT ?item ?name ?rank ?prod ?gbif WHERE { VALUES ?item { " + values + " } "
+        "OPTIONAL { ?item wdt:P225 ?name } OPTIONAL { ?item wdt:P105 ?rank } OPTIONAL { ?item wdt:P1582 ?prod } "
+        "OPTIONAL { ?item wdt:P846 ?gbif } }"
     )
     d = get_json(WIKIDATA_SPARQL, {"query": query, "format": "json"})
     out: dict[str, dict] = {}
     for b in d["results"]["bindings"]:
         q = b["item"]["value"].rsplit("/", 1)[-1]
-        f = out.setdefault(q, {"name": None, "rank": None, "product_of": []})
+        f = out.setdefault(q, {"name": None, "rank": None, "product_of": [], "gbif": None})
+        if "gbif" in b and not f["gbif"]:
+            f["gbif"] = b["gbif"]["value"]
         if "name" in b and not f["name"]:
             f["name"] = b["name"]["value"]
         if "rank" in b and not f["rank"]:
@@ -218,8 +221,12 @@ def taxon_facts(qids: list[str], workers: int = 2, chunk_size: int = 200) -> dic
     return facts
 
 
+GBIF_KEYS: dict[str, str] = {}  # scientific name -> GBIF taxon key (Wikidata P846), filled by resolve_taxa
+
+
 def resolve_taxa(qids: list[str]) -> dict[str, list[tuple[str, str]]]:
-    """{qid: [(scientific name, 'species'|'genus')]}, following food items to their source taxon."""
+    """{qid: [(scientific name, 'species'|'genus')]}, following food items to their source taxon.
+    Also records each species' GBIF key in GBIF_KEYS so packs can match synonyms by key."""
     facts = taxon_facts(qids)
     products = sorted({t for f in facts.values() if not f["name"] for t in f["product_of"]} - set(facts))
     if products:
@@ -230,7 +237,12 @@ def resolve_taxa(qids: list[str]) -> dict[str, list[tuple[str, str]]]:
             return None
         if f["rank"] in SPECIES_RANKS:
             parts = f["name"].split()
-            return (" ".join(parts[:2]), "species") if len(parts) >= 2 else None
+            if len(parts) < 2:
+                return None
+            name = " ".join(parts[:2])
+            if f.get("gbif") and len(parts) == 2:
+                GBIF_KEYS.setdefault(name, f["gbif"])
+            return (name, "species")
         if f["rank"] == GENUS_RANK:
             return (f["name"].split()[0], "genus")
         return None
@@ -328,7 +340,8 @@ def verdict_row(name: str, kinds: dict[str, set]) -> dict:
     else:
         v, harm = "inedible", ""
     return {"scientific_name": name, "verdict": v, "benefit": benefit, "harm": harm,
-            "survival": ";".join(uses), "source": "Wikipedia categories + Wikidata", "kingdom": row_kingdom(kinds)}
+            "survival": ";".join(uses), "source": "Wikipedia categories + Wikidata", "kingdom": row_kingdom(kinds),
+            "gbif_key": GBIF_KEYS.get(name, "")}
 
 
 FUNGUS_WORDS = ("mushroom", "jamur", "fungus", "fungi")
@@ -373,7 +386,7 @@ def write_outputs(species: dict, genera: dict, quick_csv: Path, rules_yaml: Path
     with open(quick_csv, "w", newline="", encoding="utf-8") as f:
         f.write("# AUTO-GENERATED from Wikipedia categories (CC BY-SA) + Wikidata (CC0) by `cli buckets`.\n")
         f.write("# Do not edit: hand-written content/quick files and Wikidata mushroom edibility override these rows.\n")
-        w = csv.DictWriter(f, fieldnames=["scientific_name", "verdict", "benefit", "harm", "survival", "source", "kingdom"])
+        w = csv.DictWriter(f, fieldnames=["scientific_name", "verdict", "benefit", "harm", "survival", "source", "kingdom", "gbif_key"])
         w.writeheader()
         w.writerows(rows)
     rules = [r for r in (genus_rule(n, k) for n, k in sorted(genera.items())) if r]
