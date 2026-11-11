@@ -1,0 +1,383 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED. Mushrooms worldwide: common edibles and their dangerous lookalikes.
+# Edible entries still pass through SafetyPolicy: High confidence + ≥2 photos incl. underside required.
+
+# ---------- dangerous ----------
+- scientific_name: Amanita ocreata
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Amatoxin poisoning: vomiting and diarrhoea, false recovery, then liver and kidney failure.",
+      onset: "Usually 6–24 hours after eating.",
+      severity: "Western destroying angel (North America). Frequently fatal.",
+      what_to_do: "Seek emergency medical care immediately, even with no symptoms. Report possible amatoxin poisoning."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Agaricus spp., danger: edible}]
+  sources: ["Wikipedia: Amanita ocreata"]
+
+- scientific_name: Amanita pantherina
+  edibility: toxic
+  toxicity: serious
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Vomiting, confusion, agitation alternating with deep sleep, delirium, muscle spasms; rarely coma.",
+      onset: "Usually within 30 minutes to 3 hours.",
+      severity: "Panther cap. More toxic than the fly agaric; serious poisonings occur.",
+      what_to_do: "Seek medical care. Keep the person safe and supervised."}
+    feeling:
+      effects: "Reported effects include confusion, dream-like states and distorted perception."
+      risks: "Delirium, falls and loss of consciousness; very dangerous outdoors."
+  survival: {priority: avoid}
+  lookalikes: [{name: Amanita rubescens, danger: edible}, {name: Amanita muscaria, danger: psychoactive}]
+  sources: ["Wikipedia: Amanita pantherina"]
+
+- scientific_name: Pholiotina rugosa
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Amatoxin poisoning: vomiting and diarrhoea, false recovery, then liver failure.",
+      onset: "Usually 6–24 hours after eating.",
+      severity: "Small brown lawn mushroom containing amatoxins. Potentially fatal.",
+      what_to_do: "Seek emergency medical care immediately and report possible amatoxin poisoning."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Psilocybe spp., danger: psychoactive}]
+  sources: ["Wikipedia: Pholiotina rugosa"]
+
+- scientific_name: Inocybe erubescens
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Heavy sweating, salivation, tears, blurred vision, vomiting, diarrhoea, slow heartbeat, breathing difficulty.",
+      onset: "Fast: usually 15–30 minutes after eating.",
+      severity: "Deadly fibrecap. Contains high levels of muscarine. Can be fatal.",
+      what_to_do: "Seek emergency medical care immediately; an antidote exists."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Calocybe gambosa, danger: edible}]
+  sources: ["Wikipedia: Inocybe erubescens"]
+
+- scientific_name: Clitocybe rivulosa
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Sweating, salivation, tears, blurred vision, vomiting, slow heartbeat.",
+      onset: "Fast: usually 15–30 minutes after eating.",
+      severity: "Fool's funnel. Contains muscarine; grows in grass alongside edible fairy-ring mushrooms.",
+      what_to_do: "Seek emergency medical care; an antidote exists."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Marasmius oreades, danger: edible}]
+  sources: ["Wikipedia: Clitocybe rivulosa"]
+
+- scientific_name: Paxillus involutus
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Vomiting and diarrhoea; after repeated meals it can trigger an immune reaction that destroys red blood cells and causes kidney failure.",
+      onset: "Usually 1–2 hours after eating.",
+      severity: "Brown roll-rim. Was once eaten widely; deaths have occurred after eating it many times safely.",
+      what_to_do: "Seek medical care for any symptoms, especially dark urine or weakness."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Paxillus involutus"]
+
+- scientific_name: Omphalotus olearius
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Repeated vomiting, cramps, diarrhoea.",
+      onset: "Usually within 1–3 hours.",
+      severity: "Jack-o'-lantern mushroom. Orange, grows in clusters on wood, has true gills. Mistaken for chanterelles.",
+      what_to_do: "Seek medical care if vomiting is severe or you cannot keep fluids down."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Cantharellus cibarius, danger: edible}]
+  sources: ["Wikipedia: Omphalotus olearius"]
+
+- scientific_name: Omphalotus nidiformis
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Repeated vomiting and cramps.",
+      onset: "Usually within 1–3 hours.",
+      severity: "Ghost fungus (Australia). Glows faintly in the dark. Mistaken for oyster mushrooms.",
+      what_to_do: "Seek medical care if vomiting is severe."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Pleurotus ostreatus, danger: edible}]
+  sources: ["Wikipedia: Omphalotus nidiformis"]
+
+- scientific_name: Rubroboletus satanas
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Severe vomiting, diarrhoea and cramps.",
+      onset: "Usually within a few hours.",
+      severity: "Satan's bolete. Red pores, pale cap; flesh turns blue when cut.",
+      what_to_do: "Seek medical care if you cannot keep fluids down."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Boletus edulis, danger: edible}]
+  sources: ["Wikipedia: Rubroboletus satanas"]
+
+- scientific_name: Entoloma sinuatum
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Severe vomiting, diarrhoea, cramps; sometimes liver involvement.",
+      onset: "Usually within 30 minutes to 4 hours.",
+      severity: "Livid pinkgill. Causes many poisonings in Europe; mistaken for St George's mushroom and miller.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Calocybe gambosa, danger: edible}, {name: Clitopilus prunulus, danger: edible}]
+  sources: ["Wikipedia: Entoloma sinuatum"]
+
+- scientific_name: Hypholoma fasciculare
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Vomiting, diarrhoea; severe cases can involve liver damage.",
+      onset: "Usually within a few hours, sometimes later.",
+      severity: "Sulphur tuft. Bright yellow clusters on dead wood; very bitter.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Armillaria mellea, danger: edible}, {name: Kuehneromyces mutabilis, danger: edible}]
+  sources: ["Wikipedia: Hypholoma fasciculare"]
+
+- scientific_name: Scleroderma citrinum
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], symptoms: "Nausea, vomiting, stomach pain; sometimes faintness."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Lycoperdon perlatum, danger: edible}]
+  sources: ["Wikipedia: Scleroderma citrinum"]
+
+- scientific_name: Agaricus xanthodermus
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], symptoms: "Vomiting, diarrhoea and cramps. Stains bright yellow at the stem base when scratched and smells of ink or phenol."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Agaricus campestris, danger: edible}]
+  sources: ["Wikipedia: Agaricus xanthodermus"]
+
+- scientific_name: Russula emetica
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom when raw or undercooked], symptoms: "Vomiting and diarrhoea. Red cap, white gills, very hot peppery taste."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Russula emetica"]
+
+- scientific_name: Coprinopsis atramentaria
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom, when combined with alcohol],
+      symptoms: "With alcohol: flushing, nausea, vomiting, racing heart. Reaction can occur with alcohol taken up to a few days after eating."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Coprinus comatus, danger: edible}]
+  sources: ["Wikipedia: Coprinopsis atramentaria"]
+
+- scientific_name: Psilocybe semilanceata
+  edibility: psychoactive
+  toxicity: mild
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [whole mushroom], cooking_makes_safe: false,
+      symptoms: "Nausea, anxiety, panic, confusion, fast heartbeat.",
+      onset: "Usually within 20–60 minutes; effects last several hours.",
+      severity: "Liberty cap. Main dangers are misidentification (deadly lookalikes) and risky behaviour while affected.",
+      what_to_do: "Stay with the person in a calm, safe place. Seek medical care for chest pain, seizures, severe agitation, or if a deadly lookalike may have been eaten."}
+    feeling:
+      effects: "Reported effects include visual distortions, altered sense of time and strong emotions. Unpredictable."
+      risks: "Panic, paranoia, impaired judgement and coordination; dangerous outdoors."
+  survival: {priority: avoid}
+  lookalikes: [{name: Galerina marginata, danger: deadly}, {name: Inocybe spp., danger: toxic}]
+  sources: ["Wikipedia: Psilocybe semilanceata"]
+
+# ---------- edible (identify with extreme care) ----------
+- scientific_name: Cantharellus cibarius
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Chanterelle. Prized edible; provides vitamin D and fibre."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook before eating. Check for blunt, forked ridges (not true gills) running down the stem."
+    feeling: {taste_texture: "Fruity apricot smell, peppery and firm."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Omphalotus olearius, danger: toxic}, {name: Hygrophoropsis aurantiaca, danger: toxic}, {name: Cortinarius rubellus, danger: deadly}]
+  sources: ["Wikipedia: Cantharellus cibarius"]
+
+- scientific_name: Boletus edulis
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Porcini / cep. Highly prized; good protein content for a mushroom."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook before eating. Avoid boletes with red pores or flesh that turns blue."
+    feeling: {taste_texture: "Nutty and meaty."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Rubroboletus satanas, danger: toxic}, {name: Tylopilus felleus, danger: harmless}]
+  sources: ["Wikipedia: Boletus edulis"]
+
+- scientific_name: Pleurotus ostreatus
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Oyster mushroom. Grows on dead wood worldwide."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook before eating."
+    feeling: {taste_texture: "Mild, tender, slightly anise-like."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Omphalotus nidiformis, danger: toxic}, {name: Omphalotus olearius, danger: toxic}]
+  sources: ["Wikipedia: Pleurotus ostreatus"]
+
+- scientific_name: Laetiporus sulphureus
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw or old fruiting bodies], cooking_makes_safe: true, symptoms: "Some people get stomach upset even when cooked; raw it causes vomiting."}
+    benefits:
+      nutrition: "Chicken of the woods. Young tender edges are eaten."
+      edible_parts: [young tender edges]
+      preparation_required: "Cook thoroughly; try a small portion first. Avoid ones growing on yew or eucalyptus."
+    feeling: {taste_texture: "Texture like chicken."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Taxus baccata, danger: deadly}]
+  sources: ["Wikipedia: Laetiporus sulphureus"]
+
+- scientific_name: Coprinus comatus
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Shaggy ink cap. Edible only when young and white."
+      edible_parts: [young caps]
+      preparation_required: "Cook within hours of picking, before the gills turn black."
+    feeling: {taste_texture: "Delicate and mild."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Coprinopsis atramentaria, danger: toxic}]
+  sources: ["Wikipedia: Coprinus comatus"]
+
+- scientific_name: Macrolepiota procera
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Parasol mushroom. Large caps."
+      edible_parts: [caps]
+      preparation_required: "Cook before eating. Only very large specimens with a movable double ring and snakeskin stem."
+    feeling: {taste_texture: "Nutty and tender."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Chlorophyllum molybdites, danger: toxic}, {name: Lepiota brunneoincarnata, danger: deadly}, {name: Amanita pantherina, danger: toxic}]
+  sources: ["Wikipedia: Macrolepiota procera"]
+
+- scientific_name: Agaricus campestris
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Field mushroom. Pink gills turning chocolate brown; never white gills."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook before eating. Reject any with white gills, a cup at the base, or yellow staining."
+    feeling: {taste_texture: "Classic mushroom flavour."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Amanita phalloides, danger: deadly}, {name: Amanita virosa, danger: deadly}, {name: Agaricus xanthodermus, danger: toxic}]
+  sources: ["Wikipedia: Agaricus campestris"]
+
+- scientific_name: Morchella esculenta
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw mushroom], cooking_makes_safe: true, symptoms: "Raw or undercooked morels cause vomiting and stomach upset."}
+    benefits:
+      nutrition: "Morel. Highly prized spring mushroom."
+      edible_parts: [whole mushroom]
+      preparation_required: "Always cook thoroughly. Cut in half: a true morel is completely hollow inside."
+    feeling: {taste_texture: "Earthy, nutty, meaty."}
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Gyromitra esculenta, danger: deadly}]
+  sources: ["Wikipedia: Morchella esculenta"]
+
+- scientific_name: Armillaria mellea
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw mushroom], cooking_makes_safe: true, symptoms: "Raw or undercooked honey fungus causes stomach upset; some people react even when cooked."}
+    benefits:
+      nutrition: "Honey fungus. Grows in clusters on wood."
+      edible_parts: [caps]
+      preparation_required: "Cook thoroughly; try a small portion first."
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Galerina marginata, danger: deadly}, {name: Hypholoma fasciculare, danger: toxic}]
+  sources: ["Wikipedia: Armillaria mellea"]
+
+- scientific_name: Hydnum repandum
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Hedgehog mushroom. Spines instead of gills make it easy to recognise."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook before eating."
+    feeling: {taste_texture: "Sweet, nutty, firm."}
+  survival: {priority: neutral, uses: [food]}
+  sources: ["Wikipedia: Hydnum repandum"]
+
+- scientific_name: Lycoperdon perlatum
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Common puffball. Edible only when young and pure white inside."
+      edible_parts: [young fruit body]
+      preparation_required: "Slice top to bottom: it must be solid pure white with no outline of a mushroom inside (that would be a young deadly Amanita)."
+  survival: {priority: neutral, uses: [food, fire]}
+  lookalikes: [{name: Scleroderma citrinum, danger: toxic}, {name: Amanita phalloides, danger: deadly}]
+  sources: ["Wikipedia: Lycoperdon perlatum"]
+
+- scientific_name: Calocybe gambosa
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "St George's mushroom. Spring mushroom with a mealy smell."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook before eating."
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Inocybe erubescens, danger: deadly}, {name: Entoloma sinuatum, danger: toxic}]
+  sources: ["Wikipedia: Calocybe gambosa"]
+
+- scientific_name: Marasmius oreades
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Fairy ring mushroom."
+      edible_parts: [caps]
+      preparation_required: "Cook before eating. Check every single mushroom; toxic funnels grow in the same rings."
+  survival: {priority: neutral, uses: [food]}
+  lookalikes: [{name: Clitocybe rivulosa, danger: toxic}]
+  sources: ["Wikipedia: Marasmius oreades"]
+
+- scientific_name: Amanita rubescens
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw mushroom], cooking_makes_safe: true, symptoms: "Toxic when raw; destroyed by thorough cooking."}
+    benefits:
+      nutrition: "The blusher. Flesh slowly turns pink where damaged."
+      edible_parts: [whole mushroom]
+      preparation_required: "Cook thoroughly. Not recommended for beginners: very similar to the panther cap."
+  survival: {priority: avoid}
+  lookalikes: [{name: Amanita pantherina, danger: toxic}]
+  sources: ["Wikipedia: Amanita rubescens"]

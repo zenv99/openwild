@@ -1,0 +1,508 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED. Temperate Europe, Asia and North America.
+
+# ---------- dangerous ----------
+- scientific_name: Convallaria majalis
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially berries and leaves], cooking_makes_safe: false,
+      symptoms: "Nausea, vomiting, abdominal pain, blurred vision, slow or irregular heartbeat.",
+      onset: "Usually within a few hours.",
+      severity: "Lily of the valley. Contains heart toxins; leaves are mistaken for wild garlic.",
+      what_to_do: "Seek emergency medical care. Heart monitoring may be needed."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Allium ursinum, danger: edible}]
+  sources: ["Wikipedia: Convallaria majalis"]
+
+- scientific_name: Colchicum autumnale
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially bulbs and seeds], cooking_makes_safe: false,
+      symptoms: "Burning mouth, severe vomiting and diarrhoea, then multi-organ failure.",
+      onset: "Usually 2–12 hours; organ failure can follow over the next days.",
+      severity: "Autumn crocus. Contains colchicine. Leaves are mistaken for wild garlic. Frequently fatal.",
+      what_to_do: "Seek emergency medical care immediately."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Allium ursinum, danger: edible}]
+  sources: ["Wikipedia: Colchicum autumnale"]
+
+- scientific_name: Digitalis purpurea
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [all parts], cooking_makes_safe: false,
+      symptoms: "Nausea, vomiting, yellow-green vision, slow or irregular heartbeat.",
+      onset: "Usually within a few hours.",
+      severity: "Foxglove. Young leaves resemble comfrey and borage.",
+      what_to_do: "Seek emergency medical care. Heart monitoring is needed."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Symphytum officinale, danger: toxic}, {name: Borago officinalis, danger: edible}]
+  sources: ["Wikipedia: Digitalis purpurea"]
+
+- scientific_name: Oenanthe crocata
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially roots], cooking_makes_safe: false,
+      symptoms: "Nausea, salivation, then seizures and breathing failure.",
+      onset: "Fast: often within an hour or two.",
+      severity: "Hemlock water dropwort. Roots resemble parsnips. One of the most toxic plants in Europe.",
+      what_to_do: "Seek emergency medical care immediately."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Pastinaca sativa, danger: edible}, {name: Apium graveolens, danger: edible}]
+  sources: ["Wikipedia: Oenanthe crocata"]
+
+- scientific_name: Veratrum album
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially roots], cooking_makes_safe: false,
+      symptoms: "Burning mouth, nausea, vomiting, slow heartbeat, low blood pressure, collapse.",
+      onset: "Usually within 30 minutes to a few hours.",
+      severity: "White hellebore. Mistaken for yellow gentian and wild garlic. Potentially fatal.",
+      what_to_do: "Seek emergency medical care immediately."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Gentiana lutea, danger: harmless}, {name: Allium ursinum, danger: edible}]
+  sources: ["Wikipedia: Veratrum album"]
+
+- scientific_name: Hyoscyamus niger
+  edibility: deadly
+  toxicity: deadly
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially seeds and roots], cooking_makes_safe: false,
+      symptoms: "Dry mouth, dilated pupils, fast heartbeat, flushing, confusion, delirium, seizures.",
+      onset: "Usually within 30 minutes to a few hours.",
+      severity: "Henbane. Potentially fatal; potency is unpredictable.",
+      what_to_do: "Seek emergency medical care immediately."}
+    feeling:
+      effects: "Delirium and hallucinations that feel real, with confusion and agitation."
+      risks: "Dangerous and frequently frightening; injuries and deaths occur."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Hyoscyamus niger"]
+
+- scientific_name: Heracleum mantegazzianum
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [sap, all parts], cooking_makes_safe: false,
+      symptoms: "Sap on skin plus sunlight causes severe burns and blisters that can scar for years; sap in eyes can cause blindness.",
+      onset: "Burns appear within 1–2 days of sun exposure.",
+      severity: "Giant hogweed. Do not touch; do not cut without full protection.",
+      what_to_do: "Wash skin with soap and water immediately, keep it out of the sun for 48 hours, seek medical care for blisters or eye contact."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Heracleum sphondylium, danger: toxic}, {name: Angelica sylvestris, danger: harmless}]
+  sources: ["Wikipedia: Heracleum mantegazzianum"]
+
+- scientific_name: Solanum dulcamara
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [berries, leaves, stems], cooking_makes_safe: false,
+      symptoms: "Nausea, vomiting, diarrhoea, headache, dizziness, dilated pupils.",
+      onset: "Usually within a few hours.",
+      severity: "Bittersweet nightshade. Bright red berries attract children.",
+      what_to_do: "Seek medical care, especially for children."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Solanum dulcamara"]
+
+- scientific_name: Arum maculatum
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [all parts, especially berries], cooking_makes_safe: false,
+      symptoms: "Intense burning and swelling of lips, mouth and throat; vomiting.",
+      onset: "Immediately on chewing.",
+      severity: "Lords-and-ladies. Swelling can make breathing difficult.",
+      what_to_do: "Rinse the mouth. Seek urgent care if breathing or swallowing is difficult."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Allium ursinum, danger: edible}]
+  sources: ["Wikipedia: Arum maculatum"]
+
+- scientific_name: Ranunculus acris
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [all parts when fresh], symptoms: "Burning and blistering of mouth, vomiting, diarrhoea; sap can blister skin."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Ranunculus acris"]
+
+- scientific_name: Phytolacca americana
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [roots, berries, mature leaves and stems], cooking_makes_safe: false,
+      symptoms: "Burning mouth, severe vomiting and diarrhoea, cramps; rarely seizures.",
+      onset: "Usually within a few hours.",
+      severity: "Pokeweed. Roots are the most toxic and are mistaken for parsnip or horseradish.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Phytolacca americana"]
+
+- scientific_name: Ilex aquifolium
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [berries, leaves], symptoms: "Vomiting, diarrhoea and drowsiness, especially in children."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Ilex aquifolium"]
+
+- scientific_name: Daphne mezereum
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [berries, bark, all parts], cooking_makes_safe: false,
+      symptoms: "Burning mouth and throat, swelling, vomiting, bloody diarrhoea, collapse.",
+      onset: "Usually within a few hours.",
+      severity: "Mezereon. Bright red berries are very toxic; sap blisters skin.",
+      what_to_do: "Seek emergency medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Daphne mezereum"]
+
+- scientific_name: Laburnum anagyroides
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [seeds, pods, all parts], cooking_makes_safe: false,
+      symptoms: "Vomiting, sweating, headache, drowsiness; in severe cases convulsions.",
+      onset: "Usually within an hour.",
+      severity: "Golden chain tree. Pea-like pods are attractive to children.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Laburnum anagyroides"]
+
+- scientific_name: Euonymus europaeus
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [fruit, seeds, leaves], cooking_makes_safe: false,
+      symptoms: "Vomiting, diarrhoea, weakness, chills; in severe cases liver and kidney damage.",
+      onset: "Often delayed 10–12 hours.",
+      severity: "Spindle tree. Bright pink-orange fruit.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Euonymus europaeus"]
+
+- scientific_name: Aesculus hippocastanum
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [conkers (seeds), leaves, bark], cooking_makes_safe: false,
+      symptoms: "Vomiting, diarrhoea, abdominal pain; in severe cases muscle twitching and paralysis.",
+      onset: "Usually within a few hours.",
+      severity: "Horse chestnut. Conkers are mistaken for edible sweet chestnuts.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Castanea sativa, danger: edible}]
+  sources: ["Wikipedia: Aesculus hippocastanum"]
+
+- scientific_name: Toxicodendron radicans
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [all parts, smoke from burning], cooking_makes_safe: false,
+      symptoms: "Itchy, blistering rash where skin touched the plant; smoke can inflame the lungs.",
+      onset: "Rash usually appears 12–72 hours after contact.",
+      severity: "Poison ivy. Never burn it.",
+      what_to_do: "Wash skin and clothing with soap and water as soon as possible. Seek urgent care for breathing problems or a rash on the face or genitals."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Toxicodendron radicans"]
+
+- scientific_name: Kalmia latifolia
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [leaves, flowers, honey from its nectar], cooking_makes_safe: false,
+      symptoms: "Salivation, vomiting, dizziness, low blood pressure, slow heartbeat.",
+      onset: "Usually within a few hours.",
+      severity: "Mountain laurel.",
+      what_to_do: "Seek medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Kalmia latifolia"]
+
+- scientific_name: Toxicoscordion venenosum
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [bulbs, all parts], cooking_makes_safe: false,
+      symptoms: "Salivation, vomiting, weakness, slow heartbeat, low blood pressure, collapse.",
+      onset: "Usually within a few hours.",
+      severity: "Death camas. Bulbs are mistaken for edible camas and wild onion.",
+      what_to_do: "Seek emergency medical care."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Camassia quamash, danger: edible}, {name: Allium cernuum, danger: edible}]
+  sources: ["Wikipedia: Toxicoscordion venenosum"]
+
+# ---------- edible ----------
+- scientific_name: Allium ursinum
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Wild garlic. Leaves, flowers and bulbs are edible raw or cooked."
+      edible_parts: [leaves, flowers, bulbs]
+      preparation_required: "Crush a leaf: it must smell strongly of garlic. No garlic smell means do not eat."
+    feeling: {taste_texture: "Strong garlic flavour."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes:
+    - {name: Convallaria majalis, danger: deadly}
+    - {name: Colchicum autumnale, danger: deadly}
+    - {name: Arum maculatum, danger: toxic}
+    - {name: Veratrum album, danger: deadly}
+  sources: ["Wikipedia: Allium ursinum"]
+
+- scientific_name: Camassia quamash
+  edibility: edible_with_preparation
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Bulbs are a traditional starchy staple of Indigenous peoples of western North America."
+      edible_parts: [bulbs]
+      preparation_required: "Bulbs are slow-cooked or pit-roasted. Only harvest while flowering (blue flowers) to avoid deadly death camas."
+  survival: {priority: use_with_caution, uses: [food]}
+  lookalikes: [{name: Toxicoscordion venenosum, danger: deadly}]
+  sources: ["Wikipedia: Camassia quamash"]
+
+- scientific_name: Trifolium repens
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "White clover. Flowers and young leaves are edible; better cooked."
+      edible_parts: [flowers, young leaves]
+    feeling: {taste_texture: "Mild, slightly sweet flowers; leaves are grassy."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Trifolium repens"]
+
+- scientific_name: Rumex acetosa
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [leaves in large amounts], symptoms: "Contains oxalic acid; large amounts can upset the stomach and are best avoided by people with kidney stones."}
+    benefits:
+      nutrition: "Sorrel leaves are rich in vitamin C."
+      edible_parts: [leaves]
+    feeling: {taste_texture: "Sharp, lemony sourness."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Rumex acetosa"]
+
+- scientific_name: Chenopodium album
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw leaves in large amounts], symptoms: "Contains oxalates and saponins; best cooked."}
+    benefits:
+      nutrition: "Lamb's quarters. Leaves are nutritious greens; seeds are edible."
+      edible_parts: [young leaves, seeds]
+      preparation_required: "Cook leaves; rinse seeds well."
+    feeling: {taste_texture: "Like mild spinach."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Chenopodium album"]
+
+- scientific_name: Stellaria media
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Chickweed. Tender leaves and stems eaten raw or cooked."
+      edible_parts: [leaves, stems, flowers]
+    feeling: {taste_texture: "Fresh and mild, like corn silk or lettuce."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Stellaria media"]
+
+- scientific_name: Portulaca oleracea
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [leaves in large amounts], symptoms: "Contains oxalates; eat in moderation."}
+    benefits:
+      nutrition: "Purslane. Rich in omega-3 fatty acids and vitamins; found worldwide."
+      edible_parts: [leaves, stems, seeds]
+    feeling: {taste_texture: "Juicy, crunchy, slightly sour and salty."}
+  survival: {priority: high_value, uses: [food, water]}
+  lookalikes: [{name: Euphorbia maculata, danger: toxic}]
+  sources: ["Wikipedia: Portulaca oleracea"]
+
+- scientific_name: Rubus fruticosus
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Blackberries are high in sugar, fibre and vitamin C; young leaves are also used."
+      edible_parts: [berries, young shoots]
+    feeling: {taste_texture: "Sweet to tart, juicy."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Rubus fruticosus"]
+
+- scientific_name: Sambucus nigra
+  edibility: edible_with_preparation
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [raw berries, seeds, leaves, stems, bark], cooking_makes_safe: true,
+      symptoms: "Nausea, vomiting, diarrhoea, dizziness.",
+      onset: "Usually within a few hours.",
+      severity: "Elder. Only ripe, cooked berries and the flowers are safe.",
+      what_to_do: "Seek medical care for severe or persistent vomiting."}
+    benefits:
+      nutrition: "Cooked ripe berries are rich in vitamin C; flowers are edible."
+      edible_parts: [ripe berries when cooked, flowers]
+      preparation_required: "Use only fully ripe dark berries, remove all stems, and cook thoroughly."
+  survival: {priority: use_with_caution, uses: [food]}
+  lookalikes: [{name: Sambucus racemosa, danger: toxic}, {name: Conium maculatum, danger: deadly}]
+  sources: ["Wikipedia: Sambucus nigra"]
+
+- scientific_name: Rosa canina
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Rose hips are extremely rich in vitamin C."
+      edible_parts: [hips (fruit flesh), petals]
+      preparation_required: "Remove the hairy seeds inside the hips; they irritate the mouth and gut."
+    feeling: {taste_texture: "Tangy and fruity."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Rosa canina"]
+
+- scientific_name: Pinus sylvestris
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Pine needles provide vitamin C; inner bark is an emergency food; seeds are edible."
+      edible_parts: [needles, inner bark, seeds, young male cones]
+      traditional_uses: [{text: "Resin is an excellent fire starter; branches for shelter.", source: "Wikipedia: Pinus sylvestris"}]
+  survival: {priority: high_value, uses: [food, fire, shelter]}
+  lookalikes: [{name: Taxus baccata, danger: deadly}]
+  sources: ["Wikipedia: Pinus sylvestris"]
+
+- scientific_name: Quercus robur
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [raw acorns], cooking_makes_safe: true, symptoms: "Raw acorns are bitter with tannins and can upset the stomach."}
+    benefits:
+      nutrition: "Acorns are high in carbohydrate and fat once leached."
+      edible_parts: [acorns]
+      preparation_required: "Shell, crush and soak or boil in several changes of water until no longer bitter, then roast or cook."
+  survival: {priority: high_value, uses: [food, fire]}
+  sources: ["Wikipedia: Quercus robur"]
+
+- scientific_name: Corylus avellana
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Hazelnuts are high in fat, protein and calories."
+      edible_parts: [nuts]
+    feeling: {taste_texture: "Sweet and nutty."}
+  survival: {priority: high_value, uses: [food, shelter]}
+  sources: ["Wikipedia: Corylus avellana"]
+
+- scientific_name: Castanea sativa
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Sweet chestnuts are high in starch; best roasted or boiled."
+      edible_parts: [nuts]
+      preparation_required: "Cut the shell before roasting so it doesn't burst."
+    feeling: {taste_texture: "Sweet, soft and floury when cooked."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes: [{name: Aesculus hippocastanum, danger: toxic}]
+  sources: ["Wikipedia: Castanea sativa"]
+
+- scientific_name: Nasturtium officinale
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Watercress is rich in vitamins A, C and K."
+      edible_parts: [leaves, stems]
+      preparation_required: "Cook if collected near grazing animals; wild watercress can carry liver fluke."
+    feeling: {taste_texture: "Peppery."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes: [{name: Oenanthe crocata, danger: deadly}]
+  sources: ["Wikipedia: Watercress"]
+
+- scientific_name: Vaccinium myrtillus
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Bilberries are rich in antioxidants and vitamin C."
+      edible_parts: [berries]
+    feeling: {taste_texture: "Sweet-tart, stains mouth blue."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes: [{name: Atropa belladonna, danger: deadly}]
+  sources: ["Wikipedia: Vaccinium myrtillus"]
+
+- scientific_name: Fragaria vesca
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Wild strawberries; leaves are also edible."
+      edible_parts: [fruit, leaves]
+    feeling: {taste_texture: "Small, intensely sweet and fragrant."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Fragaria vesca"]
+
+- scientific_name: Malva sylvestris
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Common mallow. Leaves, flowers and seeds are edible."
+      edible_parts: [leaves, flowers, seeds]
+    feeling: {taste_texture: "Mild, slightly mucilaginous."}
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Malva sylvestris"]
+
+- scientific_name: Betula pendula
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Spring sap is drinkable; inner bark is an emergency food."
+      edible_parts: [sap, inner bark]
+      traditional_uses: [{text: "Outer bark burns even when damp and makes excellent tinder.", source: "Wikipedia: Betula pendula"}]
+  survival: {priority: high_value, uses: [water, fire, food]}
+  sources: ["Wikipedia: Betula pendula"]
+
+- scientific_name: Arctium lappa
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Greater burdock. The long taproot is a root vegetable when cooked."
+      edible_parts: [roots, young stems]
+      preparation_required: "Peel and cook the root."
+    feeling: {taste_texture: "Earthy and slightly sweet."}
+  survival: {priority: high_value, uses: [food]}
+  lookalikes: [{name: Rheum rhabarbarum, danger: toxic}]
+  sources: ["Wikipedia: Arctium lappa"]
+
+- scientific_name: Opuntia ficus-indica
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Prickly pear. Fruit and young pads are edible and full of water."
+      edible_parts: [fruit, young pads]
+      preparation_required: "Remove the tiny hair-like spines (glochids) by burning or scraping before handling or eating."
+    feeling: {taste_texture: "Fruit is sweet like watermelon; pads are like green beans."}
+  survival: {priority: high_value, uses: [food, water]}
+  sources: ["Wikipedia: Opuntia ficus-indica"]
+
+- scientific_name: Typha angustifolia
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Narrowleaf cattail, used like broadleaf cattail: starchy rhizomes and edible shoots."
+      edible_parts: [rhizomes, young shoots, pollen]
+      preparation_required: "Best cooked. Only harvest from clean water."
+  survival: {priority: high_value, uses: [food, fire, shelter, cordage]}
+  lookalikes: [{name: Iris pseudacorus, danger: toxic}]
+  sources: ["Wikipedia: Typha angustifolia"]

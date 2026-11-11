@@ -79,7 +79,7 @@ def test_build_pack_schema_and_content(tmp_path):
 
 
 def test_curated_content_is_valid():
-    assert len(load_curated()) >= 20
+    assert len(load_curated()) >= 140
 
 
 @pytest.mark.parametrize("bad_text", [
@@ -114,3 +114,6 @@ def test_regions_locate():
     assert locate(regions, 115.2, -8.65).id == "ID"        # Bali
     assert locate(regions, -122.4, 37.8).id == "US-CA"     # San Francisco
     assert locate(regions, -30.0, 0.0).id == "WORLD"       # mid-Atlantic -> world pack
+    assert locate(regions, -74.0, 40.7).id == "US"         # New York
+    assert locate(regions, -157.8, 21.3).id == "US-HI"     # Honolulu
+    assert len(regions) >= 60

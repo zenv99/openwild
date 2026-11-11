@@ -1,0 +1,187 @@
+# SEED CONTENT — NOT YET EXPERT REVIEWED. Americas, Africa, Middle East and widespread species.
+
+- scientific_name: Hippomane mancinella
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [fruit, sap, leaves, bark, smoke from burning], cooking_makes_safe: false,
+      symptoms: "Fruit causes burning, blistering and swelling of mouth and throat; sap blisters skin and can blind.",
+      onset: "Immediately to within a few hours.",
+      severity: "Manchineel. Small green apple-like fruit on Caribbean and Central American beaches. Do not shelter under it in rain.",
+      what_to_do: "Rinse mouth, skin and eyes with clean water and seek emergency medical care."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Hippomane mancinella"]
+
+- scientific_name: Adenium obesum
+  edibility: deadly
+  toxicity: deadly
+  if_eaten:
+    harms: {toxic_parts: [sap, all parts], cooking_makes_safe: false,
+      symptoms: "Vomiting, slow and irregular heartbeat, collapse.",
+      onset: "Usually within a few hours.",
+      severity: "Desert rose. Sap contains heart toxins and was used as an arrow poison.",
+      what_to_do: "Seek emergency medical care. Heart monitoring is needed."}
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Adenium obesum"]
+
+- scientific_name: Euphorbia maculata
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [milky sap], symptoms: "Milky sap irritates skin, eyes and gut. Unlike purslane it bleeds white sap when broken."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Portulaca oleracea, danger: edible}]
+  sources: ["Wikipedia: Euphorbia maculata"]
+
+- scientific_name: Papaver somniferum
+  edibility: psychoactive
+  toxicity: serious
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [latex, unripe seed pods], cooking_makes_safe: false,
+      symptoms: "Drowsiness, pinpoint pupils, nausea, slow and shallow breathing, unconsciousness.",
+      onset: "Usually within an hour.",
+      severity: "Opium poppy. Opioid overdose can stop breathing and kill.",
+      what_to_do: "Seek emergency medical care immediately for slow breathing or unresponsiveness. Naloxone reverses opioid overdose."}
+    feeling:
+      effects: "Reported effects include drowsiness, euphoria and reduced pain."
+      risks: "Breathing can stop; addiction develops quickly. Illegal to cultivate for drugs in most countries."
+  survival: {priority: avoid}
+  sources: ["Wikipedia: Papaver somniferum"]
+
+- scientific_name: Cannabis sativa
+  edibility: psychoactive
+  toxicity: mild
+  psychoactive: true
+  if_eaten:
+    harms: {toxic_parts: [flowers, leaves], cooking_makes_safe: false,
+      symptoms: "Anxiety, panic, racing heart, nausea, dizziness, impaired coordination; effects after eating are delayed and long-lasting.",
+      onset: "When eaten, effects are delayed, often 30 minutes to 2 hours, which leads people to take more.",
+      severity: "Rarely dangerous physically, but impairment is dangerous outdoors and for children.",
+      what_to_do: "Stay calm in a safe place; seek medical care for chest pain, severe panic, or any child who has eaten it."}
+    feeling:
+      effects: "Reported effects include relaxation, altered perception and euphoria, sometimes anxiety."
+      risks: "Impaired judgement, coordination and navigation. Legal status varies widely by country."
+  survival: {priority: neutral, uses: [cordage]}
+  sources: ["Wikipedia: Cannabis sativa"]
+
+- scientific_name: Adansonia digitata
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Baobab. Fruit pulp is rich in vitamin C; young leaves are cooked as greens; seeds are edible roasted."
+      edible_parts: [fruit pulp, leaves, seeds]
+      traditional_uses: [{text: "Bark fibre used for rope; hollow trunks can store rainwater.", source: "Wikipedia: Adansonia digitata"}]
+    feeling: {taste_texture: "Dry, powdery, tangy pulp."}
+  survival: {priority: high_value, uses: [food, water, cordage]}
+  sources: ["Wikipedia: Adansonia digitata"]
+
+- scientific_name: Plantago lanceolata
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Ribwort plantain. Young leaves are edible cooked."
+      edible_parts: [young leaves, seeds]
+      traditional_uses: [{text: "Crushed leaves traditionally applied to stings and minor wounds.", source: "Wikipedia: Plantago lanceolata"}]
+  survival: {priority: high_value, uses: [food, medicinal]}
+  sources: ["Wikipedia: Plantago lanceolata"]
+
+- scientific_name: Achillea millefolium
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [leaves in large amounts], symptoms: "Can cause skin sensitivity in some people; avoid in pregnancy."}
+    benefits:
+      nutrition: "Yarrow. Young leaves edible in small quantities."
+      edible_parts: [young leaves, flowers]
+      traditional_uses: [{text: "Traditionally used to help stop bleeding from minor wounds.", source: "Wikipedia: Achillea millefolium"}]
+  survival: {priority: high_value, uses: [medicinal, food]}
+  lookalikes: [{name: Conium maculatum, danger: deadly}, {name: Cicuta maculata, danger: deadly}]
+  sources: ["Wikipedia: Achillea millefolium"]
+
+- scientific_name: Juglans nigra
+  edibility: edible
+  toxicity: none
+  if_eaten:
+    benefits:
+      nutrition: "Black walnut kernels are very high in fat and protein."
+      edible_parts: [nuts]
+      preparation_required: "Remove the staining husk; crack the very hard shell."
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Juglans nigra"]
+
+- scientific_name: Daucus carota
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [leaves on skin in sunlight], symptoms: "Handling leaves can cause skin irritation in sunlight in sensitive people."}
+    benefits:
+      nutrition: "Wild carrot. Young roots are edible; flowers are edible."
+      edible_parts: [young roots, flowers, seeds]
+      preparation_required: "Only harvest if certain: hairy stems, carrot smell, and often a single dark flower in the centre. Never eat if stems are smooth with purple blotches."
+  survival: {priority: use_with_caution, uses: [food]}
+  lookalikes: [{name: Conium maculatum, danger: deadly}, {name: Cicuta maculata, danger: deadly}, {name: Oenanthe crocata, danger: deadly}]
+  sources: ["Wikipedia: Daucus carota"]
+
+- scientific_name: Urtica urens
+  edibility: edible_with_preparation
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [stinging hairs on raw plant], cooking_makes_safe: true, symptoms: "Raw plant stings skin and mouth."}
+    benefits:
+      nutrition: "Small nettle; used like stinging nettle."
+      edible_parts: [young leaves]
+      preparation_required: "Cook or dry to destroy the stinging hairs."
+  survival: {priority: high_value, uses: [food]}
+  sources: ["Wikipedia: Urtica urens"]
+
+- scientific_name: Oxalis acetosella
+  edibility: edible
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [leaves in large amounts], symptoms: "Contains oxalic acid; eat only small amounts."}
+    benefits:
+      nutrition: "Wood sorrel. Leaves and flowers make a sour nibble."
+      edible_parts: [leaves, flowers]
+    feeling: {taste_texture: "Lemony sour."}
+  survival: {priority: neutral, uses: [food]}
+  sources: ["Wikipedia: Oxalis acetosella"]
+
+- scientific_name: Equisetum arvense
+  edibility: toxic
+  toxicity: mild
+  if_eaten:
+    harms: {toxic_parts: [whole plant when raw], symptoms: "Contains thiaminase; repeated eating can deplete vitamin B1. Not a survival food."}
+  survival: {priority: neutral, uses: [fire]}
+  sources: ["Wikipedia: Equisetum arvense"]
+
+- scientific_name: Iris pseudacorus
+  edibility: toxic
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [rhizomes, leaves, all parts], cooking_makes_safe: false,
+      symptoms: "Burning mouth, vomiting, severe diarrhoea.",
+      onset: "Usually within a few hours.",
+      severity: "Yellow flag iris. Young shoots resemble edible cattail; iris leaves are flat in a fan with no fluffy seed head.",
+      what_to_do: "Seek medical care for severe vomiting or diarrhoea."}
+  survival: {priority: avoid}
+  lookalikes: [{name: Typha latifolia, danger: edible}]
+  sources: ["Wikipedia: Iris pseudacorus"]
+
+- scientific_name: Rheum rhabarbarum
+  edibility: edible_with_preparation
+  toxicity: serious
+  if_eaten:
+    harms: {toxic_parts: [leaves], cooking_makes_safe: false,
+      symptoms: "Leaves contain oxalic acid: burning mouth, vomiting, and in severe cases kidney damage.",
+      onset: "Usually within a few hours.",
+      severity: "Rhubarb. Stalks are edible; leaves are not.",
+      what_to_do: "Seek medical care if leaves were eaten."}
+    benefits:
+      nutrition: "Cooked stalks are a common food."
+      edible_parts: [stalks]
+      preparation_required: "Eat the stalks only, usually cooked. Discard all leaf."
+  survival: {priority: use_with_caution, uses: [food]}
+  sources: ["Wikipedia: Rhubarb"]
