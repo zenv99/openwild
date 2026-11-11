@@ -189,5 +189,10 @@
     <string name="photo_close">Close photo</string>
     <string name="photo_of">Photo of %1$s</string>
     <string name="photo_counter">%1$d / %2$d</string>
+    <string name="view_list">Show as list</string>
+    <string name="view_grid">Show as photo grid</string>
+    <string name="home_food_row">Food you can find here</string>
+    <string name="home_deadly_row">Deadly here — learn these</string>
+    <string name="see_all">See all</string>
 </resources>
 

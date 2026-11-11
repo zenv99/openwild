@@ -6,7 +6,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +67,13 @@ private object ThumbCache {
     val cache = LruCache<String, ImageBitmap>(400)
 }
 
+/** Cover photos for grid tiles, bounded by memory (≈40 MB). */
+private object CoverCache {
+    val cache = object : LruCache<String, ImageBitmap>(40 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: ImageBitmap) = value.width * value.height * 4
+    }
+}
+
 private fun decode(bytes: ByteArray?): ImageBitmap? =
     bytes?.let { runCatching { BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap() }.getOrNull() }
 
@@ -83,6 +99,60 @@ fun SpeciesThumb(pack: RegionPack, i: Int, tint: Color, size: Dp = 52.dp) {
     }
 }
 
+/**
+ * Photo card for grids and carousels: the cover photo fills the card, the name sits on a dark fade,
+ * and a danger badge sits on top. Falls back to a leaf icon on a tinted card.
+ */
+@Composable
+fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val key = "${pack.regionId}:${pack.version}:$i"
+    val bmp by produceState(CoverCache.cache.get(key), key) {
+        if (value == null && pack.hasPhotos) {
+            value = withContext(Dispatchers.IO) { decode(pack.coverImage(i)) }?.also { CoverCache.cache.put(key, it) }
+        }
+    }
+    val flags = pack.safety[i]
+    val tint = if (flags?.isDeadly == true) org.openwild.app.ui.theme.Danger else org.openwild.app.ui.theme.Leaf
+    Box(
+        modifier.aspectRatio(0.8f).clip(MaterialTheme.shapes.large).background(tint.copy(alpha = 0.18f)).clickable(onClick = onClick),
+    ) {
+        val b = bmp
+        if (b != null) {
+            Image(b, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        } else {
+            Icon(Icons.Filled.Eco, null, tint = tint, modifier = Modifier.align(Alignment.Center).size(40.dp))
+        }
+        Box(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.82f))))
+                .padding(start = 10.dp, end = 10.dp, top = 28.dp, bottom = 10.dp),
+        ) {
+            Column {
+                Text(
+                    pack.species.commonNames[i] ?: pack.species.scientificNames[i],
+                    color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    pack.species.scientificNames[i], color = Color.White.copy(alpha = 0.75f), fontStyle = FontStyle.Italic,
+                    style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        Box(Modifier.align(Alignment.TopStart).padding(8.dp)) { DangerBadge(flags) }
+    }
+}
+
+@Composable
+private fun PagerDots(count: Int, current: Int, modifier: Modifier = Modifier) {
+    if (count < 2) return
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        repeat(count) { k ->
+            Box(Modifier.size(if (k == current) 8.dp else 6.dp).clip(CircleShape)
+                .background(Color.White.copy(alpha = if (k == current) 1f else 0.5f)))
+        }
+    }
+}
+
 /** Large photo on the species page. Tap opens a full-screen, zoomable viewer with photo credits. */
 @Composable
 fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
@@ -94,7 +164,7 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
     var viewerAt by remember(i) { mutableStateOf<Int?>(null) }
     val pager = rememberPagerState { photos.size }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Box(Modifier.fillMaxWidth().height(240.dp).clip(MaterialTheme.shapes.large)) {
+        Box(Modifier.fillMaxWidth().height(300.dp).clip(MaterialTheme.shapes.large)) {
             HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
                 Image(
                     photos[page].second,
@@ -103,9 +173,9 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
                     modifier = Modifier.fillMaxSize().clickable { viewerAt = page },
                 )
             }
+            PagerDots(photos.size, pager.currentPage, Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp))
             Text(
-                if (photos.size > 1) stringResource(R.string.photo_counter, pager.currentPage + 1, photos.size)
-                else stringResource(R.string.photo_tap_hint),
+                stringResource(R.string.photo_tap_hint),
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp)
@@ -166,9 +236,18 @@ private fun ZoomableImage(bmp: ImageBitmap, name: String) {
                 })
             }
             .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(1f, 5f)
-                    offset = if (scale == 1f) Offset.Zero else offset + pan
+                // Pinch always zooms; one-finger drags only pan when zoomed in, so swiping to the next photo still works.
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    do {
+                        val event = awaitPointerEvent()
+                        val fingers = event.changes.count { it.pressed }
+                        if (fingers >= 2 || scale > 1f) {
+                            scale = (scale * event.calculateZoom()).coerceIn(1f, 5f)
+                            offset = if (scale == 1f) Offset.Zero else offset + event.calculatePan()
+                            event.changes.forEach { if (it.positionChanged()) it.consume() }
+                        }
+                    } while (event.changes.any { it.pressed })
                 }
             }
             .graphicsLayer(scaleX = scale, scaleY = scale, translationX = offset.x, translationY = offset.y),

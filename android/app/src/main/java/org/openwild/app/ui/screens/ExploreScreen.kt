@@ -13,7 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material3.IconButton
+import org.openwild.app.ui.SpeciesTile
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -72,8 +79,19 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
         ExploreFilter.PSYCHOACTIVE to R.string.badge_psychoactive,
     )
 
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        item {
+    var grid by remember { mutableStateOf(true) }
+    val showGrid = grid && pack.hasPhotos
+    // Photo-first: species with a picture come first, each group still ordered by how common it is.
+    val shown = remember(results, showGrid) { if (showGrid) results.sortedByDescending { it in pack.withPhoto } else results }
+    val full = GridItemSpan(Int.MAX_VALUE)
+
+    LazyVerticalGrid(
+        columns = if (showGrid) GridCells.Adaptive(150.dp) else GridCells.Fixed(1),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        item(span = { full }) {
             OutlinedTextField(
                 value = state.exploreQuery,
                 onValueChange = vm::setExploreQuery,
@@ -84,40 +102,57 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             )
         }
-        item {
+        item(span = { full }) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(filters) { (f, label) ->
                     FilterChip(selected = state.exploreFilter == f, onClick = { vm.setExploreFilter(f) }, label = { Text(stringResource(label)) })
                 }
             }
         }
-        item {
-            Text(
-                stringResource(R.string.results_count, results.size, pack.regionName),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        items(results, key = { it }) { i ->
-            val flags = pack.safety[i]
-            Row(
-                Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .clickable { vm.go(Screen.Species(i, Tier.LOW)) }
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                val tint = if (flags?.isDeadly == true) Danger else Leaf
-                SpeciesThumb(pack, i, tint)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(pack.species.commonNames[i] ?: pack.species.scientificNames[i], style = MaterialTheme.typography.titleSmall)
-                    Text(pack.species.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+        item(span = { full }) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.results_count, results.size, pack.regionName),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                if (pack.hasPhotos) {
+                    IconButton(onClick = { grid = !grid }) {
+                        Icon(
+                            if (showGrid) Icons.Filled.ViewList else Icons.Filled.GridView,
+                            contentDescription = stringResource(if (showGrid) R.string.view_list else R.string.view_grid),
+                        )
+                    }
                 }
-                DangerBadge(flags)
             }
         }
-        item { Spacer(Modifier.size(24.dp)) }
+        if (showGrid) {
+            gridItems(shown, key = { it }) { i ->
+                SpeciesTile(pack, i) { vm.go(Screen.Species(i, Tier.LOW)) }
+            }
+        } else {
+            gridItems(shown, key = { it }) { i ->
+                val flags = pack.safety[i]
+                Row(
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .clickable { vm.go(Screen.Species(i, Tier.LOW)) }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val tint = if (flags?.isDeadly == true) Danger else Leaf
+                    SpeciesThumb(pack, i, tint)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(pack.species.commonNames[i] ?: pack.species.scientificNames[i], style = MaterialTheme.typography.titleSmall)
+                        Text(pack.species.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    DangerBadge(flags)
+                }
+            }
+        }
+        item(span = { full }) { Spacer(Modifier.size(24.dp)) }
     }
 }

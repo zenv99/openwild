@@ -1,5 +1,11 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.core.Tier
+import org.openwild.app.ui.SpeciesTile
+import androidx.compose.runtime.remember
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -126,6 +132,22 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 ) { vm.go(Screen.Survival) }
             }
 
+            // ---------- Photo rows: food and deadly species of this region ----------
+            val pack = vm.pack
+            if (pack != null && state.activeRegionName != null) {
+                val guide = remember(pack.regionId, pack.version) {
+                    val (food, deadly) = pack.survivalGuide()
+                    val photoFirst = compareByDescending<Int> { it in pack.withPhoto }
+                    food.sortedWith(photoFirst).take(15) to deadly.sortedWith(photoFirst).take(15)
+                }
+                PhotoRow(stringResource(R.string.home_food_row), guide.first, pack, vm) {
+                    vm.setExploreFilter(RegionPack.ExploreFilter.SURVIVAL); vm.tab(Screen.Explore)
+                }
+                PhotoRow(stringResource(R.string.home_deadly_row), guide.second, pack, vm) {
+                    vm.setExploreFilter(RegionPack.ExploreFilter.DEADLY); vm.tab(Screen.Explore)
+                }
+            }
+
             // ---------- Survival mode ----------
             Card(
                 Modifier.fillMaxWidth(),
@@ -181,6 +203,23 @@ private fun Tile(
             ) { Icon(icon, contentDescription = null, tint = tint) }
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun PhotoRow(title: String, items: List<Int>, pack: RegionPack, vm: AppViewModel, onSeeAll: () -> Unit) {
+    if (items.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = onSeeAll) { Text(stringResource(R.string.see_all)) }
+        }
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            items(items, key = { it }) { i ->
+                // Browsing, not a photo ID: open at LOW tier so eating details stay hidden.
+                SpeciesTile(pack, i, Modifier.width(140.dp)) { vm.go(Screen.Species(i, Tier.LOW)) }
+            }
         }
     }
 }

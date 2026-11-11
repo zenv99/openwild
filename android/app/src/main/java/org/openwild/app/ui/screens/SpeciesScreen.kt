@@ -1,5 +1,9 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import org.openwild.app.ui.SpeciesThumb
 import org.openwild.app.ui.SpeciesPhotoHeader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -116,7 +120,12 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                     Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(DangerBg)
                         .let { m -> if (target != null) m.clickable { vm.go(Screen.Species(target, Tier.LOW)) } else m }
                         .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    if (target != null) {
+                        SpeciesThumb(pack, target, Danger, size = 56.dp)
+                        Spacer(Modifier.width(12.dp))
+                    }
                     Text(
                         stringResource(R.string.lookalike_line, lk.name, lk.danger.uppercase()),
                         color = Danger, fontWeight = FontWeight.Bold,

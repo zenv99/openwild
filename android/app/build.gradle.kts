@@ -22,8 +22,8 @@ android {
         applicationId = "org.openwild.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0"
         buildConfigField("String", "PACK_INDEX_URL", "\"$packIndexUrl\"")
         buildConfigField("String", "REPO_URL", "\"$repoUrl\"")
         buildConfigField("String", "LIGHTNING_ADDRESS", "\"$lightningAddress\"")

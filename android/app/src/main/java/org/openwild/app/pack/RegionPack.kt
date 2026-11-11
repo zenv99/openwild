@@ -189,6 +189,23 @@ class RegionPack(file: File) : Closeable {
         ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
     }
 
+    /** Cover photo (larger image) for grid tiles, or null. */
+    @Synchronized
+    fun coverImage(i: Int): ByteArray? {
+        if (!hasPhotos || i !in species.ids.indices) return null
+        return db.rawQuery(
+            "SELECT image FROM photo WHERE species_id = ? ORDER BY rank LIMIT 1",
+            arrayOf(species.ids[i].toString()),
+        ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
+    }
+
+    /** Indices of species that have a photo (for photo-first browsing). */
+    val withPhoto: Set<Int> by lazy {
+        if (!hasPhotos) emptySet() else db.rawQuery("SELECT DISTINCT species_id FROM photo", null).use { c ->
+            buildSet { while (c.moveToNext()) idToIndex[c.getLong(0)]?.let { add(it) } }
+        }
+    }
+
     /** A reference photo with the credit its licence requires. */
     class Photo(val bytes: ByteArray, val observer: String?, val license: String, val url: String)
 
