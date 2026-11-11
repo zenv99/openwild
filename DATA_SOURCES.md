@@ -30,6 +30,7 @@ License interpretation (for example, whether model fingerprints are derivative w
 
 | Source | Licence | What we take |
 |---|---|---|
+| Plants For A Future (pfaf.org), database of ~8,800 useful plants | Used with permission of PFAF | Edibility and medicinal ratings, edible parts, preparation notes and known hazards, shortened to one-liners and credited. Plants whose hazards say fatal or strongly poisonous are never shown as food. The database itself is not redistributed. |
 | Kew, World Checklist of Useful Plant Species (Diazgranados et al. 2020, KNB doi:10.5063/F1CV4G34) | CC BY 4.0 | Human food / medicine / poison / fuel flags for ~40,000 species (includes PROSEA, Plant Resources of South-East Asia) |
 | Wikipedia categories, English and Indonesian (edible fruits, vegetables, spices, herbs, edible and poisonous mushrooms, medicinal plants, and more) | CC BY-SA | Category membership only, mapped to species through Wikidata |
 | Wikimedia Commons curated categories (poisonous plants, poisonous/deadly/psychoactive fungi, medicinal plants) | CC BY-SA | Category membership only |

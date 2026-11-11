@@ -140,6 +140,16 @@ def cmd_pack_index(a):
           f"{e['species_count']} species, {e['photo_species']} with photos")
 
 
+def cmd_pfaf(a):
+    from .content import load_quick
+    from .pfaf import build, write
+
+    out = config.REPO_ROOT / "content" / "quick" / "auto_pfaf.csv"
+    out.unlink(missing_ok=True)  # rebuild against the other sources only
+    n = write(build(Path(a.db), load_quick()), out)
+    print(f"PFAF: {n} one-liners -> {out}")
+
+
 def cmd_summary(a):
     """Coverage summary for a region: how many species, and how many have safety info at each level."""
     import csv
@@ -481,6 +491,8 @@ def main(argv=None):
     sp.add_argument("--pack", required=True)
     sp.add_argument("--index", required=True)
     sp.add_argument("--url", required=True)
+    sp = add("pfaf", cmd_pfaf, "auto one-liners from a Plants For A Future database file (used with permission)")
+    sp.add_argument("--db", required=True, help="path to the PFAF SQLite export")
     add("kew", cmd_kew, "auto one-liners: Kew World Checklist of Useful Plant Species (CC BY 4.0)")
     add("buckets", cmd_buckets, "auto one-liners: edible/poisonous/medicinal lists from Wikipedia categories + Wikidata")
     sp = add("summary", cmd_summary, "coverage summary for a region -> data/regions/<id>/summary.json")
