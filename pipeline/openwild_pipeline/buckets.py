@@ -164,7 +164,7 @@ def _sparql_facts(chunk: list[str]) -> dict[str, dict]:
     return out
 
 
-def taxon_facts(qids: list[str], workers: int = 4, chunk_size: int = 200) -> dict[str, dict]:
+def taxon_facts(qids: list[str], workers: int = 2, chunk_size: int = 200) -> dict[str, dict]:
     """{qid: {name, rank, product_of: [qid]}} from Wikidata (P225, P105, P1582), via small SPARQL lookups."""
     qids = sorted(set(qids))
     chunks = [qids[i:i + chunk_size] for i in range(0, len(qids), chunk_size)]
@@ -222,7 +222,7 @@ def collect(buckets: list[Bucket] = BUCKETS) -> tuple[dict[str, dict], dict[str,
     genera: dict[str, dict] = defaultdict(lambda: defaultdict(set))
     per_bucket: list[tuple[Bucket, dict]] = []
     all_q: set[str] = set()
-    with cf.ThreadPoolExecutor(8) as ex:  # categories are independent: walk them in parallel
+    with cf.ThreadPoolExecutor(4) as ex:  # categories are independent: walk them in parallel (paced per host)
         for b, pages in zip(buckets, ex.map(lambda b: category_pages(b.lang, b.category, b.depth), buckets)):
             print(f"{b.lang}:{b.category}: {len(pages)} articles", flush=True)
             per_bucket.append((b, pages))

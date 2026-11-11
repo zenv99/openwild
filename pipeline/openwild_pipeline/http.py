@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -14,7 +15,26 @@ from . import config
 USER_AGENT = "OpenWild-pipeline/0.1 (free non-commercial plant & fungi ID; github.com/openwild)"
 
 
-def get_json(url: str, params: dict | None = None, cache: bool = True, retries: int = 4) -> dict:
+_host_lock = threading.Lock()
+_host_next: dict[str, float] = {}
+# Minimum seconds between requests per host (Wikimedia asks API clients to be gentle).
+MIN_INTERVAL = {"wikipedia.org": 0.15, "wikidata.org": 0.25}
+
+
+def _pace(url: str) -> None:
+    host = urllib.parse.urlparse(url).netloc
+    gap = next((v for k, v in MIN_INTERVAL.items() if host.endswith(k)), 0.0)
+    if not gap:
+        return
+    with _host_lock:
+        now = time.monotonic()
+        wait = _host_next.get(host, 0.0) - now
+        _host_next[host] = max(now, _host_next.get(host, 0.0)) + gap
+    if wait > 0:
+        time.sleep(wait)
+
+
+def get_json(url: str, params: dict | None = None, cache: bool = True, retries: int = 7) -> dict:
     if params:
         url = f"{url}?{urllib.parse.urlencode(params)}"
     key = hashlib.sha1(url.encode()).hexdigest()
@@ -22,6 +42,7 @@ def get_json(url: str, params: dict | None = None, cache: bool = True, retries: 
     if cache and path.exists():
         return json.loads(path.read_text())
     for attempt in range(retries):
+        _pace(url)
         try:
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(req, timeout=60) as resp:
@@ -30,10 +51,14 @@ def get_json(url: str, params: dict | None = None, cache: bool = True, retries: 
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(json.dumps(data))
             return data
-        except (urllib.error.URLError, TimeoutError) as e:
-            if isinstance(e, urllib.error.HTTPError) and e.code == 404:
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
                 raise
-            time.sleep(2 ** attempt)
+            retry_after = e.headers.get("Retry-After") if e.headers else None
+            delay = float(retry_after) if retry_after and retry_after.isdigit() else min(60, 2 ** (attempt + 1))
+            time.sleep(delay)
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+            time.sleep(min(60, 2 ** (attempt + 1)))
     raise RuntimeError(f"GET failed after {retries} attempts: {url}")
 
 

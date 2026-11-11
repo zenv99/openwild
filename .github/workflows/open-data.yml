@@ -46,7 +46,7 @@ jobs:
           git config user.email "openwild-data-bot@users.noreply.github.com"
           git add content/quick/auto_wikidata_fungi.csv content/quick/auto_buckets.csv content/auto_group_rules.yaml
           git commit -m "Open data: $(grep -vc '^#' content/quick/auto_buckets.csv) bucket one-liners, $(grep -c '^- taxon' content/auto_group_rules.yaml) genus warnings, $(grep -vc '^#' content/quick/auto_wikidata_fungi.csv) mushroom rows" || echo "No changes"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push origin HEAD:main
       - name: Rebuild Bali photo pack
         if: inputs.rebuild_bali == 'true'
