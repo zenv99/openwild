@@ -70,3 +70,23 @@ def test_commons_titles_are_taxa(monkeypatch):
     monkeypatch.setattr(buckets, "get_json", fake)
     assert buckets.commons_taxa("Poisonous plants") == [
         ("Datura metel", "species"), ("Dieffenbachia", "genus"), ("Ricinus communis", "species")]
+
+
+def test_kingdom_tag():
+    assert buckets.row_kingdom({"edible": {"edible fruit"}}) == "Plantae"
+    assert buckets.row_kingdom({"edible": {"edible mushroom"}}) == "Fungi"
+    assert buckets.row_kingdom({"edible": {"edible fruit"}, "toxic": {"poisonous mushroom"}}) == ""
+
+
+def test_pack_ignores_row_from_other_kingdom(tmp_path):
+    import json
+    import sqlite3
+
+    from openwild_pipeline.pack import SpeciesRecord, build_pack
+
+    quick = {"colletotrichum musae": {"scientific_name": "Colletotrichum musae", "verdict": "edible",
+                                      "benefit": "Listed as edible fruit", "harm": "", "survival": "food", "kingdom": "Plantae"}}
+    recs = [SpeciesRecord(scientific_name="Colletotrichum musae", kingdom="Fungi")]
+    out = build_pack(tmp_path / "K.owpack", "K", "K", 1, recs, {}, guide_only=True, group_rules={}, quick_rows=quick)
+    content = json.loads(sqlite3.connect(out).execute("SELECT json FROM content").fetchone()[0])
+    assert content.get("edibility") != "edible"

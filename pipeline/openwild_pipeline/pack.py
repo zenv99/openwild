@@ -225,7 +225,10 @@ def build_pack(
             continue
         done.add(key)
         entry = curated.get(key)
-        content = resolve(curated, rules, rec.scientific_name, rec.genus, rec.family, quick)
+        q = quick.get(key)
+        # A one-liner tagged for another kingdom (e.g. a fruit category that swept up a fungal disease) is ignored.
+        row_ok = not q or not q.get("kingdom") or q["kingdom"] == rec.kingdom
+        content = resolve(curated, rules, rec.scientific_name, rec.genus, rec.family, quick if row_ok else {})
         covered[content["level"] if content else "none"] += 1
         con.execute("INSERT INTO content VALUES (?, ?)", (name_to_id[key], json.dumps(content or finalize(None))))
         for lk in (entry or {}).get("lookalikes") or []:

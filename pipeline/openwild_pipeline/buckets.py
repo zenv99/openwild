@@ -328,7 +328,23 @@ def verdict_row(name: str, kinds: dict[str, set]) -> dict:
     else:
         v, harm = "inedible", ""
     return {"scientific_name": name, "verdict": v, "benefit": benefit, "harm": harm,
-            "survival": ";".join(uses), "source": "Wikipedia categories + Wikidata"}
+            "survival": ";".join(uses), "source": "Wikipedia categories + Wikidata", "kingdom": row_kingdom(kinds)}
+
+
+FUNGUS_WORDS = ("mushroom", "jamur", "fungus", "fungi")
+
+
+def row_kingdom(kinds: dict[str, set]) -> str:
+    """'Fungi' if every source list was a mushroom list, 'Plantae' if none was, '' if mixed.
+    The pack builder only applies a row to species of the same kingdom, so a fruit-disease fungus
+    swept up from a fruit category can never be labelled edible."""
+    labels = [l.lower() for ls in kinds.values() for l in ls]
+    fungal = [any(w in l for w in FUNGUS_WORDS) for l in labels]
+    if fungal and all(fungal):
+        return "Fungi"
+    if not any(fungal):
+        return "Plantae"
+    return ""
 
 
 def genus_rule(name: str, kinds: dict[str, set]) -> dict | None:
@@ -357,7 +373,7 @@ def write_outputs(species: dict, genera: dict, quick_csv: Path, rules_yaml: Path
     with open(quick_csv, "w", newline="", encoding="utf-8") as f:
         f.write("# AUTO-GENERATED from Wikipedia categories (CC BY-SA) + Wikidata (CC0) by `cli buckets`.\n")
         f.write("# Do not edit: hand-written content/quick files and Wikidata mushroom edibility override these rows.\n")
-        w = csv.DictWriter(f, fieldnames=["scientific_name", "verdict", "benefit", "harm", "survival", "source"])
+        w = csv.DictWriter(f, fieldnames=["scientific_name", "verdict", "benefit", "harm", "survival", "source", "kingdom"])
         w.writeheader()
         w.writerows(rows)
     rules = [r for r in (genus_rule(n, k) for n, k in sorted(genera.items())) if r]
