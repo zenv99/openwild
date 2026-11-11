@@ -34,6 +34,7 @@ jobs:
       - run: pip install numpy pyyaml pytest pillow
       - run: python -m openwild_pipeline.cli wikidata
       - run: python -m openwild_pipeline.cli buckets
+        timeout-minutes: 60
       - run: python -m openwild_pipeline.cli content-validate
       - run: pytest -q
       - name: Coverage for Bali

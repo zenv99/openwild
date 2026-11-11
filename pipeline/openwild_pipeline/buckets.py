@@ -222,11 +222,12 @@ def collect(buckets: list[Bucket] = BUCKETS) -> tuple[dict[str, dict], dict[str,
     genera: dict[str, dict] = defaultdict(lambda: defaultdict(set))
     per_bucket: list[tuple[Bucket, dict]] = []
     all_q: set[str] = set()
-    for b in buckets:
-        pages = category_pages(b.lang, b.category, b.depth)
-        print(f"{b.lang}:{b.category}: {len(pages)} articles", flush=True)
-        per_bucket.append((b, pages))
-        all_q |= set(pages.values())
+    with cf.ThreadPoolExecutor(8) as ex:  # categories are independent: walk them in parallel
+        for b, pages in zip(buckets, ex.map(lambda b: category_pages(b.lang, b.category, b.depth), buckets)):
+            print(f"{b.lang}:{b.category}: {len(pages)} articles", flush=True)
+            per_bucket.append((b, pages))
+            all_q |= set(pages.values())
+    print(f"{len(all_q)} distinct articles; looking up taxa on Wikidata", flush=True)
     taxa = resolve_taxa(sorted(all_q))
     for b, pages in per_bucket:
         n = 0
