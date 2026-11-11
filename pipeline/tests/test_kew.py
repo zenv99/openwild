@@ -22,3 +22,20 @@ def test_genus_species_columns():
     data = b"genus;species;Human food;Medicines;Poisons\nMusa;acuminata;1;0;0\n"
     rows = to_rows(read_table("y.csv", data))
     assert rows[0]["scientific_name"] == "Musa acuminata"
+
+
+def test_pdf_stream_parsing():
+    from openwild_pipeline.kew_useful import codes_to_rows, parse_streams
+
+    stream = [
+        "Trixis", "Trixis californica Kellogg", "256685-1 | AF ME | [4, 9]",
+        "Manihot esculenta Crantz", "123-1 | HF ME PO | [1]",
+        "Troglophyton", "(Thunb.) Hilliard & B.L.Burtt", "Troglophyton capillaceum", "909799-1 | ME | [4]",
+        "Page 6 of 689",
+    ]
+    uses = parse_streams([stream])
+    assert uses == {"Trixis californica": {"AF", "ME"}, "Manihot esculenta": {"HF", "ME", "PO"}, "Troglophyton capillaceum": {"ME"}}
+    rows = {r["scientific_name"]: r for r in codes_to_rows(uses)}
+    assert rows["Manihot esculenta"]["verdict"] == "edible_cooked" and "poison" in rows["Manihot esculenta"]["harm"]
+    assert rows["Trixis californica"]["verdict"] == "medicinal"
+    assert all(not validate_quick(r) for r in rows.values())

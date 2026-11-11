@@ -55,35 +55,6 @@ def find_data_files() -> list[dict]:
     return files
 
 
-def pdf_lines(data: bytes) -> list[list[tuple[float, str]]]:
-    """Every text line of the PDF as [(x position, word)], using PyMuPDF word boxes."""
-    import fitz  # PyMuPDF
-
-    doc = fitz.open(stream=data, filetype="pdf")
-    out = []
-    for page in doc:
-        rows: dict[tuple[int, int], list] = {}
-        for x0, y0, x1, y1, w, b, ln, wn in page.get_text("words"):
-            rows.setdefault((round(y0 / 2), 0), []).append((x0, w))
-        for key in sorted(rows):
-            out.append(sorted(rows[key]))
-    return out
-
-
-def pdf_rows(data: bytes) -> list[dict]:
-    """Fallback: the checklist PDF. Prints a sample with x positions so the layout can be checked."""
-    lines = pdf_lines(data)
-    print(f"PDF text: {len(lines)} lines")
-    for ln in lines[200:230] + lines[20000:20030]:
-        print("PDFLINE|" + " ".join(f"{int(x)}:{w}" for x, w in ln)[:300])
-    return parse_pdf_lines(lines)
-
-
-def parse_pdf_lines(lines: list[str]) -> list[dict]:
-    """Placeholder until the layout is confirmed: returns nothing."""
-    return []
-
-
 def download_object(pid: str) -> bytes:
     url = f"{KNB}/object/{urllib.parse.quote(pid, safe='')}"
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -164,6 +135,84 @@ def to_rows(table: list[dict]) -> list[dict]:
                              "survival": ";".join(uses), "source": "Kew World Checklist of Useful Plant Species (CC BY 4.0)",
                              "kingdom": "Plantae", "gbif_key": ""}
     return sorted(out.values(), key=lambda r: r["scientific_name"])
+
+
+# Use codes in the checklist PDF (Diazgranados et al. 2020).
+USE_CODES = {"AF": "animal food", "EU": "environmental", "FU": "fuels", "GS": "gene sources", "HF": "human food",
+             "IF": "invertebrate food", "MA": "materials", "ME": "medicines", "PO": "poisons", "SU": "social"}
+COLUMN_SPLIT_X = 305.0
+NAME_LINE = re.compile(r"^([A-Z][a-z-]+) ([a-z][a-z-]+)\b")
+CODES_LINE = re.compile(r"\d+-\d+\s*\|\s*((?:[A-Z]{2}\s*)+)\|")
+
+
+def pdf_streams(data: bytes) -> list[list[str]]:
+    """Each page's left column then right column, as lists of text lines (top to bottom)."""
+    import fitz  # PyMuPDF
+
+    streams = []
+    for page in fitz.open(stream=data, filetype="pdf"):
+        cols: list[dict] = [{}, {}]
+        for x0, y0, x1, y1, w, *_ in page.get_text("words"):
+            side = 0 if x0 < COLUMN_SPLIT_X else 1
+            cols[side].setdefault(round(y0 / 2), []).append((x0, w))
+        for c in cols:
+            streams.append([" ".join(w for _, w in sorted(c[k])) for k in sorted(c)])
+    return streams
+
+
+def parse_streams(streams: list[list[str]]) -> dict[str, set]:
+    """{binomial: {use codes}}: a codes line belongs to the nearest species line above it."""
+    uses: dict[str, set] = {}
+    for lines in streams:
+        current = None
+        for ln in lines:
+            m = CODES_LINE.search(ln)
+            if m and current:
+                uses.setdefault(current, set()).update(c for c in m.group(1).split() if c in USE_CODES)
+                current = None
+                continue
+            n = NAME_LINE.match(ln)
+            if n:
+                current = f"{n.group(1)} {n.group(2)}"
+    return uses
+
+
+def codes_to_rows(uses: dict[str, set]) -> list[dict]:
+    from collections import Counter
+
+    print("use code counts:", Counter(c for cs in uses.values() for c in cs).most_common())
+    out = []
+    for name, cs in sorted(uses.items()):
+        food, med, poison, fuel = "HF" in cs, "ME" in cs, "PO" in cs, "FU" in cs
+        uses_ = (["food"] if food else []) + (["medicinal"] if med else []) + (["fire"] if fuel else [])
+        if food and poison:
+            v, benefit = "edible_cooked", "Recorded as human food (Kew useful plants)"
+            harm = "Also recorded as a poison: some parts or raw material are toxic. Eat only parts known to be edible, properly prepared."
+        elif food:
+            v, benefit, harm = "edible_cooked", "Recorded as human food (Kew useful plants)", ""
+        elif poison:
+            v, benefit, harm = "toxic", "", "Recorded as a poison (Kew useful plants)."
+            uses_ = [u for u in uses_ if u == "fire"]
+        elif med:
+            v, benefit, harm = "medicinal", "Recorded as a medicinal plant (Kew useful plants)", ""
+        else:
+            continue
+        if med and food:
+            benefit += "; also medicinal"
+        if fuel and v != "toxic":
+            benefit += "; used as fuel"
+        out.append({"scientific_name": name, "verdict": v, "benefit": benefit, "harm": harm, "survival": ";".join(uses_),
+                    "source": "Kew World Checklist of Useful Plant Species (CC BY 4.0)", "kingdom": "Plantae", "gbif_key": ""})
+    return out
+
+
+def pdf_rows(data: bytes) -> list[dict]:
+    streams = pdf_streams(data)
+    uses = parse_streams(streams)
+    print(f"PDF: {sum(len(s) for s in streams)} lines, {len(uses)} species with use codes")
+    for name in ("Cocos nucifera", "Manihot esculenta", "Cerbera odollam", "Centella asiatica", "Musa acuminata"):
+        print(f"  check {name}: {sorted(uses.get(name, []))}")
+    return codes_to_rows(uses)
 
 
 def write(rows: list[dict], out_csv: Path) -> int:
