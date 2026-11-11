@@ -1,11 +1,35 @@
 # AUTO-GENERATED genus WARNINGS from Wikipedia categories + Wikidata by `cli buckets`.
 # Rules here only warn. Hand-written content/group_rules.yaml overrides any genus listed here.
+- taxon: Aconitum
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Anadenanthera
   rank: genus
   kingdom: Plantae
   toxicity: serious
   psychoactive: true
   warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Apocynaceae
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Ariocarpus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -32,7 +56,15 @@
   kingdom: Plantae
   toxicity: serious
   psychoactive: true
-  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Bryonia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -53,12 +85,36 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Caragana
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Claviceps
   rank: genus
   kingdom: Fungi
   toxicity: serious
   psychoactive: true
   warning: This genus includes a psychoactive mushroom; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Clematis
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Colchicum
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -71,12 +127,36 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Coriariaceae
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Cyclamen
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Datura
   rank: genus
   kingdom: Plantae
   toxicity: serious
   psychoactive: true
-  warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Delphinium
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -97,11 +177,19 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Dieffenbachia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Digitalis
   rank: genus
   kingdom: Plantae
   toxicity: serious
-  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  warning: This genus includes a poisonous plant, tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -114,11 +202,19 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Euonymus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Euphorbia
   rank: genus
   kingdom: Plantae
   toxicity: serious
-  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  warning: This genus includes a poisonous plant, tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -139,12 +235,28 @@
   onset: Varies by species and amount.
   what_to_do: Seek emergency medical care.
   source: Wikipedia categories + Wikidata
+- taxon: Gloriosa
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Heimia
   rank: genus
   kingdom: Plantae
   toxicity: serious
   psychoactive: true
   warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Helleborus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -174,6 +286,54 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Kalanchoe
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Laburnum
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Lathyrus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Ligustrum
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Lophophora
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Lupinus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Mandevilla
   rank: genus
   kingdom: Plantae
@@ -187,7 +347,7 @@
   rank: genus
   kingdom: Plantae
   toxicity: serious
-  warning: This genus includes a tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
+  warning: This genus includes a poisonous plant, tumbuhan beracun (poisonous plant). Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -218,6 +378,14 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Oenanthe
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Opuntia
   rank: genus
   kingdom: Plantae
@@ -245,11 +413,43 @@
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
+- taxon: Ranunculaceae
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Rhus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Robinia
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
 - taxon: Sarcosphaera
   rank: genus
   kingdom: Fungi
   toxicity: serious
   warning: This genus includes a poisonous mushroom. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Strophanthus
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
@@ -268,6 +468,22 @@
   toxicity: serious
   psychoactive: true
   warning: This genus includes a psychoactive plant; toxic lookalikes are common. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Urtica
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
+  onset: Varies by species and amount.
+  what_to_do: Seek medical care if symptoms appear.
+  source: Wikipedia categories + Wikidata
+- taxon: Veratrum
+  rank: genus
+  kingdom: Plantae
+  toxicity: serious
+  warning: This genus includes a poisonous plant. Treat every species in it as unsafe unless identified with certainty.
   onset: Varies by species and amount.
   what_to_do: Seek medical care if symptoms appear.
   source: Wikipedia categories + Wikidata
