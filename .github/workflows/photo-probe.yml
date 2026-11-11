@@ -1,0 +1,32 @@
+name: Photo download probe (diagnostics)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pillow numpy pyyaml
+      - name: Time one GBIF query and one image
+        run: |
+          python - <<'PY'
+          import time
+          from openwild_pipeline import gbif_photos as g
+          from openwild_pipeline.http import get_json
+          t=time.time(); c=g.photo_candidates(2735117, 8); print("candidates", len(c), f"{time.time()-t:.1f}s")
+          for x in c[:3]: print(x["url"], x["kind"])
+          from pathlib import Path
+          for i,x in enumerate(c[:4]):
+              t=time.time(); ok=g._download(x["url"], Path(f"/tmp/p{i}.jpg")); print("download", ok, f"{time.time()-t:.1f}s")
+          PY
+      - name: Time 60 species
+        run: time python -m openwild_pipeline.cli photos ID-BA --per-species 8 --workers 16 --max-species 60
