@@ -365,10 +365,57 @@ def cmd_free_model(_):
 
 
 def cmd_photos(a):
-    from .gbif_photos import fetch_region_photos
+    """Download reference photos for a pack build.
 
-    fetch_region_photos(data_dir(a.region) / "species.csv", config.WORK / "photos_gbif" / a.region,
-                        per_species=a.per_species, workers=a.workers, max_species=a.max_species)
+    When the region has a photo manifest (Bali's weekly backfill), download those pinned URLs and
+    refetch only covered species that have no direct image URL. Pending species are left for
+    `photo-batch`, so a pack rebuild does not crawl the whole gap. Regions without a manifest keep
+    the original full GBIF crawl.
+    """
+    from .gbif_photos import fetch_region_photos
+    from .photo_batch import fetch_recorded, manifest_path, status_path
+
+    d = data_dir(a.region)
+    out = config.WORK / "photos_gbif" / a.region
+    if manifest_path(d).exists() and status_path(d).exists():
+        fetch_recorded(d / "species.csv", out, manifest_path(d), status_path(d),
+                       per_species=a.per_species, workers=a.workers)
+        return
+    fetch_region_photos(d / "species.csv", out, per_species=a.per_species, workers=a.workers,
+                        max_species=a.max_species)
+
+
+def cmd_photo_baseline(a):
+    """Record the photos already inside a published pack so later builds do not depend on recrawling."""
+    from .photo_batch import baseline_from_pack, manifest_path, pin_covered_without_file, pin_occurrence_media, status_path
+
+    d = data_dir(a.region)
+    stats = baseline_from_pack(Path(a.pack), manifest_path(d), status_path(d))
+    print(f"{a.region}: pinned {stats['pinned_photos']} iNaturalist photos for {stats['pinned_species']} species; "
+          f"{stats['have_species']} marked have; {stats['refetch_on_publish']} covered species had no iNaturalist file URL")
+    if not a.skip_occurrence_resolve:
+        extra = pin_occurrence_media(Path(a.pack), manifest_path(d), status_path(d))
+        print(f"{a.region}: pinned {extra['occurrence_photos']} images from GBIF occurrence pages "
+              f"for {extra['occurrence_species']} of those species")
+        covered = pin_covered_without_file(d / "species.csv", manifest_path(d), status_path(d))
+        print(f"{a.region}: pinned {covered['photos']} further images for {covered['species']} "
+              f"covered species that had no file URL")
+
+
+def cmd_photo_batch(a):
+    """Add openly licensed photos for the next handful of species that still lack one."""
+    from datetime import datetime, timezone
+
+    from .content import load_curated, load_group_rules, load_quick
+    from .photo_batch import run_batch
+
+    batch_id = a.batch or datetime.now(timezone.utc).strftime("%Y%m%d")
+    summary = run_batch(
+        data_dir(a.region) / "species.csv", data_dir(a.region),
+        limit=a.limit, max_tier=a.max_tier, per_species=a.per_species, batch_id=batch_id,
+        curated=load_curated(), quick=load_quick(), rules=load_group_rules(),
+    )
+    return summary
 
 
 def cmd_photo_pack(a):
@@ -530,11 +577,22 @@ def main(argv=None):
         sp.add_argument("--wiki", action="store_true", help="add Wikipedia descriptions")
         sp.add_argument("--text-protos", action="store_true", help="add teacher text prototypes for photo-poor species")
     add("free-model", cmd_free_model, "export the free DINOv2-small fingerprint model to android assets (CPU)")
-    sp = add("photos", cmd_photos, "download licensed reference photos from GBIF for a region")
+    sp = add("photos", cmd_photos, "download reference photos for a pack build (manifest if present, else GBIF)")
     sp.add_argument("region")
     sp.add_argument("--per-species", type=int, default=8)
     sp.add_argument("--workers", type=int, default=16)
     sp.add_argument("--max-species", type=int, default=None)
+    sp = add("photo-baseline", cmd_photo_baseline, "pin photos already shipped in a pack into data/regions/<id>/")
+    sp.add_argument("region")
+    sp.add_argument("--pack", required=True, help="path to an .owpack whose photo credits should be pinned")
+    sp.add_argument("--skip-occurrence-resolve", action="store_true",
+                    help="do not look up image files for gbif.org/occurrence credits")
+    sp = add("photo-batch", cmd_photo_batch, "weekly batch: openly licensed photos for the next missing species")
+    sp.add_argument("region")
+    sp.add_argument("--limit", type=int, default=160, help="species to look up this run (default 160, about a week)")
+    sp.add_argument("--max-tier", type=int, default=None, help="only species at this priority tier or higher (0 = deadly)")
+    sp.add_argument("--per-species", type=int, default=2)
+    sp.add_argument("--batch", default=None, help="batch id recorded on new rows (default UTC date)")
     sp = add("photo-pack", cmd_photo_pack, "build a region pack with photo fingerprints (free model, CPU)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=2)
