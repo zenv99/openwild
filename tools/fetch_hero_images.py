@@ -21,7 +21,7 @@ CREDITS = ROOT / "android/app/src/main/assets/hero_credits.json"
 OK = re.compile(r"^(public domain|pd|cc0|cc by(-sa)? [\d.]+|cc-by(-sa)?-[\d.]+)", re.I)
 
 FILES = {
-    "mushroom": "File:AD2009Sep20 Amanita muscaria 02.jpg",
+    "mushroom": "File:Vliegenzwam (Amanita muscaria). Locatie De Famberhorst. 27-09-2020 (d.j.b.).jpg",
     "fruit": "File:ARS tropical fruit no labels.jpg",
 }
 
