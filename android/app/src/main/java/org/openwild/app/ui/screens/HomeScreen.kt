@@ -113,6 +113,13 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
             if (state.activeRegionName == null) {
                 WarningBox(stringResource(R.string.no_pack), danger = false)
             }
+            val bundledUpdate = state.bundled.firstOrNull { it.regionId == state.activeRegionId && it.version > state.activePackVersion }
+            if (bundledUpdate != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(stringResource(R.string.pack_update_banner), style = MaterialTheme.typography.bodyMedium)
+                    TextButton(onClick = { vm.installRegion(bundledUpdate.regionId) }) { Text(stringResource(R.string.pack_update_action)) }
+                }
+            }
             state.suggestedRegion?.let {
                 Text(stringResource(R.string.suggested_region, it), style = MaterialTheme.typography.bodySmall)
             }

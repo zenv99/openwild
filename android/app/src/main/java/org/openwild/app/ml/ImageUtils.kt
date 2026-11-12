@@ -33,6 +33,29 @@ object ImageUtils {
         return rotated
     }
 
+    /** Decode a JPEG the camera just wrote. file:// Uris fail on some devices, so this reads the path. */
+    fun loadFile(path: String, maxSide: Int = 640): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxSide) sample *= 2
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        val bmp = BitmapFactory.decodeFile(path, opts) ?: return null
+        val rotation = runCatching {
+            when (ExifInterface(path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> 0f
+            }
+        }.getOrDefault(0f)
+        if (rotation == 0f) return bmp
+        val rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, Matrix().apply { postRotate(rotation) }, true)
+        if (rotated !== bmp) bmp.recycle()
+        return rotated
+    }
+
     /** Same preprocessing as the pipeline: shorter side -> size, centre crop. */
     fun centerCropSquare(src: Bitmap, size: Int): Bitmap {
         val side = minOf(src.width, src.height)

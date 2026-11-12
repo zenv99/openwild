@@ -61,7 +61,8 @@ CREATE TABLE photo (
   image       BLOB NOT NULL,        -- up to 320 px WebP (tap to view full screen)
   observer    TEXT,
   license     TEXT NOT NULL,        -- shown under the photo, as CC licences require
-  url         TEXT NOT NULL
+  url         TEXT NOT NULL,
+  stage       TEXT NOT NULL DEFAULT 'unspecified'  -- seedling, leaves, flower, fruit, closeup, field, specimen
 );
 ```
 

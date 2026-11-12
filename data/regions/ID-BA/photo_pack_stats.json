@@ -1,0 +1,41 @@
+{
+  "region": "ID-BA",
+  "pack_bytes": 15769600,
+  "model_bytes": 22849680,
+  "model_id": "ow-dinov2s-384-v1",
+  "species": 4383,
+  "display_photos": 1107,
+  "species_with_display_photo": 671,
+  "prototypes": 1107,
+  "species_with_prototype": 671,
+  "licenses": {
+    "cc-by": 243,
+    "cc-by-sa": 643,
+    "cc0": 221
+  },
+  "stages": {
+    "closeup": 27,
+    "field": 515,
+    "flower": 171,
+    "fruit": 147,
+    "leaves": 72,
+    "seedling": 58,
+    "specimen": 117
+  },
+  "display_long_edge_px": "320, or 256 if the WebP would exceed 20KB",
+  "display_webp_quality": "65, or 60 when needed to stay near 8\u201320KB",
+  "mean_image_bytes": 10757,
+  "max_image_bytes": 23024,
+  "licenses_allowed": [
+    "cc-by",
+    "cc-by-sa",
+    "cc0"
+  ],
+  "excluded": [
+    "CC BY-NC",
+    "CC BY-ND",
+    "iNaturalist dataset and inaturalist.org files",
+    "PFAF images",
+    "tropical.theferns.info"
+  ]
+}

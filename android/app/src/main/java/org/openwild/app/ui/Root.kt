@@ -14,6 +14,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudDownload
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.openwild.app.R
 import org.openwild.app.ui.screens.AboutScreen
+import org.openwild.app.ui.screens.RegionChoiceScreen
 import org.openwild.app.ui.screens.CaptureScreen
 import org.openwild.app.ui.screens.CreditsScreen
 import org.openwild.app.ui.screens.ExploreScreen
@@ -85,12 +88,24 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
         )
     }
 
-    BackHandler(enabled = state.stack.size > 1) { vm.back() }
-
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(state.message) {
         state.message?.let { snackbar.showSnackbar(it); vm.clearMessage() }
     }
+
+    if (!state.bootstrapped) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        return
+    }
+    if (state.activeRegionName == null) {
+        Box(Modifier.fillMaxSize()) {
+            RegionChoiceScreen(state, vm)
+            SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+        }
+        return
+    }
+
+    BackHandler(enabled = state.stack.size > 1) { vm.back() }
 
     val screen = state.screen
     val isTopLevel = screen in TopLevel

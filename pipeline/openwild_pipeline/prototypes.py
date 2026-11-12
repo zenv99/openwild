@@ -58,6 +58,16 @@ def dequantize(blob: bytes, scale: float) -> np.ndarray:
     return np.frombuffer(blob, dtype=np.int8).astype(np.float32) * scale
 
 
-def build_species_prototypes(embs: np.ndarray, seed: int = 0) -> list[tuple[bytes, float]]:
-    k = n_prototypes(len(embs))
-    return [quantize(c) for c in spherical_kmeans(embs, k, seed=seed)]
+def build_species_prototypes(embs: np.ndarray, seed: int = 0, keep_each: bool = False) -> list[tuple[bytes, float]]:
+    """One prototype per reference photo when keep_each is set (life stages stay distinct).
+
+    Clustering is for large unlabeled sets. A seedling and a flower of the same species
+    should not be averaged together, or a camera photo of one stage misses the other.
+    """
+    vecs = l2n(np.asarray(embs, dtype=np.float32))
+    if keep_each:
+        if len(vecs) > config.MAX_PROTOTYPES:
+            vecs = vecs[: config.MAX_PROTOTYPES]
+        return [quantize(v) for v in vecs]
+    k = n_prototypes(len(vecs))
+    return [quantize(c) for c in spherical_kmeans(vecs, k, seed=seed)]

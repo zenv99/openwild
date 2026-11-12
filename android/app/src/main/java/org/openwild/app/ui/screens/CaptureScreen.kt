@@ -4,7 +4,6 @@ package org.openwild.app.ui.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,9 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -51,10 +47,12 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,6 +69,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnAttach
 import org.openwild.app.R
 import org.openwild.app.core.KingdomFilter
 import org.openwild.app.ui.AppViewModel
@@ -80,6 +79,7 @@ import org.openwild.app.ui.UiState
 import org.openwild.app.ui.theme.ForestDeep
 import org.openwild.app.ui.theme.Lime
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Composable
 fun CaptureScreen(state: UiState, vm: AppViewModel) {
@@ -95,13 +95,30 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
         ActivityResultContracts.PickMultipleVisualMedia(AppViewModel.MAX_PHOTOS),
     ) { uris -> uris.forEach { vm.addPhoto(it) } }
 
-    val imageCapture = remember { ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build() }
+    val imageCapture = remember {
+        ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setJpegQuality(90)
+            .build()
+    }
+    var cameraError by remember { mutableStateOf<String?>(null) }
+    var cameraReady by remember { mutableStateOf(false) }
+    var bindAttempt by remember { mutableIntStateOf(0) }
+    val providerHolder = remember { arrayOfNulls<ProcessCameraProvider>(1) }
+    val previewHolder = remember { arrayOfNulls<PreviewView>(1) }
+    val binding = remember { AtomicBoolean(false) }
     val full = state.photos.size >= AppViewModel.MAX_PHOTOS
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+    DisposableEffect(bindAttempt) {
+        onDispose {
+            cameraReady = false
+            binding.set(false)
+            runCatching { providerHolder[0]?.unbindAll() }
+            providerHolder[0] = null
+        }
+    }
+
+    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         val kinds = listOf(
             KingdomFilter.ANY to R.string.kind_any,
             KingdomFilter.PLANTS to R.string.kind_plant,
@@ -117,30 +134,59 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
             }
         }
 
-        // Viewfinder
+        // The viewfinder is NOT inside a vertical scroll. Scrolling was destroying the camera
+        // surface, and binding before the view was attached left ImageCapture unbound, so the
+        // shutter did nothing (the error callback was also empty).
         Box(
-            Modifier.fillMaxWidth().aspectRatio(3f / 4f).clip(MaterialTheme.shapes.extraLarge).background(Color.Black),
+            Modifier.weight(1f).fillMaxWidth().clip(MaterialTheme.shapes.extraLarge).background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
             if (hasCamera) {
                 AndroidView(
                     factory = { ctx ->
-                        PreviewView(ctx).also { view ->
-                            view.scaleType = PreviewView.ScaleType.FILL_CENTER
-                            val providerFuture = ProcessCameraProvider.getInstance(ctx)
-                            providerFuture.addListener({
-                                val provider = providerFuture.get()
-                                val preview = Preview.Builder().build().also { it.setSurfaceProvider(view.surfaceProvider) }
-                                provider.unbindAll()
-                                provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
-                            }, ContextCompat.getMainExecutor(ctx))
+                        PreviewView(ctx).apply {
+                            scaleType = PreviewView.ScaleType.FILL_CENTER
+                            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                         }
+                    },
+                    update = { view ->
+                        fun start() {
+                            previewHolder[0] = view
+                            if (!view.isAttachedToWindow || !binding.compareAndSet(false, true)) return
+                            val future = ProcessCameraProvider.getInstance(view.context)
+                            future.addListener({
+                                if (!view.isAttachedToWindow) {
+                                    binding.set(false)
+                                    return@addListener
+                                }
+                                try {
+                                    val provider = future.get()
+                                    val selector = when {
+                                        provider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) -> CameraSelector.DEFAULT_BACK_CAMERA
+                                        provider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) -> CameraSelector.DEFAULT_FRONT_CAMERA
+                                        else -> {
+                                            cameraError = context.getString(R.string.camera_none)
+                                            cameraReady = false
+                                            return@addListener
+                                        }
+                                    }
+                                    view.display?.rotation?.let { imageCapture.targetRotation = it }
+                                    val preview = Preview.Builder().build().also { it.surfaceProvider = view.surfaceProvider }
+                                    provider.unbindAll()
+                                    provider.bindToLifecycle(lifecycleOwner, selector, preview, imageCapture)
+                                    providerHolder[0] = provider
+                                    cameraReady = true
+                                    cameraError = null
+                                } catch (e: Exception) {
+                                    cameraReady = false
+                                    cameraError = context.getString(R.string.camera_failed, e.message ?: e.javaClass.simpleName)
+                                }
+                            }, ContextCompat.getMainExecutor(view.context))
+                        }
+                        if (view.isAttachedToWindow) start() else view.doOnAttach { start() }
                     },
                     modifier = Modifier.fillMaxSize(),
                 )
-                DisposableEffect(Unit) {
-                    onDispose { runCatching { ProcessCameraProvider.getInstance(context).get().unbindAll() } }
-                }
             } else {
                 Text(stringResource(R.string.camera_permission), color = Color.White, modifier = Modifier.padding(24.dp))
             }
@@ -163,7 +209,11 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
             )
         }
 
-        // Controls: gallery · shutter · identify
+        cameraError?.let { message ->
+            Text(message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = { cameraError = null; bindAttempt++ }) { Text(stringResource(R.string.camera_retry)) }
+        }
+
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             FilledTonalIconButton(
                 enabled = !full,
@@ -178,18 +228,32 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
                     .padding(8.dp).clip(CircleShape)
                     .background(if (shutterEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                     .clickable(enabled = shutterEnabled) {
+                        if (!cameraReady || providerHolder[0] == null) {
+                            cameraError = context.getString(R.string.camera_not_ready)
+                            return@clickable
+                        }
                         val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
-                        imageCapture.takePicture(
-                            ImageCapture.OutputFileOptions.Builder(file).build(),
-                            ContextCompat.getMainExecutor(context),
-                            object : ImageCapture.OnImageSavedCallback {
-                                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                                    vm.addPhoto(Uri.fromFile(file))
-                                }
+                        try {
+                            previewHolder[0]?.display?.rotation?.let { imageCapture.targetRotation = it }
+                            imageCapture.takePicture(
+                                ImageCapture.OutputFileOptions.Builder(file).build(),
+                                ContextCompat.getMainExecutor(context),
+                                object : ImageCapture.OnImageSavedCallback {
+                                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                        vm.addCapturedFile(file)
+                                    }
 
-                                override fun onError(exception: ImageCaptureException) {}
-                            },
-                        )
+                                    override fun onError(exception: ImageCaptureException) {
+                                        cameraError = context.getString(
+                                            R.string.camera_failed,
+                                            exception.message ?: exception.imageCaptureError.toString(),
+                                        )
+                                    }
+                                },
+                            )
+                        } catch (e: Exception) {
+                            cameraError = context.getString(R.string.camera_failed, e.message ?: e.javaClass.simpleName)
+                        }
                     },
             )
 
@@ -213,7 +277,7 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
                 itemsIndexed(state.photos) { i, photo -> Thumb(i, photo, state.filter, vm) }
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
     }
 }
 

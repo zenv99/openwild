@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.openwild.app.OpenWildApp
 import org.openwild.app.R
+import org.openwild.app.data.ReviewStore
+import java.io.File
 import org.openwild.app.core.ConfidenceResult
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
@@ -89,6 +91,12 @@ data class UiState(
     val message: String? = null,
     val exploreQuery: String = "",
     val exploreFilter: RegionPack.ExploreFilter = RegionPack.ExploreFilter.ALL,
+    /** False until installed packs have been read. The region chooser waits for this. */
+    val bootstrapped: Boolean = false,
+    val activeRegionId: String? = null,
+    val activePackVersion: Int = 0,
+    val bundled: List<PackManager.BundledPack> = emptyList(),
+    val installingRegion: String? = null,
 ) {
     val screen: Screen get() = stack.last()
 }
@@ -114,13 +122,38 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     init {
         viewModelScope.launch {
             val missing = withContext(Dispatchers.Default) { ow.embedder == null }
-            _state.update { it.copy(modelMissing = missing) }
-            withContext(Dispatchers.IO) { runCatching { ow.packs.installBundled() } }
             val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
-            _state.update { it.copy(regions = regions) }
+            val bundled = withContext(Dispatchers.IO) { ow.packs.bundledCatalog() }
+            _state.update { it.copy(modelMissing = missing, regions = regions, bundled = bundled) }
             refreshInstalled()
             loadActivePack()
+            _state.update { it.copy(bootstrapped = true) }
         }
+    }
+
+    /** Install the pack for a region the user explicitly chose. Does nothing for unfinished regions. */
+    fun installRegion(regionId: String) = viewModelScope.launch {
+        _state.update { it.copy(installingRegion = regionId) }
+        val ok = withContext(Dispatchers.IO) { runCatching { ow.packs.installBundled(regionId) }.getOrDefault(false) }
+        if (!ok) {
+            val name = _state.value.regions.firstOrNull { it.id == regionId }?.name ?: regionId
+            _state.update {
+                it.copy(installingRegion = null, message = getApplication<Application>().getString(R.string.region_not_ready, name))
+            }
+            return@launch
+        }
+        refreshInstalled()
+        ow.packs.activeRegionId = regionId
+        loadActivePack()
+        _state.update { it.copy(installingRegion = null) }
+    }
+
+    fun loadReview(regionId: String, scientificName: String): ReviewStore.Review? = ow.reviews.get(regionId, scientificName)
+
+    fun saveReview(regionId: String, scientificName: String, rating: Int, body: String) = viewModelScope.launch(Dispatchers.IO) {
+        ow.reviews.save(regionId, scientificName, rating, body)
+        val saved = getApplication<Application>().getString(R.string.review_saved)
+        _state.update { it.copy(message = saved) }
     }
 
     fun setThemeMode(m: ThemeMode) {
@@ -186,7 +219,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val id = ow.packs.activeRegionId?.takeIf { a -> installed.any { it.regionId == a } }
             ?: installed.firstOrNull()?.regionId
         val loaded = withContext(Dispatchers.IO) {
-            id?.let { runCatching { RegionPack(ow.packs.fileFor(it)) }.getOrNull() }
+            id?.let { runCatching { RegionPack(ow.packs.fileFor(it)) }.getOrNull() }?.also { runCatching { it.safety.size } }
         }
         pack?.close()
         pack = loaded
@@ -195,6 +228,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _state.update {
             it.copy(
                 activeRegionName = loaded?.regionName,
+                activeRegionId = loaded?.regionId,
+                activePackVersion = loaded?.version ?: 0,
                 activeSpeciesCount = loaded?.species?.size ?: 0,
                 photoIdReady = (loaded?.index?.size ?: 0) > 0,
             )
@@ -251,7 +286,26 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun addPhoto(uri: Uri) = viewModelScope.launch {
         if (_state.value.photos.size >= MAX_PHOTOS) return@launch
-        val bmp = withContext(Dispatchers.IO) { ImageUtils.load(getApplication<Application>(), uri) } ?: return@launch
+        val bmp = withContext(Dispatchers.IO) { ImageUtils.load(getApplication<Application>(), uri) }
+        if (bmp == null) {
+            _state.update { it.copy(message = getApplication<Application>().getString(R.string.photo_unreadable)) }
+            return@launch
+        }
+        addBitmap(bmp)
+    }
+
+    /** A JPEG the camera wrote into app cache. Read from the path; file:// Uris are not reliable. */
+    fun addCapturedFile(file: File) = viewModelScope.launch {
+        if (_state.value.photos.size >= MAX_PHOTOS) return@launch
+        val bmp = withContext(Dispatchers.IO) { ImageUtils.loadFile(file.absolutePath) }
+        if (bmp == null) {
+            _state.update { it.copy(message = getApplication<Application>().getString(R.string.photo_unreadable)) }
+            return@launch
+        }
+        addBitmap(bmp)
+    }
+
+    private fun addBitmap(bmp: android.graphics.Bitmap) {
         _state.update { s ->
             val defaultPart = defaultPartFor(s.filter, s.photos.size)
             s.copy(photos = (s.photos + Photo(bmp, defaultPart)).take(MAX_PHOTOS))
@@ -268,7 +322,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val emb = ow.embedder
         val id = identifier
         val p = pack
-        if (s.photos.isEmpty() || emb == null || id == null || p == null || p.index.size == 0) return@launch
+        val app = getApplication<Application>()
+        if (s.photos.isEmpty()) return@launch
+        if (emb == null) {
+            _state.update { it.copy(message = app.getString(R.string.identify_needs_model)) }
+            return@launch
+        }
+        if (id == null || p == null) {
+            _state.update { it.copy(message = app.getString(R.string.identify_needs_pack)) }
+            return@launch
+        }
+        if (p.index.size == 0) {
+            _state.update { it.copy(message = app.getString(R.string.identify_no_fingerprints)) }
+            return@launch
+        }
         _state.update { it.copy(busy = true) }
         val res = withContext(Dispatchers.Default) {
             val embeddings = s.photos.map { emb.embed(it.bitmap) }

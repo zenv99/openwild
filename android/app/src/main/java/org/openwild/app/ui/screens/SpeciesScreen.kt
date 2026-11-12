@@ -22,10 +22,23 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -33,7 +46,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import org.openwild.app.R
 import org.openwild.app.core.SafetyPolicy
 import org.openwild.app.core.SpeciesContent
@@ -103,7 +115,10 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                     Pill(stringResource(if (sp.isFungus[index]) R.string.kind_fungus else R.string.kind_plant), Color.White, glass)
                     if (content != null && content.hasSafetyData) {
                         Pill(stringResource(R.string.toxicity, content.toxicity), Color.White, glass)
-                        Pill(content.edibility.replace('_', ' '), Color.White, glass)
+                        // Reported food use is not a recommendation to eat, and never a mushroom verdict.
+                        if (!sp.isFungus[index] && content.edibility.startsWith("edible")) {
+                            Pill(stringResource(R.string.badge_food_reported), Color.White, glass)
+                        }
                     }
                     if (content?.psychoactive == true) Pill(stringResource(R.string.badge_psychoactive), Color.White, Psychedelic)
                     if (fromTopResult) Pill(tierLabel(tier) + " · ${res!!.result.score}%", Color.White, glass)
@@ -195,7 +210,46 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                 content?.sources?.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
             }
         }
+        ReviewCard(pack.regionId, sp.scientificNames[index], vm)
         Footer()
+    }
+}
+
+@Composable
+private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewModel) {
+    var rating by remember(regionId, scientificName) { mutableIntStateOf(0) }
+    var body by remember(regionId, scientificName) { mutableStateOf("") }
+    var ready by remember(regionId, scientificName) { mutableStateOf(false) }
+    LaunchedEffect(regionId, scientificName) {
+        val saved = withContext(Dispatchers.IO) { vm.loadReview(regionId, scientificName) }
+        if (saved != null) {
+            rating = saved.rating
+            body = saved.body
+        }
+        ready = true
+    }
+    SectionCard(stringResource(R.string.review_title), Icons.Filled.Star, MaterialTheme.colorScheme.primary) {
+        Text(stringResource(R.string.review_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            for (star in 1..5) {
+                Icon(
+                    Icons.Filled.Star,
+                    contentDescription = stringResource(R.string.review_star, star),
+                    tint = if (star <= rating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.size(32.dp).clickable { rating = star },
+                )
+            }
+        }
+        OutlinedTextField(
+            value = body,
+            onValueChange = { if (it.length <= 4000) body = it },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3,
+            label = { Text(stringResource(R.string.review_text_label)) },
+        )
+        Button(enabled = ready && rating in 1..5, onClick = { vm.saveReview(regionId, scientificName, rating, body) }) {
+            Text(stringResource(R.string.review_save))
+        }
     }
 }
 
