@@ -38,7 +38,7 @@ License interpretation (for example, whether model fingerprints are derivative w
 
 **How the lines in the app are written.** `cli evidence` combines the facts from PFAF, Kew and Wikipedia/Commons for each plant and writes one line in OpenWild's own words (content/quick/auto_combined.csv), saying how many independent sources confirm a food use. Every claim, per source, with a link, is kept in content/evidence/ledger.csv. Kew's "poisons" category means a plant is *used as* a poison (fish or insect poison), so on its own it does not mark a known food plant as dangerous.
 
-Photos come only from GBIF occurrence media under Creative Commons licences (CC0, CC BY, CC BY-SA, CC BY-NC, CC BY-NC-SA), with the photographer and licence shown under every photo. No PFAF images are used.
+Photos come from iNaturalist (Creative Commons; research-grade first), GBIF occurrence media, and Wikimedia Commons. Allowed licences are CC0, CC BY, CC BY-SA, CC BY-NC and CC BY-NC-SA. ND licences are skipped. The photographer and licence are stored with every photo and shown in the app. Field photos are preferred; a herbarium sheet is kept only when no field photo exists. No PFAF images are used, and tropical.theferns.info is not used. Bali's missing photos are filled in small weekly batches (`photo-batch`, see REGION_QUEUE.md), not by one crawl of the whole list.
 
 Rules: poison always beats food; a food claim from one source, or without documented edible parts, never outweighs a poison flag; anything any source says can kill is never shown as food; rows apply only to species of the same kingdom; genus-level hits only add warnings; hand-written files override all automatic rows. All automatic rows show "not expert reviewed" in the app.
 

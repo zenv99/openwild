@@ -17,8 +17,15 @@ USER_AGENT = "OpenWild-pipeline/0.1 (free non-commercial plant & fungi ID; githu
 
 _host_lock = threading.Lock()
 _host_next: dict[str, float] = {}
-# Minimum seconds between requests per host (Wikimedia asks API clients to be gentle).
-MIN_INTERVAL = {"wikipedia.org": 0.15, "wikidata.org": 0.25, "wikimedia.org": 0.15, "api.gbif.org": 0.08}
+# Minimum seconds between requests per host (Wikimedia asks API clients to be gentle;
+# iNaturalist asks for about one request per second).
+MIN_INTERVAL = {
+    "wikipedia.org": 0.15,
+    "wikidata.org": 0.25,
+    "wikimedia.org": 0.15,
+    "api.gbif.org": 0.08,
+    "api.inaturalist.org": 1.05,
+}
 
 
 def _pace(url: str) -> None:
