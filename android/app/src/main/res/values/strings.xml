@@ -215,7 +215,7 @@
     <string name="explore_empty">Nothing in %1$s matches that search.</string>
 
     <string name="choose_region_title">Choose your region</string>
-    <string name="choose_region_body">Pick a region to install on this phone. Identification only uses species recorded there, and it works offline after the pack is installed. Bali is the first finished pack. Other regions are listed, but their packs are not finished — nothing is downloaded or invented for them.</string>
+    <string name="choose_region_body">Pick a region to install on this phone. OpenWild is an offline field guide for plants, fungi, and edibles. Identification only uses species recorded in the region you choose, and it works offline after the pack is installed. Packs can be updated over time. A listed region without a finished pack has nothing to download — nothing is invented for it.</string>
     <string name="region_not_ready">%1$s doesn\'t have a finished pack yet.</string>
     <string name="install_pack">Install</string>
     <string name="installing_pack">Installing…</string>
