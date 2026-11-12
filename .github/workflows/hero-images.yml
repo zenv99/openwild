@@ -25,7 +25,8 @@ jobs:
         run: |
           git config user.name "openwild-data-bot"
           git config user.email "openwild-data-bot@users.noreply.github.com"
-          git add android/app/src/main/res/drawable-nodpi android/app/src/main/assets/hero_credits.json tools/hero_candidates 2>/dev/null || true
+          git add android/app/src/main/res/drawable-nodpi android/app/src/main/assets/hero_credits.json
+          [ -d tools/hero_candidates ] && git add tools/hero_candidates || true
           git commit -m "Landing-page photos from Wikimedia Commons (open licences, credited)" || echo "No changes"
           git pull --rebase --autostash origin main
           git push origin HEAD:main
