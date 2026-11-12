@@ -41,3 +41,12 @@ License interpretation (for example, whether model fingerprints are derivative w
 Photos come only from GBIF occurrence media under Creative Commons licences (CC0, CC BY, CC BY-SA, CC BY-NC, CC BY-NC-SA), with the photographer and licence shown under every photo. No PFAF images are used.
 
 Rules: poison always beats food; a food claim from one source, or without documented edible parts, never outweighs a poison flag; anything any source says can kill is never shown as food; rows apply only to species of the same kingdom; genus-level hits only add warnings; hand-written files override all automatic rows. All automatic rows show "not expert reviewed" in the app.
+
+## Landing-page photos
+
+| Photo | Author | Licence | Source |
+|---|---|---|---|
+| Fly agaric (*Amanita muscaria*) on autumn leaves | Dominicus Johannes Bergsma | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Vliegenzwam_(Amanita_muscaria)._Locatie_De_Famberhorst._27-09-2020_(d.j.b.).jpg |
+| Tropical fruit | Peggy Greb, USDA Agricultural Research Service | Public domain | https://commons.wikimedia.org/wiki/File:ARS_tropical_fruit_no_labels.jpg |
+
+Fetched and licence-checked by `.github/workflows/hero-images.yml` (refuses anything that isn't public domain, CC0, CC BY or CC BY-SA). The app shows the credit under the animation. The resized fly agaric image remains under CC BY-SA 4.0.

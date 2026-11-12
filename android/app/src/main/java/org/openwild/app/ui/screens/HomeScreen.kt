@@ -1,5 +1,7 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.foundation.layout.aspectRatio
+import org.openwild.app.ui.PhotoMorph
 import org.openwild.app.core.Tier
 import org.openwild.app.ui.SpeciesTile
 import androidx.compose.runtime.remember
@@ -49,7 +51,6 @@ import org.openwild.app.R
 import org.openwild.app.pack.RegionPack
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.Footer
-import org.openwild.app.ui.MushroomMorph
 import org.openwild.app.ui.Pill
 import org.openwild.app.ui.Screen
 import org.openwild.app.ui.UiState
@@ -81,10 +82,8 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                         fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
                     )
                 }
-                // Landing art: the fly agaric morphing into abundance (Zen V)
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    MushroomMorph(Modifier.size(260.dp))
-                }
+                // Landing art (Zen V's vision): a real fly agaric whose flecks lift off and become leaves and fruit
+                PhotoMorph(Modifier.fillMaxWidth().aspectRatio(1.25f).clip(RoundedCornerShape(24.dp)))
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(
                         Modifier.clip(CircleShape)

@@ -196,5 +196,8 @@
     <string name="see_all">See all</string>
     <string name="updates_title">Updates</string>
     <string name="updates_body">Regions update from the Packs tab. The app itself doesn\'t update on its own. For automatic updates, install the free, open-source app Obtainium and add the address below. It installs each new version (new species, photos, fixes) for you. Or download the newest OpenWild.apk from the same page whenever you like.</string>
+    <string name="hero_mushroom_cd">Fly agaric mushroom on autumn leaves</string>
+    <string name="hero_fruit_cd">Tropical fruit: papaya, mango, guava, pineapple</string>
+    <string name="hero_photo_credit">Photos: D. J. Bergsma (CC BY-SA 4.0) · P. Greb, USDA (public domain) · Wikimedia Commons</string>
 </resources>
 
