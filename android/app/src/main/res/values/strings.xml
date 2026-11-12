@@ -15,9 +15,12 @@
     <string name="survival_mode">Survival mode</string>
     <string name="survival_mode_desc">Show survival value first and highlight deadly species.</string>
     <string name="active_region">Region: %1$s (%2$d species)</string>
-    <string name="no_pack">No region pack installed. Download one while you have internet.</string>
+    <string name="no_pack">Choose a region to start. Nothing is selected until you pick one.</string>
     <string name="model_missing">Photo ID is coming soon. Meanwhile, the full offline field guide is ready: tap Explore to search every species.</string>
     <string name="suggested_region">You seem to be in %1$s.</string>
+    <string name="suggested_region_choose">You seem to be in %1$s. That is only a suggestion — tap it if it is the region you want.</string>
+    <string name="choose_region_title">Choose your region</string>
+    <string name="choose_region_body">Nothing is selected until you tap a region. A region already saved on this phone works offline. Others download when you tap them, or show as coming soon.</string>
     <string name="credits">Photo credits</string>
 
     <!-- Capture -->
@@ -117,7 +120,7 @@
     <string name="explore">Explore</string>
     <string name="works_offline">No internet access. No account. Nothing leaves your phone.</string>
     <string name="region_pill">%1$s · %2$d species</string>
-    <string name="no_region_pill">No region downloaded</string>
+    <string name="no_region_pill">Choose your region</string>
     <string name="tile_deadly">Deadly here</string>
     <string name="tile_deadly_sub">Learn what to never touch or eat</string>
     <string name="tile_survival_sub">Food, water, fire and shelter plants</string>
@@ -140,7 +143,7 @@
     <!-- regions (packs) -->
     <string name="on_device">On this device</string>
     <string name="on_device_summary">%1$d regions · %2$s</string>
-    <string name="private_note">This app has no internet access at all. Regions are built in or imported from a file you choose.</string>
+    <string name="private_note">Downloaded regions stay on this phone. Updates are offered when a newer pack is published, and nothing downloads until you agree.</string>
     <string name="import_region">Import file</string>
     <string name="status_import">Not installed · import its region file</string>
     <string name="update_all">Update all (%1$d)</string>
@@ -167,6 +170,11 @@
     <string name="donate_body">OpenWild is free with no ads. If it helped you, you can send a tip over Bitcoin Lightning:</string>
     <string name="donate_lightning">Tip with Lightning</string>
     <string name="copied_address">No Lightning wallet found. Address copied to clipboard.</string>
+    <string name="donate_copied_title">Lightning address copied</string>
+    <string name="donate_copied_body">This address is on the clipboard. If your wallet does not fill in the payee, paste it. OpenWild does not send the payment.</string>
+    <string name="donate_open_wallet">Open wallet</string>
+    <string name="donate_no_wallet">No Lightning wallet opened. %1$s is copied — paste it into a wallet.</string>
+    <string name="donate_done">Done</string>
     <string name="feedback_title">Feedback</string>
     <string name="feedback_body">Found a bug, a wrong ID, or have an idea? Tell us. Nothing is sent until you press send.</string>
     <string name="feedback_send">Send feedback</string>
@@ -175,7 +183,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_system">System</string>
     <string name="privacy_title">100% private</string>
-    <string name="privacy_body">OpenWild goes online for one thing only: downloading a region when you tap Download. It talks only to GitHub, where the regions are published, and sends nothing about you. Identification runs entirely on your phone, with or without signal. No account, no ads, no analytics, no tracking, no cloud backup. Photos and location never leave the device. Share and feedback buttons only hand text to another app when you tap them.</string>
+    <string name="privacy_body">OpenWild goes online for one thing only: the public list of region packs on GitHub, and a pack you agree to download. It sends nothing about you. Identification, your notes and your photos stay on the phone, with or without signal. No account, no ads, no analytics, no tracking, no cloud backup. Location never leaves the device. Share, submit and feedback buttons only hand text to another app when you tap them.</string>
     <string name="contribute_title">Help make it better</string>
     <string name="contribute_body">Botanists, mycologists and translators: every safety entry is reviewed by people. Share confirmed sightings on iNaturalist to help train future versions.</string>
     <string name="contribute_review">Review safety content</string>
@@ -195,7 +203,23 @@
     <string name="home_deadly_row">Deadly here — learn these</string>
     <string name="see_all">See all</string>
     <string name="updates_title">Updates</string>
-    <string name="updates_body">Regions update from the Packs tab. The app itself doesn\'t update on its own. For automatic updates, install the free, open-source app Obtainium and add the address below. It installs each new version (new species, photos, fixes) for you. Or download the newest OpenWild.apk from the same page whenever you like.</string>
+    <string name="updates_body">While the app is open it checks for a newer pack for the regions you installed, and asks before downloading. Large downloads prefer Wi-Fi and are never started on mobile data unless you agree. The app itself still does not update on its own. For that, install the free, open-source app Obtainium and add the address below, or download the newest OpenWild.apk whenever you like.</string>
+    <string name="update_offer_title">Region update</string>
+    <string name="update_offer_body">%1$s can be updated (%2$s). Download now? The field guide keeps working offline either way. Nothing is downloaded until you tap Download.</string>
+    <string name="update_offer_mobile">%1$s can be updated (%2$s). You are not on Wi-Fi, and this is a large download. Wi-Fi is a better way to get it. Nothing is downloaded unless you agree to use mobile data.</string>
+    <string name="update_download_mobile">Download on mobile data</string>
+    <string name="update_not_now">Not now</string>
+    <string name="notes_title">Your notes</string>
+    <string name="notes_body">A rating, a review, and your own photos stay on this phone. No account. Nothing is sent unless you tap Submit.</string>
+    <string name="notes_safety">Not medical advice. Never eat a plant you have not identified for yourself.</string>
+    <string name="notes_hint">What you noticed. Not a guide to eating it.</string>
+    <string name="notes_star">Rating %1$d of 5</string>
+    <string name="notes_add_photo">Add a photo</string>
+    <string name="notes_take_photo">Take a photo</string>
+    <string name="notes_remove_photo">Remove</string>
+    <string name="notes_submit">Submit to OpenWild (optional)</string>
+    <string name="notes_submit_hint">Opens the share sheet so you can email it or send it yourself. OpenWild does not upload anything.</string>
+    <string name="notes_github">Or open a text-only GitHub issue</string>
     <string name="hero_mushroom_cd">Fly agaric mushroom on autumn leaves</string>
     <string name="hero_fruit_cd">Tropical fruit: papaya, mango, guava, pineapple</string>
     <string name="hero_photo_credit">Photos: D. J. Bergsma (CC BY-SA 4.0) · P. Greb, USDA (public domain) · Wikimedia Commons</string>

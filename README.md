@@ -13,20 +13,20 @@ OpenWild is a free, open-source, non-commercial Android app. Point the camera at
 ## Install on Android
 
 1. On your phone, download **[OpenWild.apk](https://github.com/zenv99/openwild/releases/download/app-latest/OpenWild.apk)**, open it, and allow installing from this source.
-2. **Automatic updates:** install [Obtainium](https://github.com/ImranR98/Obtainium) (free, open source), tap *Add app*, paste `https://github.com/zenv99/openwild`. Obtainium checks for new releases and installs them. OpenWild itself never goes online.
+2. **App updates:** install [Obtainium](https://github.com/ImranR98/Obtainium) (free, open source), tap *Add app*, paste `https://github.com/zenv99/openwild`. Obtainium installs new app versions. Region packs are separate: while OpenWild is open it checks for a newer pack and asks before downloading. Large downloads prefer Wi-Fi.
 
-Every build gets a new version number and a release (`v0.6.N`), checked automatically for no internet permission, no backup and no debug mode.
+Every build gets a new version number and a release (`v0.6.N`), checked automatically for HTTPS-only pack downloads, no backup and no debug mode.
 
 ## What it does
 
 - **Photo ID, fully offline.** A small on-device model (~10–25 MB) turns each photo into a fingerprint and matches it against a regional reference library.
 - **Several photos, more confidence.** Take 1–5 shots (leaf, flower, fruit, whole plant; or cap, gills, stem, base). Results are fused across photos.
 - **Honest confidence.** Every result shows a calibrated confidence score and a tier: High, Medium, Low, or "Not in our library".
-- **Region downloads like Organic Maps.** Browse by continent, search countries, see sizes, update all. The app suggests your region from GPS (offline) and downloads only that region's species (typically 5–30 MB).
+- **Choose your region.** A new install asks you to pick a region after the safety note. GPS may suggest one if you allow it; nothing is selected until you tap. A region saved in the app can be used offline. Others download when you tap them, or show as coming soon.
 - **Photos for every species.** A photo grid in Explore, thumbnails in every list, photo rows on the home screen ("Food you can find here", "Deadly here — learn these"), and a full-screen, pinch-to-zoom viewer with the photographer and licence credited. Field photos from iNaturalist come first; herbarium sheets only when nothing else exists. All photos live inside the region pack, offline.
 - **Explore offline.** Search every species in your region; filter by deadly, survival, plants, mushrooms, psychoactive. Switch between photo grid and list.
 - **Dark mode by default**, light and system themes too.
-- **Contribute privately.** Share a sighting (e.g. to iNaturalist) or report a wrong ID — only when you tap it. Nothing is ever sent automatically.
+- **Contribute privately.** Rate a species, write a note and add your own photos. They stay on the phone. Submit to OpenWild only if you tap it (share sheet or a GitHub issue). Nothing is ever sent automatically.
 - **"If eaten" for every species.** Benefits, harms (with symptom onset timing and what to do), and what it feels like — including clear legal warnings for psychoactive species.
 - **Survival mode.** Puts safe high-value plants, deadly species, and water/fire/shelter/medicinal uses first.
 - **Safety first, always.** Harms before benefits. Deadly lookalikes always shown. Full "If eaten" details only at High confidence. See [SAFETY.md](SAFETY.md).

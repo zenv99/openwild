@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import org.openwild.app.BuildConfig
 import org.openwild.app.R
+import org.openwild.app.core.FieldNote
+import org.openwild.app.core.LightningAddress
 import java.io.File
 
 /**
@@ -58,15 +60,24 @@ object Contribute {
         open(context, "${BuildConfig.REPO_URL}/issues/new?title=${Uri.encode(title)}&body=${Uri.encode(body)}&labels=wrong-id")
     }
 
-    /** Opens the user's Lightning wallet; if none is installed, copies the address instead. */
-    fun donateLightning(context: Context) {
+    /** Copies the Lightning Address. A `lightning:user@host` link is not an invoice, so wallets often ignore it. */
+    fun copyLightningAddress(context: Context) {
         val address = BuildConfig.LIGHTNING_ADDRESS
+        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newPlainText("Lightning address", address))
+    }
+
+    /**
+     * Opens a wallet on the LNURL-pay endpoint for the address (`https://host/.well-known/lnurlp/user`,
+     * bech32-encoded). The app does not contact that host. If no wallet handles it, the address is already copied.
+     */
+    fun openLightningWallet(context: Context) {
+        val address = BuildConfig.LIGHTNING_ADDRESS
+        val uri = runCatching { LightningAddress.payUri(address) }.getOrElse { "lightning:$address" }
         try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("lightning:$address")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         } catch (_: ActivityNotFoundException) {
-            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(ClipData.newPlainText("Lightning address", address))
-            Toast.makeText(context, context.getString(R.string.copied_address), Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.donate_no_wallet, address), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -87,11 +98,44 @@ object Contribute {
         open(context, "${BuildConfig.REPO_URL}/issues/new?title=${Uri.encode(subject)}&labels=feedback")
     }
 
+    /** Share sheet with the note and any photos. The user picks where it goes; nothing is uploaded by the app. */
+    fun submitFieldNote(context: Context, note: FieldNote, regionName: String?, photoFiles: List<File>) {
+        val text = note.shareText(regionName)
+        val uris = photoFiles.map { cacheCopy(context, it) }
+        val intent = Intent(if (uris.size > 1) Intent.ACTION_SEND_MULTIPLE else Intent.ACTION_SEND).apply {
+            putExtra(Intent.EXTRA_SUBJECT, "OpenWild field note: ${note.scientificName}")
+            putExtra(Intent.EXTRA_TEXT, text)
+            if (uris.isEmpty()) {
+                type = "text/plain"
+            } else {
+                type = "image/jpeg"
+                if (uris.size == 1) putExtra(Intent.EXTRA_STREAM, uris.first())
+                else putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        }
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.notes_submit)))
+    }
+
+    /** Text-only GitHub issue. Photos are not attached; the share sheet is how photos leave the phone. */
+    fun submitFieldNoteIssue(context: Context, note: FieldNote, regionName: String?) {
+        val title = "Field note: ${note.scientificName}"
+        val body = note.shareText(regionName) + "\n\n_Photos stay on my phone unless I attach them myself._"
+        open(context, "${BuildConfig.REPO_URL}/issues/new?title=${Uri.encode(title)}&body=${Uri.encode(body)}&labels=field-note")
+    }
+
     fun open(context: Context, url: String) {
         try {
             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         } catch (_: ActivityNotFoundException) {
         }
+    }
+
+    private fun cacheCopy(context: Context, src: File): Uri {
+        val dir = File(context.cacheDir, "share").apply { mkdirs() }
+        val dest = File(dir, src.name)
+        src.copyTo(dest, overwrite = true)
+        return FileProvider.getUriForFile(context, "${context.packageName}.share", dest)
     }
 
     private fun cacheShareImage(context: Context, bmp: Bitmap): Uri {

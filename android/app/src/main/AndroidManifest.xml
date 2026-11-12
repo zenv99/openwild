@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Coarse location is enough to pick a region; it never leaves the phone. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Used only to tell Wi-Fi from mobile data before offering a large region download. Nothing is sent. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- INTERNET is used for one thing only: downloading region packs from GitHub when the user taps
          Download (Packs tab). PackManager refuses any other host, and plain http is blocked by
          network_security_config. No analytics, no telemetry, nothing uploaded. CI checks this on every build. -->

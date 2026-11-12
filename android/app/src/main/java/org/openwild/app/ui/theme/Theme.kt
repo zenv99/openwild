@@ -10,17 +10,26 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.openwild.app.core.Appearance
 
-// Brand
+// Brand. Nav and Explore colors live in Appearance so the contrast test and the theme cannot drift.
 val Forest = Color(0xFF0F3D2E)
-val ForestDeep = Color(0xFF07261C)
-val Leaf = Color(0xFF2E8B57)
-val Lime = Color(0xFFB7E36A)
+val ForestDeep = Color(Appearance.FOREST_DEEP)
+val Leaf = Color(Appearance.LEAF)
+val Lime = Color(Appearance.LIME)
 val Mint = Color(0xFF95D5B2)
-val Sand = Color(0xFFF6F4EE)
+val Sand = Color(Appearance.SAND)
+
+/** Card behind an Explore photo that has not decoded yet. Opaque, so the grid is not a black wall. */
+@Composable
+fun exploreCardColor(): Color {
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    return Color(if (dark) Appearance.DARK_EXPLORE_CARD else Appearance.LIGHT_EXPLORE_CARD)
+}
 
 // Safety semantics (fixed in light and dark so meaning never changes)
 val Danger = Color(0xFFC62828)
@@ -44,13 +53,19 @@ private val LightColors = lightColorScheme(
     primaryContainer = Mint,
     onPrimaryContainer = ForestDeep,
     secondary = Leaf,
+    onSecondary = Color.White,
+    secondaryContainer = Color(Appearance.LIGHT_INDICATOR),
+    onSecondaryContainer = Color(Appearance.LIGHT_SELECTED_ICON),
     tertiary = Lime,
     onTertiary = ForestDeep,
     background = Sand,
+    onBackground = Color(Appearance.LIGHT_LABEL),
     surface = Sand,
+    onSurface = Color(Appearance.LIGHT_LABEL),
     surfaceVariant = Color(0xFFE7EBE4),
-    surfaceContainer = Color(0xFFFFFFFF),
-    surfaceContainerHigh = Color(0xFFFFFFFF),
+    onSurfaceVariant = Color(Appearance.LIGHT_UNSELECTED),
+    surfaceContainer = Color(Appearance.LIGHT_BAR),
+    surfaceContainerHigh = Color(Appearance.WHITE),
     surfaceContainerLow = Color(0xFFF1F3EE),
     error = Danger,
 )
@@ -61,13 +76,22 @@ private val DarkColors = darkColorScheme(
     primaryContainer = Forest,
     onPrimaryContainer = Mint,
     secondary = Mint,
+    onSecondary = ForestDeep,
+    // Selected nav pill. The Material default (a dark purple) sat on the dark bar at ~1.8:1,
+    // and the filled Explore compass read as a black button.
+    secondaryContainer = Color(Appearance.DARK_INDICATOR),
+    onSecondaryContainer = Color(Appearance.DARK_SELECTED_ICON),
     tertiary = Lime,
-    background = Color(0xFF0B1410),
-    surface = Color(0xFF0B1410),
+    background = Color(Appearance.DARK_PAGE),
+    onBackground = Color(Appearance.DARK_LABEL),
+    surface = Color(Appearance.DARK_PAGE),
+    onSurface = Color(Appearance.DARK_LABEL),
     surfaceVariant = Color(0xFF1E2A24),
-    surfaceContainer = Color(0xFF15201B),
+    onSurfaceVariant = Color(Appearance.DARK_UNSELECTED),
+    surfaceContainer = Color(Appearance.DARK_BAR),
     surfaceContainerHigh = Color(0xFF1B2721),
     surfaceContainerLow = Color(0xFF111A16),
+    outline = Color(0xFF8AA394),
     error = Color(0xFFFF6B6B),
 )
 

@@ -114,7 +114,15 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
                             stringResource(R.string.on_device_summary, state.installed.size, mb(totalBytes)),
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        Text(stringResource(R.string.private_note), style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(if (state.activeRegionName == null) R.string.choose_region_body else R.string.private_note),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        if (state.activeRegionName == null) {
+                            state.suggestedRegion?.let {
+                                Text(stringResource(R.string.suggested_region_choose, it), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
                     }
                     if (updates > 0) {
                         Button(onClick = vm::updateAll) { Text(stringResource(R.string.update_all, updates)) }

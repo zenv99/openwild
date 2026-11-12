@@ -61,6 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.openwild.app.R
 import org.openwild.app.pack.RegionPack
+import org.openwild.app.ui.theme.exploreCardColor
 
 /** Decoded thumbnails, so scrolling a long list doesn't re-decode. Photos never leave the phone. */
 private object ThumbCache {
@@ -74,13 +75,16 @@ private object CoverCache {
     }
 }
 
-private fun decode(bytes: ByteArray?, sample: Int = 1): ImageBitmap? =
-    bytes?.takeIf { it.isNotEmpty() }?.let {
-        runCatching {
-            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-            BitmapFactory.decodeByteArray(it, 0, it.size, opts)?.asImageBitmap()
-        }.getOrNull()
+private fun decode(bytes: ByteArray?, sample: Int = 1): ImageBitmap? {
+    if (bytes == null || bytes.isEmpty()) return null
+    return try {
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample.coerceAtLeast(1) }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)?.asImageBitmap()
+    } catch (_: Throwable) {
+        // A failed or oversized cover must leave the card visible, not take the screen down.
+        null
     }
+}
 
 /** Square species thumbnail for list rows; falls back to a leaf icon when the pack has no photo. */
 @Composable
@@ -113,35 +117,45 @@ fun SpeciesThumb(pack: RegionPack, i: Int, tint: Color, size: Dp = 52.dp) {
  */
 @Composable
 fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val key = "${pack.regionId}:${pack.version}:$i"
+    val key = "${pack.regionId}:${pack.version}:$i:s2"
     val bmp by produceState(CoverCache.cache.get(key), key) {
         if (value == null && pack.hasPhotos) {
-            value = withContext(Dispatchers.IO) { decode(pack.coverImage(i)) }?.also { CoverCache.cache.put(key, it) }
+            // 448 px covers are sampled down for the grid so a full region cannot exhaust memory.
+            value = withContext(Dispatchers.IO) { decode(pack.coverImage(i), sample = 2) }?.also { CoverCache.cache.put(key, it) }
         }
     }
     val flags = pack.safety[i]
-    val tint = if (flags?.isDeadly == true) org.openwild.app.ui.theme.Danger else org.openwild.app.ui.theme.Leaf
+    val photo = bmp
+    val card = if (photo == null) exploreCardColor() else MaterialTheme.colorScheme.surfaceContainerHigh
+    val nameColor = if (photo == null) MaterialTheme.colorScheme.onSurface else Color.White
+    val latinColor = if (photo == null) MaterialTheme.colorScheme.onSurfaceVariant else Color.White.copy(alpha = 0.75f)
     Box(
-        modifier.aspectRatio(0.8f).clip(MaterialTheme.shapes.large).background(tint.copy(alpha = 0.18f)).clickable(onClick = onClick),
+        modifier.aspectRatio(0.8f).clip(MaterialTheme.shapes.large).background(card).clickable(onClick = onClick),
     ) {
-        val b = bmp
-        if (b != null) {
-            Image(b, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        if (photo != null) {
+            Image(photo, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         } else {
-            Icon(Icons.Filled.Eco, null, tint = tint, modifier = Modifier.align(Alignment.Center).size(40.dp))
+            Icon(
+                Icons.Filled.Eco, null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.align(Alignment.Center).size(40.dp),
+            )
         }
         Box(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.82f))))
+                .background(
+                    if (photo != null) Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.82f)))
+                    else Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent)),
+                )
                 .padding(start = 10.dp, end = 10.dp, top = 28.dp, bottom = 10.dp),
         ) {
             Column {
                 Text(
                     pack.species.commonNames[i] ?: pack.species.scientificNames[i],
-                    color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    color = nameColor, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    pack.species.scientificNames[i], color = Color.White.copy(alpha = 0.75f), fontStyle = FontStyle.Italic,
+                    pack.species.scientificNames[i], color = latinColor, fontStyle = FontStyle.Italic,
                     style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }

@@ -195,6 +195,7 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                 content?.sources?.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
             }
         }
+        FieldNotesCard(sp.scientificNames[index], pack.regionName, state, vm)
         Footer()
     }
 }
