@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/images/banner.png" alt="OpenWild — free offline plant & mushroom ID" width="100%"></p>
+<p align="center"><img src="docs/images/banner.jpg" alt="OpenWild — free offline plant & mushroom ID" width="100%"></p>
 
 # OpenWild
 
