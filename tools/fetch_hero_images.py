@@ -54,6 +54,38 @@ def info(title):
     }
 
 
+CANDIDATES = [
+    "File:Fly Agaric mushroom 04.jpg",
+    "File:Fliegenpilz fly agaric Amanita muscaria.JPG",
+    "File:Amanita muscaria qtl4.jpg",
+    "File:Vliegenzwam (Amanita muscaria). Locatie De Famberhorst. 27-09-2020 (d.j.b.).jpg",
+    "File:AD2009Sep20 Amanita muscaria 01.jpg",
+    "File:Fly Agaric.JPG",
+]
+
+
+def candidates():
+    """Preview mode: small copies of several candidates (with licences) for picking by eye."""
+    out = ROOT / "tools/hero_candidates"
+    out.mkdir(parents=True, exist_ok=True)
+    seen = []
+    for i, title in enumerate(CANDIDATES):
+        try:
+            meta = info(title)
+        except Exception as e:  # noqa: BLE001
+            print("skip", title, e)
+            continue
+        ok = bool(OK.match(meta["license"]))
+        print(i, ok, meta["license"], "|", meta["author"][:60], "|", title)
+        if not ok:
+            continue
+        im = Image.open(io.BytesIO(get(meta["url"]))).convert("RGB")
+        im.thumbnail((640, 640))
+        im.save(out / f"c{i}.jpg", quality=80)
+        seen.append({"i": i, **{k: meta[k] for k in ("title", "author", "license", "page")}})
+    (out / "candidates.json").write_text(json.dumps(seen, indent=1, ensure_ascii=False))
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     credits = {}
@@ -71,4 +103,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    candidates() if "--candidates" in sys.argv else main()
