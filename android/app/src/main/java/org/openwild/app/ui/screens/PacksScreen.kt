@@ -60,9 +60,11 @@ import org.openwild.app.ui.theme.Leaf
 
 private fun mb(bytes: Long) = if (bytes <= 0) "—" else "%.1f MB".format(bytes / 1_000_000.0)
 
-private sealed interface Status {
+    private sealed interface Status {
     data class Installed(val version: Int, val active: Boolean, val update: PackManager.RemotePack?) : Status
     data class Available(val pack: PackManager.RemotePack) : Status
+    data class Ready(val version: Int, val speciesCount: Int) : Status
+    data object Installing : Status
     data class Downloading(val progress: Float) : Status
     data object NotBuilt : Status
 }
@@ -83,11 +85,13 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
     val remote = state.remote.associateBy { it.regionId }
 
     fun status(id: String): Status {
+        if (state.installingRegion == id) return Status.Installing
         state.downloading[id]?.let { return Status.Downloading(it) }
         installed[id]?.let { p ->
             val upd = remote[id]?.takeIf { it.version > p.version }
             return Status.Installed(p.version, id == activeId, upd)
         }
+        state.bundled.firstOrNull { it.regionId == id && it.complete }?.let { return Status.Ready(it.version, it.speciesCount) }
         remote[id]?.let { return Status.Available(it) }
         return Status.NotBuilt
     }
@@ -207,7 +211,9 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
                 is Status.Installed -> stringResource(if (s.active) R.string.status_in_use else R.string.status_downloaded, s.version)
                 is Status.Available -> stringResource(R.string.pack_size, mb(s.pack.size), s.pack.speciesCount)
                 is Status.Downloading -> stringResource(R.string.status_downloading, (s.progress * 100).toInt())
-                Status.NotBuilt -> stringResource(if (BuildConfig.ALLOW_NETWORK) R.string.status_coming_soon else R.string.status_import)
+                is Status.Ready -> stringResource(R.string.status_ready, s.version, s.speciesCount)
+                Status.Installing -> stringResource(R.string.installing_pack)
+                Status.NotBuilt -> stringResource(R.string.status_not_ready)
             }
             Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -219,6 +225,10 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
                     Icon(Icons.Filled.CheckCircle, null, tint = Leaf)
                 }
                 IconButton(onClick = { vm.deletePack(r.id) }) { Icon(Icons.Filled.Delete, stringResource(R.string.delete)) }
+            }
+            is Status.Ready -> Button(onClick = { vm.installRegion(r.id) }) { Text(stringResource(R.string.install_pack)) }
+            Status.Installing -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
             }
             is Status.Available -> IconButton(onClick = { vm.download(s.pack) }) {
                 Icon(Icons.Filled.CloudDownload, stringResource(R.string.download), tint = MaterialTheme.colorScheme.primary)

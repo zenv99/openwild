@@ -30,6 +30,15 @@ class PackManager(private val context: Context) {
 
     data class InstalledPack(val regionId: String, val name: String, val version: Int, val file: File, val compatible: Boolean)
 
+    /** A pack shipped inside the APK. It is not copied onto the device until the user chooses that region. */
+    data class BundledPack(
+        val regionId: String,
+        val version: Int,
+        val fileName: String,
+        val speciesCount: Int,
+        val complete: Boolean,
+    )
+
     private val dir = File(context.filesDir, "packs").apply { mkdirs() }
     private val indexCache = File(context.filesDir, "index.json")
     private val prefs = context.getSharedPreferences("openwild", Context.MODE_PRIVATE)
@@ -53,37 +62,43 @@ class PackManager(private val context: Context) {
 
     fun fileFor(regionId: String) = File(dir, "$regionId.owpack")
 
-    /**
-     * Copy packs shipped inside the APK (assets/packs) into storage on first launch, or when the
-     * bundled version is newer than the installed one. Lets the field guide work with no internet at all.
-     */
-    fun installBundled() {
-        // Bundled packs only change when the app is updated: copy them once per app version, not on every launch.
-        val installStamp = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime }.getOrDefault(0L)
-        if (installStamp != 0L && prefs.getLong("bundled_for_install", -1L) == installStamp) return
-        val names = context.assets.list("packs").orEmpty().filter { it.endsWith(".owpack") }
-        for (name in names) {
-            val tmp = File(dir, "$name.bundled")
-            context.assets.open("packs/$name").use { input -> tmp.outputStream().use { input.copyTo(it) } }
-            val meta = RegionPack.readMeta(tmp)
-            val region = meta?.get("region_id")
-            if (meta == null || region == null) {
-                tmp.delete()
-                continue
-            }
-            val bundledVersion = meta["pack_version"]?.toIntOrNull() ?: 0
-            val dest = fileFor(region)
-            val installedVersion = if (dest.exists()) RegionPack.readMeta(dest)?.get("pack_version")?.toIntOrNull() ?: -1 else -1
-            if (bundledVersion > installedVersion) {
-                if (!tmp.renameTo(dest)) {
-                    tmp.copyTo(dest, overwrite = true)
-                    tmp.delete()
-                }
-            } else {
-                tmp.delete()
-            }
+    /** Packs the APK can install. Empty when assets/packs/catalog.json is absent. Nothing is copied here. */
+    fun bundledCatalog(): List<BundledPack> = runCatching {
+        val text = context.assets.open("packs/catalog.json").bufferedReader().use { it.readText() }
+        val arr = org.json.JSONArray(text)
+        (0 until arr.length()).mapNotNull { i ->
+            val o = arr.getJSONObject(i)
+            val file = o.getString("file")
+            if (file.contains('/') || file.contains('\\') || file.contains("..")) return@mapNotNull null
+            BundledPack(
+                regionId = o.getString("region_id"),
+                version = o.getInt("version"),
+                fileName = file,
+                speciesCount = o.optInt("species_count"),
+                complete = o.optBoolean("complete", false),
+            )
         }
-        prefs.edit().putLong("bundled_for_install", installStamp).apply()
+    }.getOrDefault(emptyList())
+
+    /**
+     * Copy one bundled pack into app storage. Called only after the user chooses that region
+     * (or taps update). Does not run on launch.
+     */
+    fun installBundled(regionId: String): Boolean {
+        val entry = bundledCatalog().firstOrNull { it.regionId == regionId && it.complete } ?: return false
+        val tmp = File(dir, "${entry.regionId}.bundled")
+        context.assets.open("packs/${entry.fileName}").use { input -> tmp.outputStream().use { input.copyTo(it) } }
+        val meta = RegionPack.readMeta(tmp)
+        if (meta?.get("region_id") != regionId) {
+            tmp.delete()
+            return false
+        }
+        val dest = fileFor(regionId)
+        if (!tmp.renameTo(dest)) {
+            tmp.copyTo(dest, overwrite = true)
+            tmp.delete()
+        }
+        return dest.exists()
     }
 
     /**

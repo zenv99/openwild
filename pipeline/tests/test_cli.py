@@ -6,7 +6,7 @@ import sys
 def test_cli_lists_commands():
     out = subprocess.run([sys.executable, "-m", "openwild_pipeline.cli", "--help"], capture_output=True, text=True)
     assert out.returncode == 0, out.stderr
-    for cmd in ("photos", "photo-pack", "pack-index", "kew", "buckets", "wikidata", "summary"):
+    for cmd in ("photos", "photo-pack", "pack-index", "kew", "buckets", "wikidata", "summary", "commercial-photos", "commercial-pack"):
         assert cmd in out.stdout
 
 

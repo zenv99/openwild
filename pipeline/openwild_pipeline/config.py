@@ -31,6 +31,10 @@ GBIF_KINGDOM_KEYS = {"Plantae": 6, "Fungi": 5}
 
 # Licenses usable in a free, non-commercial app. ND (no-derivatives) excluded.
 ALLOWED_LICENSES = {"cc0", "cc-by", "cc-by-sa", "cc-by-nc", "cc-by-nc-sa"}
+# Photos and fingerprints that ship in a region pack. Commercial-ok only:
+# CC BY-NC is not used, and neither are ND licences. CC BY-SA is commercial-ok
+# (share-alike) and is how most Wikimedia Commons files are published.
+COMMERCIAL_LICENSES = {"cc0", "cc-by", "cc-by-sa"}
 
 # Model contract (must match the app's assets/embedder.json, written by export).
 # "dinov2s": free, no training — DINOv2 ViT-S/14 (Apache-2.0), runs on GitHub's CPUs. Default.
@@ -76,3 +80,35 @@ def normalize_license(raw: str | None) -> str | None:
 
 def license_allowed(raw: str | None) -> bool:
     return normalize_license(raw) in ALLOWED_LICENSES
+
+
+def commercial_license(raw: str | None) -> str | None:
+    """Return a normalised commercial-ok licence, or None.
+
+    Accepts short names ('CC BY-SA 4.0', 'cc-by-nc') and Creative Commons URLs.
+    CC BY-NC and ND are rejected. iNaturalist terms are a separate check.
+    """
+    if not raw or not str(raw).strip():
+        return None
+    text = str(raw).strip()
+    lower = text.lower()
+    if "noncommercial" in lower or "-nc" in lower.replace("_", "-") or " by-nc" in lower:
+        # Still parse so 'by-nc' is not mistaken for 'by' via a sloppy substring.
+        lic = normalize_license(text)
+        if lic in COMMERCIAL_LICENSES:
+            return lic
+        return None
+    lic = normalize_license(text)
+    if lic in COMMERCIAL_LICENSES:
+        return lic
+    u = lower
+    if "publicdomain/zero" in u or "/publicdomain/" in u or "creativecommons.org/publicdomain/zero" in u:
+        return "cc0"
+    import re
+    m = re.search(r"licenses/(by(?:-nc)?(?:-sa)?(?:-nd)?)", u)
+    if m:
+        name = "cc-" + m.group(1)
+        return name if name in COMMERCIAL_LICENSES else None
+    if "cc0" in u or "public-domain" in u or "public domain" in u:
+        return "cc0"
+    return None

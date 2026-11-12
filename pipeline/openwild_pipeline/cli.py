@@ -540,6 +540,22 @@ def main(argv=None):
     sp.add_argument("--version", type=int, default=2)
     sp.add_argument("--out", default=None)
     sp.add_argument("--photos-shown", type=int, default=3, help="photos per species stored for display")
+    def cmd_commercial_photos(a):
+        from .commercial_photos import fetch_commercial_photos
+        fetch_commercial_photos(a.region, max_species=a.max_species)
+
+    def cmd_commercial_pack(a):
+        from .commercial_photos import build_region_photo_pack
+        out = Path(a.out) if a.out else None
+        build_region_photo_pack(a.region, version=a.version, out=out)
+
+    sp = add("commercial-photos", cmd_commercial_photos, "download CC0/CC BY/CC BY-SA reference photos (no NC, no iNaturalist)")
+    sp.add_argument("region")
+    sp.add_argument("--max-species", type=int, default=None)
+    sp = add("commercial-pack", cmd_commercial_pack, "build a region pack: species, safety, light WebP, on-device fingerprints")
+    sp.add_argument("region")
+    sp.add_argument("--version", type=int, default=2026111201)
+    sp.add_argument("--out", default=None)
     sp = add("guide-pack", cmd_guide_pack, "offline field-guide pack from data/regions/<id> (no photo model needed)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=1)

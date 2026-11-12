@@ -25,6 +25,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -146,7 +149,7 @@ fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick
                 )
             }
         }
-        Box(Modifier.align(Alignment.TopStart).padding(8.dp)) { DangerBadge(flags) }
+        Box(Modifier.align(Alignment.TopStart).padding(8.dp)) { DangerBadge(flags, fungus = pack.species.isFungus[i]) }
     }
 }
 
@@ -161,6 +164,22 @@ private fun PagerDots(count: Int, current: Int, modifier: Modifier = Modifier) {
     }
 }
 
+private val LifeStages = listOf("seedling", "leaves", "flower", "fruit", "closeup")
+
+@Composable
+private fun stageLabel(stage: String): String = stringResource(
+    when (stage) {
+        "seedling" -> R.string.stage_seedling
+        "leaves" -> R.string.stage_leaves
+        "flower" -> R.string.stage_flower
+        "fruit" -> R.string.stage_fruit
+        "closeup" -> R.string.stage_closeup
+        "field" -> R.string.stage_field
+        "specimen" -> R.string.stage_specimen
+        else -> R.string.stage_unspecified
+    },
+)
+
 /** Large photo on the species page. Tap opens a full-screen, zoomable viewer with photo credits. */
 @Composable
 fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
@@ -168,8 +187,14 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
     val photos by produceState<List<Pair<RegionPack.Photo, ImageBitmap>>>(emptyList(), pack, i) {
         value = withContext(Dispatchers.IO) { pack.photos(i).mapNotNull { p -> decode(p.bytes)?.let { p to it } } }
     }
-    if (photos.isEmpty()) return
     var viewerAt by remember(i) { mutableStateOf<Int?>(null) }
+    if (photos.isEmpty()) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.photo_none), style = MaterialTheme.typography.bodyMedium)
+            LifeStageStrip(emptyList())
+        }
+        return
+    }
     val pager = rememberPagerState { photos.size }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Box(Modifier.fillMaxWidth().height(300.dp).clip(MaterialTheme.shapes.large)) {
@@ -192,8 +217,40 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
             )
         }
         PhotoCredit(photos[pager.currentPage].first, Color.Unspecified)
+        LifeStageStrip(photos)
     }
     viewerAt?.let { start -> PhotoViewer(photos, start, name) { viewerAt = null } }
+}
+
+@Composable
+private fun LifeStageStrip(photos: List<Pair<RegionPack.Photo, ImageBitmap>>) {
+    val byStage = photos.groupBy { it.first.stage }
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(LifeStages) { stage ->
+            val hit = byStage[stage]?.firstOrNull()
+            Column(Modifier.width(112.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(
+                    Modifier.fillMaxWidth().height(84.dp).clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (hit != null) {
+                        Image(hit.second, contentDescription = stageLabel(stage), contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    } else {
+                        Icon(Icons.Filled.Eco, null, tint = MaterialTheme.colorScheme.outline)
+                    }
+                }
+                Text(stageLabel(stage), style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (hit != null) PhotoCredit(hit.first, Color.Unspecified) else {
+                    Text(
+                        stringResource(R.string.photo_stage_missing, stageLabel(stage)),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable

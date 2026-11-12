@@ -91,16 +91,19 @@ fun Pill(text: String, fg: Color, bg: Color, icon: ImageVector? = null) {
     }
 }
 
-/** Danger badge for lists, from a pack's cached safety flags. */
+/**
+ * Safety badge for lists. A reported food use is not a verdict that the plant is safe to eat,
+ * and mushrooms never get that badge.
+ */
 @Composable
-fun DangerBadge(flags: RegionPack.SafetyFlags?) {
+fun DangerBadge(flags: RegionPack.SafetyFlags?, fungus: Boolean = false) {
     when {
         flags == null -> Unit
         flags.isDeadly -> Pill(stringResource(R.string.badge_deadly), Color.White, Danger)
         flags.psychoactive -> Pill(stringResource(R.string.badge_psychoactive), Psychedelic, PsychedelicBg)
         flags.toxicity == "serious" -> Pill(stringResource(R.string.badge_toxic), Danger, DangerBg)
         flags.toxicity == "mild" -> Pill(stringResource(R.string.badge_caution), Caution, CautionBg)
-        flags.edibility.startsWith("edible") -> Pill(stringResource(R.string.badge_edible), Safe, SafeBg)
+        !fungus && flags.edibility.startsWith("edible") -> Pill(stringResource(R.string.badge_food_reported), Safe, SafeBg)
         else -> Unit
     }
 }

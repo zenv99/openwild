@@ -90,6 +90,6 @@ private fun SpeciesRow(vm: AppViewModel, pack: RegionPack, i: Int) {
             Text(sp.commonNames[i] ?: sp.scientificNames[i], style = MaterialTheme.typography.titleSmall)
             Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
         }
-        DangerBadge(pack.safety[i])
+        DangerBadge(pack.safety[i], fungus = sp.isFungus[i])
     }
 }

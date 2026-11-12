@@ -98,6 +98,7 @@ def preprocess(path: Path) -> np.ndarray:
     """Same as the app: shorter side -> 224, centre crop, RGB in [0,1], NHWC."""
     from PIL import Image
 
+    Image.MAX_IMAGE_PIXELS = 8_000_000
     im = Image.open(path).convert("RGB")
     w, h = im.size
     s = config.INPUT_SIZE / min(w, h)
@@ -106,6 +107,30 @@ def preprocess(path: Path) -> np.ndarray:
     l, t = (w - config.INPUT_SIZE) // 2, (h - config.INPUT_SIZE) // 2
     im = im.crop((l, t, l + config.INPUT_SIZE, t + config.INPUT_SIZE))
     return np.asarray(im, dtype=np.float32) / 255.0
+
+
+def embed_tflite(paths: list[Path], model_path: Path) -> np.ndarray:
+    """Fingerprints from the same LiteRT file the phone runs, so prototypes match the camera.
+
+    The exported graph already applies ImageNet normalisation and L2-normalises the output.
+    Input is float32 NHWC [1, 224, 224, 3] in [0, 1], identical to Embedder.kt.
+    """
+    from ai_edge_litert.interpreter import Interpreter
+
+    it = Interpreter(model_path=str(model_path))
+    it.allocate_tensors()
+    inp, out = it.get_input_details()[0], it.get_output_details()[0]
+    dim = int(out["shape"][-1])
+    vecs = np.zeros((len(paths), dim), np.float32)
+    for i, path in enumerate(paths):
+        it.set_tensor(inp["index"], preprocess(path)[None, ...])
+        it.invoke()
+        v = np.asarray(it.get_tensor(out["index"])[0], dtype=np.float32)
+        n = float(np.linalg.norm(v)) or 1.0
+        vecs[i] = v / n
+        if i and i % 100 == 0:
+            print(f"embedded {i}/{len(paths)}", flush=True)
+    return vecs
 
 
 def embed_paths(paths: list[Path], batch: int = 32) -> np.ndarray:

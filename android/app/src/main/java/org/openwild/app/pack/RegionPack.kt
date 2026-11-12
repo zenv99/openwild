@@ -16,6 +16,7 @@ import java.io.File
 class RegionPack(file: File) : Closeable {
 
     private val db: SQLiteDatabase = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY)
+    private val dbLock = Any()
 
     val meta: Map<String, String> = buildMap {
         db.rawQuery("SELECT key, value FROM meta", null).use { c -> while (c.moveToNext()) put(c.getString(0), c.getString(1)) }
@@ -84,39 +85,45 @@ class RegionPack(file: File) : Closeable {
 
     private val contentCache = HashMap<Int, SpeciesContent?>()
 
-    @Synchronized
-    fun content(i: Int): SpeciesContent? = contentCache.getOrPut(i) {
-        db.rawQuery("SELECT json FROM content WHERE species_id = ?", arrayOf(species.ids[i].toString())).use { c ->
-            if (c.moveToFirst()) ContentParser.parse(c.getString(0)) else null
+    fun content(i: Int): SpeciesContent? = synchronized(dbLock) {
+        contentCache.getOrPut(i) {
+            db.rawQuery("SELECT json FROM content WHERE species_id = ?", arrayOf(species.ids[i].toString())).use { c ->
+                if (c.moveToFirst()) ContentParser.parse(c.getString(0)) else null
+            }
         }
     }
 
-    fun lookalikes(i: Int): List<Lookalike> =
+    fun lookalikes(i: Int): List<Lookalike> = synchronized(dbLock) {
         db.rawQuery(
             "SELECT lookalike_name, danger, lookalike_species_id FROM lookalike WHERE species_id = ?",
             arrayOf(species.ids[i].toString()),
         ).use { c ->
             buildList { while (c.moveToNext()) add(Lookalike(c.getString(0), c.getString(1), if (c.isNull(2)) null else c.getLong(2))) }
         }.sortedBy { dangerRank(it.danger) }
+    }
 
     fun indexOfSpeciesId(id: Long): Int? = idToIndex[id]
 
     /** (description, wikipedia url) */
-    fun description(i: Int): Pair<String?, String?> =
+    fun description(i: Int): Pair<String?, String?> = synchronized(dbLock) {
         db.rawQuery("SELECT description, wiki_url FROM species WHERE id = ?", arrayOf(species.ids[i].toString())).use { c ->
             if (c.moveToFirst()) (if (c.isNull(0)) null else c.getString(0)) to (if (c.isNull(1)) null else c.getString(1)) else null to null
         }
+    }
 
     data class Credit(val species: String, val observer: String?, val license: String, val url: String)
 
-    fun credits(limit: Int = 500, offset: Int = 0): List<Credit> =
+    fun credits(limit: Int = 500, offset: Int = 0): List<Credit> = synchronized(dbLock) {
         db.rawQuery(
             "SELECT s.scientific_name, a.observer, a.license, a.url FROM attribution a JOIN species s ON s.id = a.species_id " +
                 "ORDER BY s.scientific_name LIMIT ? OFFSET ?",
             arrayOf(limit.toString(), offset.toString()),
         ).use { c -> buildList { while (c.moveToNext()) add(Credit(c.getString(0), c.getString(1), c.getString(2), c.getString(3))) } }
+    }
 
-    fun creditCount(): Int = db.rawQuery("SELECT count(*) FROM attribution", null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+    fun creditCount(): Int = synchronized(dbLock) {
+        db.rawQuery("SELECT count(*) FROM attribution", null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+    }
 
     /** Compact per-species safety flags, parsed once on first use (for lists, filters and badges). */
     data class SafetyFlags(val toxicity: String, val edibility: String, val psychoactive: Boolean, val survival: String) {
@@ -125,18 +132,20 @@ class RegionPack(file: File) : Closeable {
     }
 
     val safety: Array<SafetyFlags?> by lazy {
-        val out = arrayOfNulls<SafetyFlags>(species.size)
-        db.rawQuery("SELECT species_id, json FROM content", null).use { c ->
-            while (c.moveToNext()) {
-                val i = idToIndex[c.getLong(0)] ?: continue
-                val content = ContentParser.parse(c.getString(1)) ?: continue
-                synchronized(this) { contentCache.getOrPut(i) { content } }
-                if (content.hasSafetyData) {
-                    out[i] = SafetyFlags(content.toxicity, content.edibility, content.psychoactive, content.survivalPriority)
+        synchronized(dbLock) {
+            val out = arrayOfNulls<SafetyFlags>(species.size)
+            db.rawQuery("SELECT species_id, json FROM content", null).use { c ->
+                while (c.moveToNext()) {
+                    val i = idToIndex[c.getLong(0)] ?: continue
+                    val content = ContentParser.parse(c.getString(1)) ?: continue
+                    contentCache.getOrPut(i) { content }
+                    if (content.hasSafetyData) {
+                        out[i] = SafetyFlags(content.toxicity, content.edibility, content.psychoactive, content.survivalPriority)
+                    }
                 }
             }
+            out
         }
-        out
     }
 
     /** Survival guide: (high-value species, deadly species) for this region, each sorted by how common they are. */
@@ -180,8 +189,9 @@ class RegionPack(file: File) : Closeable {
     }.getOrDefault(false)
 
     /** Small square WebP thumbnail for lists, or null. */
-    @Synchronized
-    fun thumbnail(i: Int): ByteArray? {
+    fun thumbnail(i: Int): ByteArray? = synchronized(dbLock) { thumbnailLocked(i) }
+
+    private fun thumbnailLocked(i: Int): ByteArray? {
         if (!hasPhotos || i !in species.ids.indices) return null
         return db.rawQuery(
             "SELECT thumb FROM photo WHERE species_id = ? ORDER BY rank LIMIT 1",
@@ -190,8 +200,9 @@ class RegionPack(file: File) : Closeable {
     }
 
     /** Cover photo (larger image) for grid tiles, or null. */
-    @Synchronized
-    fun coverImage(i: Int): ByteArray? {
+    fun coverImage(i: Int): ByteArray? = synchronized(dbLock) { coverLocked(i) }
+
+    private fun coverLocked(i: Int): ByteArray? {
         if (!hasPhotos || i !in species.ids.indices) return null
         return db.rawQuery(
             "SELECT image FROM photo WHERE species_id = ? ORDER BY rank LIMIT 1",
@@ -201,22 +212,46 @@ class RegionPack(file: File) : Closeable {
 
     /** Indices of species that have a photo (for photo-first browsing). */
     val withPhoto: Set<Int> by lazy {
-        if (!hasPhotos) emptySet() else db.rawQuery("SELECT DISTINCT species_id FROM photo", null).use { c ->
-            buildSet { while (c.moveToNext()) idToIndex[c.getLong(0)]?.let { add(it) } }
+        synchronized(dbLock) {
+            if (!hasPhotos) emptySet() else db.rawQuery("SELECT DISTINCT species_id FROM photo", null).use { c ->
+                buildSet { while (c.moveToNext()) idToIndex[c.getLong(0)]?.let { add(it) } }
+            }
         }
     }
 
-    /** A reference photo with the credit its licence requires. */
-    class Photo(val bytes: ByteArray, val observer: String?, val license: String, val url: String)
+    /** A reference photo with the credit its licence requires. Stage is unspecified when the pack has no stage column. */
+    class Photo(
+        val bytes: ByteArray,
+        val observer: String?,
+        val license: String,
+        val url: String,
+        val stage: String = "unspecified",
+    )
 
-    @Synchronized
-    fun photos(i: Int): List<Photo> {
+    private val hasStageColumn: Boolean by lazy {
+        synchronized(dbLock) {
+            if (!hasPhotos) return@synchronized false
+            db.rawQuery("PRAGMA table_info(photo)", null).use { c ->
+                while (c.moveToNext()) if (c.getString(1) == "stage") return@synchronized true
+            }
+            false
+        }
+    }
+
+    fun photos(i: Int): List<Photo> = synchronized(dbLock) {
         if (!hasPhotos || i !in species.ids.indices) return emptyList()
-        return db.rawQuery(
-            "SELECT image, observer, license, url FROM photo WHERE species_id = ? ORDER BY rank",
-            arrayOf(species.ids[i].toString()),
-        ).use { c ->
-            buildList { while (c.moveToNext()) add(Photo(c.getBlob(0), if (c.isNull(1)) null else c.getString(1), c.getString(2), c.getString(3))) }
+        val sql = if (hasStageColumn) {
+            "SELECT image, observer, license, url, stage FROM photo WHERE species_id = ? ORDER BY rank"
+        } else {
+            "SELECT image, observer, license, url FROM photo WHERE species_id = ? ORDER BY rank"
+        }
+        db.rawQuery(sql, arrayOf(species.ids[i].toString())).use { c ->
+            buildList {
+                while (c.moveToNext()) {
+                    val stage = if (hasStageColumn && !c.isNull(4)) c.getString(4) else "unspecified"
+                    add(Photo(c.getBlob(0), if (c.isNull(1)) null else c.getString(1), c.getString(2), c.getString(3), stage))
+                }
+            }
         }
     }
 

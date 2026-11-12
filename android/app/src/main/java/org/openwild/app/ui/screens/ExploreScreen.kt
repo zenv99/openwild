@@ -67,8 +67,21 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
         return
     }
     var results by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var searchError by remember { mutableStateOf<String?>(null) }
+    var searchReady by remember { mutableStateOf(false) }
     LaunchedEffect(pack.regionId, state.exploreQuery, state.exploreFilter) {
-        results = withContext(Dispatchers.Default) { pack.search(state.exploreQuery, state.exploreFilter) }
+        searchReady = false
+        val found = runCatching {
+            withContext(Dispatchers.Default) { pack.search(state.exploreQuery, state.exploreFilter, limit = pack.species.size) }
+        }
+        if (found.isSuccess) {
+            searchError = null
+            results = found.getOrThrow()
+        } else {
+            results = emptyList()
+            searchError = found.exceptionOrNull()?.message
+        }
+        searchReady = true
     }
     val filters = listOf(
         ExploreFilter.ALL to R.string.filter_all,
@@ -83,7 +96,8 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
     val showGrid = grid && pack.hasPhotos
     // Photo-first: species with a picture come first, each group still ordered by how common it is.
     val shown = remember(results, showGrid) { if (showGrid) results.sortedByDescending { it in pack.withPhoto } else results }
-    val full = GridItemSpan(Int.MAX_VALUE)
+    // Span must be maxLineSpan. GridItemSpan(Int.MAX_VALUE) is wider than any row, so Compose 1.7
+    // stops advancing items and Explore never draws.
 
     LazyVerticalGrid(
         columns = if (showGrid) GridCells.Adaptive(150.dp) else GridCells.Fixed(1),
@@ -91,7 +105,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        item(span = { full }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             OutlinedTextField(
                 value = state.exploreQuery,
                 onValueChange = vm::setExploreQuery,
@@ -102,14 +116,14 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             )
         }
-        item(span = { full }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(filters) { (f, label) ->
                     FilterChip(selected = state.exploreFilter == f, onClick = { vm.setExploreFilter(f) }, label = { Text(stringResource(label)) })
                 }
             }
         }
-        item(span = { full }) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     stringResource(R.string.results_count, results.size, pack.regionName),
@@ -125,6 +139,19 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                         )
                     }
                 }
+            }
+        }
+        if (!searchReady) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(stringResource(R.string.explore_loading), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else if (searchError != null) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(stringResource(R.string.explore_error, searchError ?: ""), color = MaterialTheme.colorScheme.error)
+            }
+        } else if (shown.isEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(stringResource(R.string.explore_empty, pack.regionName), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         if (showGrid) {
@@ -149,10 +176,10 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                         Text(pack.species.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    DangerBadge(flags)
+                    DangerBadge(flags, fungus = pack.species.isFungus[i])
                 }
             }
         }
-        item(span = { full }) { Spacer(Modifier.size(24.dp)) }
+        item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.size(24.dp)) }
     }
 }

@@ -15,7 +15,7 @@
     <string name="survival_mode">Survival mode</string>
     <string name="survival_mode_desc">Show survival value first and highlight deadly species.</string>
     <string name="active_region">Region: %1$s (%2$d species)</string>
-    <string name="no_pack">No region pack installed. Download one while you have internet.</string>
+    <string name="no_pack">Choose a region to install its field guide. Nothing is installed until you do.</string>
     <string name="model_missing">Photo ID is coming soon. Meanwhile, the full offline field guide is ready: tap Explore to search every species.</string>
     <string name="suggested_region">You seem to be in %1$s.</string>
     <string name="credits">Photo credits</string>
@@ -127,7 +127,8 @@
     <string name="badge_psychoactive">Psychoactive</string>
     <string name="badge_toxic">Toxic</string>
     <string name="badge_caution">Caution</string>
-    <string name="badge_edible">Edible</string>
+    <string name="badge_edible">Food use reported</string>
+    <string name="badge_food_reported">Food use reported</string>
 
     <!-- results -->
     <string name="based_on_photos">Based on %1$d photo(s)</string>
@@ -199,5 +200,47 @@
     <string name="hero_mushroom_cd">Fly agaric mushroom on autumn leaves</string>
     <string name="hero_fruit_cd">Tropical fruit: papaya, mango, guava, pineapple</string>
     <string name="hero_photo_credit">Photos: D. J. Bergsma (CC BY-SA 4.0) · P. Greb, USDA (public domain) · Wikimedia Commons</string>
+
+    <string name="camera_failed">Couldn\'t use the camera. %1$s</string>
+    <string name="camera_not_ready">The camera is still starting. Wait a moment and try the shutter again.</string>
+    <string name="camera_none">This phone has no camera OpenWild can open.</string>
+    <string name="camera_retry">Try the camera again</string>
+    <string name="photo_unreadable">That photo couldn\'t be read. Try taking it again.</string>
+    <string name="identify_needs_model">Photo identification needs the on-device model, and it isn\'t in this install.</string>
+    <string name="identify_needs_pack">Choose a region pack before identifying.</string>
+    <string name="identify_no_fingerprints">This region pack has no photo fingerprints yet, so identification can\'t match a picture. You can still browse and review species.</string>
+
+    <string name="explore_loading">Opening the catalog…</string>
+    <string name="explore_error">Couldn\'t open this region\'s catalog. %1$s</string>
+    <string name="explore_empty">Nothing in %1$s matches that search.</string>
+
+    <string name="choose_region_title">Choose your region</string>
+    <string name="choose_region_body">Pick a region to install on this phone. Identification only uses species recorded there, and it works offline after the pack is installed. Bali is the first finished pack. Other regions are listed, but their packs are not finished — nothing is downloaded or invented for them.</string>
+    <string name="region_not_ready">%1$s doesn\'t have a finished pack yet.</string>
+    <string name="install_pack">Install</string>
+    <string name="installing_pack">Installing…</string>
+    <string name="status_not_ready">Not finished — no pack to install</string>
+    <string name="status_ready">Ready to install · v%1$d · %2$d species</string>
+    <string name="pack_update_banner">A newer pack for this region is included in this version of the app.</string>
+    <string name="pack_update_action">Install update</string>
+    <string name="near_you_install">Suggested from your location. Install only if this is the region you want.</string>
+
+    <string name="review_title">Your review</string>
+    <string name="review_hint">Saved on this phone only. No account. Nothing is uploaded.</string>
+    <string name="review_text_label">Notes</string>
+    <string name="review_save">Save review</string>
+    <string name="review_saved">Review saved on this phone</string>
+    <string name="review_star">%1$d stars</string>
+
+    <string name="stage_seedling">Seedling</string>
+    <string name="stage_leaves">Leaves</string>
+    <string name="stage_flower">Flowering</string>
+    <string name="stage_fruit">Fruiting</string>
+    <string name="stage_closeup">Close-up</string>
+    <string name="stage_field">Field view</string>
+    <string name="stage_specimen">Herbarium sheet</string>
+    <string name="stage_unspecified">Photo</string>
+    <string name="photo_stage_missing">No openly licensed %1$s photo</string>
+    <string name="photo_none">No openly licensed photo for this species. A missing photo is left blank — OpenWild does not substitute another picture.</string>
 </resources>
 

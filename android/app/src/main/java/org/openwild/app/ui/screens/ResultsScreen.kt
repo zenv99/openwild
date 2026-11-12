@@ -97,7 +97,7 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(sp.commonNames[top.index] ?: sp.scientificNames[top.index], style = MaterialTheme.typography.headlineSmall)
                         Text(sp.scientificNames[top.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        DangerBadge(pack.safety[top.index])
+                        DangerBadge(pack.safety[top.index], fungus = sp.isFungus[top.index])
                         Text(
                             stringResource(R.string.based_on_photos, res.photoCount),
                             style = MaterialTheme.typography.labelSmall,
@@ -182,7 +182,7 @@ private fun CandidateRow(vm: AppViewModel, c: Candidate, onClick: () -> Unit) {
         Spacer(Modifier.width(12.dp))
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("${(c.prob * 100).roundToInt()}%", fontWeight = FontWeight.Bold, color = if (c.isDeadly) Danger else ink)
-            DangerBadge(pack.safety[c.index])
+            DangerBadge(pack.safety[c.index], fungus = sp.isFungus[c.index])
         }
     }
 }

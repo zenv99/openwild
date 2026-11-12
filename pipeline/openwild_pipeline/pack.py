@@ -41,7 +41,8 @@ CREATE TABLE attribution (
 );
 CREATE TABLE photo (
   id INTEGER PRIMARY KEY, species_id INTEGER NOT NULL REFERENCES species(id), rank INTEGER NOT NULL,
-  thumb BLOB NOT NULL, image BLOB NOT NULL, observer TEXT, license TEXT NOT NULL, url TEXT NOT NULL
+  thumb BLOB NOT NULL, image BLOB NOT NULL, observer TEXT, license TEXT NOT NULL, url TEXT NOT NULL,
+  stage TEXT NOT NULL DEFAULT 'unspecified'
 );
 CREATE INDEX photo_species ON photo(species_id, rank);
 """
@@ -67,28 +68,47 @@ class SpeciesRecord:
     photos: list[dict] = field(default_factory=list)  # {path, observer, license, url}: shown in the app
 
 
-IMAGE_PX = 448      # cover photo (also scaled down on the phone for list thumbnails)
-IMAGE_Q = 56
-EXTRA_PX = 384      # further photos, shown when swiping
-EXTRA_Q = 50
+# Display thumbs only. The raw training frames stay in the pipeline work dir and are not packed.
+# Long edge 320px (floor 256px), WebP quality 65 (floor 60): about 8–20 KB, EXIF dropped by re-encoding.
+DISPLAY_PX = 320
+DISPLAY_Q = 65
+DISPLAY_MIN_PX = 256
+DISPLAY_MIN_Q = 60
+DISPLAY_MAX_BYTES = 20_000
 
 
 def encode_photo(path, cover: bool = True) -> tuple[bytes, bytes] | None:
-    """(thumbnail, image) as WebP. Thumbnails are no longer stored (empty): the app scales the cover photo
-    down itself, which saves ~6 KB per species."""
+    """(thumbnail, image) as lossy WebP. Thumbnails are empty: the app scales the display image.
+
+    `cover` is unused; every packed photo uses the same size budget so a life-stage strip
+    does not cost more than the cover. EXIF is not copied.
+    """
     import io
 
     from PIL import Image
 
+    del cover  # one budget for every display photo
     try:
         im = Image.open(path).convert("RGB")
     except Exception:
         return None
-    px, q = (IMAGE_PX, IMAGE_Q) if cover else (EXTRA_PX, EXTRA_Q)
-    im.thumbnail((px, px), Image.LANCZOS)
-    b = io.BytesIO()
-    im.save(b, "WEBP", quality=q, method=6)
-    return b"", b.getvalue()
+    px, q = DISPLAY_PX, DISPLAY_Q
+    data = b""
+    for _ in range(4):
+        out = im.copy()
+        out.thumbnail((px, px), Image.LANCZOS)
+        buf = io.BytesIO()
+        out.save(buf, "WEBP", quality=q, method=6)
+        data = buf.getvalue()
+        if len(data) <= DISPLAY_MAX_BYTES:
+            break
+        if q > DISPLAY_MIN_Q:
+            q = DISPLAY_MIN_Q
+        elif px > DISPLAY_MIN_PX:
+            px = DISPLAY_MIN_PX
+        else:
+            break
+    return b"", data
 
 
 def _projected(rec: "SpeciesRecord", w, mean, project) -> "SpeciesRecord":
@@ -124,6 +144,7 @@ def build_pack(
     projection: tuple | None = None,
     photos_per_species: int = 3,
     photos_per_key_species: int = 4,
+    keep_each_prototype: bool = False,
 ) -> Path:
     params = {**config.DEFAULT_PARAMS, **(params or {})}
     if projection is not None:
@@ -185,7 +206,9 @@ def build_pack(
             ),
         )
         if has_img:
-            for blob, scale in build_species_prototypes(rec.embeddings.astype(np.float32), seed=sid):
+            for blob, scale in build_species_prototypes(
+                rec.embeddings.astype(np.float32), seed=sid, keep_each=keep_each_prototype,
+            ):
                 con.execute("INSERT INTO prototype (species_id, vec, scale, kind) VALUES (?,?,?,'image')", (sid, blob, scale))
         if rec.text_embedding is not None and (not has_img or len(rec.embeddings) < 10):
             blob, scale = quantize(rec.text_embedding)
@@ -193,15 +216,20 @@ def build_pack(
         rank = 0
         key_species = rec.scientific_name.lower() in safety_names
         limit = max(photos_per_species, photos_per_key_species) if key_species else photos_per_species
+        seen_bytes: set[bytes] = set()
         for ph in rec.photos:
             if rank >= limit:
                 break
+            lic = config.commercial_license(ph.get("license"))
+            if lic is None:
+                continue  # never pack CC BY-NC, ND, or an unknown licence
             enc = encode_photo(ph["path"], cover=rank == 0)
-            if enc is None:
+            if enc is None or enc[1] in seen_bytes:
                 continue
+            seen_bytes.add(enc[1])
             con.execute(
-                "INSERT INTO photo (species_id, rank, thumb, image, observer, license, url) VALUES (?,?,?,?,?,?,?)",
-                (sid, rank, enc[0], enc[1], ph.get("observer"), ph["license"], ph["url"]),
+                "INSERT INTO photo (species_id, rank, thumb, image, observer, license, url, stage) VALUES (?,?,?,?,?,?,?,?)",
+                (sid, rank, enc[0], enc[1], ph.get("observer"), lic, ph["url"], ph.get("stage") or "unspecified"),
             )
             rank += 1
         for a in rec.attributions:

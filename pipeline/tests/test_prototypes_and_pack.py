@@ -127,9 +127,11 @@ def test_build_pack_stores_display_photos(tmp_path):
 
     img = tmp_path / "a.jpg"
     Image.new("RGB", (300, 200), (40, 160, 60)).save(img)
+    img2 = tmp_path / "b.jpg"
+    Image.new("RGB", (280, 180), (180, 90, 40)).save(img2)
     recs = [SpeciesRecord(scientific_name="Musa acuminata", kingdom="Plantae",
                           photos=[{"path": str(img), "observer": "A", "license": "cc-by", "url": "https://x/1"},
-                                  {"path": str(img), "observer": "B", "license": "cc0", "url": "https://x/2"},
+                                  {"path": str(img2), "observer": "B", "license": "cc0", "url": "https://x/2"},
                                   {"path": str(tmp_path / "missing.jpg"), "observer": "C", "license": "cc0", "url": "u"}])]
     out = build_pack(tmp_path / "P.owpack", "P", "P", 1, recs, {}, guide_only=True, photos_per_species=2)
     con = sqlite3.connect(out)
