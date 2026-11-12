@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,6 +30,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,9 +41,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.openwild.app.R
 import org.openwild.app.core.Tier
@@ -75,41 +84,59 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
         if (tier == Tier.UNKNOWN) WarningBox(stringResource(R.string.notice_not_in_library))
 
         Card(
-            Modifier.fillMaxWidth().clickable { vm.go(Screen.Species(top.index, tier)) },
+            Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
             Column {
-                state.photos.firstOrNull()?.let { p ->
-                    Box {
-                        Image(
-                            bitmap = p.bitmap.asImageBitmap(),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxWidth().height(200.dp),
-                        )
-                        Box(Modifier.align(Alignment.TopStart).padding(12.dp)) {
-                            Pill(tierLabel(tier), Color.White, tierColor(tier))
+                Column(Modifier.clickable { vm.go(Screen.Species(top.index, tier)) }) {
+                    state.photos.firstOrNull()?.let { p ->
+                        Box {
+                            Image(
+                                bitmap = p.bitmap.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxWidth().height(200.dp),
+                            )
+                            Box(Modifier.align(Alignment.TopStart).padding(12.dp)) {
+                                Pill(tierLabel(tier), Color.White, tierColor(tier))
+                            }
+                        }
+                    }
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(sp.commonNames[top.index] ?: sp.scientificNames[top.index], style = MaterialTheme.typography.headlineSmall)
+                                Text(sp.scientificNames[top.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                DangerBadge(pack.safety[top.index])
+                                Text(
+                                    stringResource(R.string.based_on_photos, res.photoCount),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            // score is round(100 × P(top)), the fused match probability. Label only.
+                            MatchScore(res.result.score, tierColor(tier))
+                        }
+                        if (tier == Tier.LOW) {
+                            Text(
+                                stringResource(R.string.low_confidence_compare),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.error,
+                            )
                         }
                     }
                 }
-                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(sp.commonNames[top.index] ?: sp.scientificNames[top.index], style = MaterialTheme.typography.headlineSmall)
-                        Text(sp.scientificNames[top.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        DangerBadge(pack.safety[top.index])
-                        Text(
-                            stringResource(R.string.based_on_photos, res.photoCount),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    ConfidenceRing(res.result.score, tierColor(tier))
-                }
+                MatchConfidenceHint(res.photoCount)
             }
         }
         if (tier == Tier.LOW) WarningBox(stringResource(R.string.notice_not_confident))
+        WarningBox(
+            stringResource(R.string.results_safety_note, stringResource(R.string.footer)),
+            danger = false,
+        )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (tier != Tier.HIGH && state.photos.size < AppViewModel.MAX_PHOTOS) {
@@ -156,6 +183,76 @@ fun displayName(vm: AppViewModel, i: Int): String {
     return sp.commonNames[i]?.let { "$it (${sp.scientificNames[i]})" } ?: sp.scientificNames[i]
 }
 
+/** The fused match probability, labeled so a bare percent is not left to guess at. */
+@Composable
+private fun MatchScore(percent: Int, color: Color, compact: Boolean = false) {
+    val spoken = stringResource(R.string.confidence, percent)
+    // Candidate rows sit on a fixed light danger background when deadly, so they pass their own ink.
+    // The top score sits on the theme surface: keep the words in onSurface so they stay readable.
+    val labelColor = if (compact) color else MaterialTheme.colorScheme.onSurface
+    Column(
+        Modifier
+            .width(if (compact) 84.dp else 96.dp)
+            .clearAndSetSemantics { contentDescription = spoken },
+        horizontalAlignment = if (compact) Alignment.End else Alignment.CenterHorizontally,
+    ) {
+        if (compact) {
+            Text("$percent%", fontWeight = FontWeight.Bold, color = color, textAlign = TextAlign.End)
+        } else {
+            ConfidenceRing(percent, color)
+        }
+        Text(
+            stringResource(R.string.match_confidence_label),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = labelColor,
+            textAlign = if (compact) TextAlign.End else TextAlign.Center,
+        )
+    }
+}
+
+/** One-line meaning of the percent, with a tap for the fuller offline-model explanation. */
+@Composable
+private fun MatchConfidenceHint(photoCount: Int) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, bottom = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.small)
+                .clickable { expanded = !expanded }
+                .padding(vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                pluralStringResource(R.plurals.match_confidence_hint, photoCount),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(
+                Icons.Filled.Info,
+                contentDescription = stringResource(
+                    if (expanded) R.string.match_confidence_info_hide_cd else R.string.match_confidence_info_cd,
+                ),
+                modifier = Modifier.padding(8.dp).size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (expanded) {
+            Text(
+                stringResource(R.string.match_confidence_info),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
+            )
+        }
+    }
+}
+
 @Composable
 private fun CandidateRow(vm: AppViewModel, c: Candidate, onClick: () -> Unit) {
     val pack = vm.pack ?: return
@@ -181,7 +278,7 @@ private fun CandidateRow(vm: AppViewModel, c: Candidate, onClick: () -> Unit) {
         }
         Spacer(Modifier.width(12.dp))
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("${(c.prob * 100).roundToInt()}%", fontWeight = FontWeight.Bold, color = if (c.isDeadly) Danger else ink)
+            MatchScore((c.prob * 100).roundToInt(), if (c.isDeadly) Danger else ink, compact = true)
             DangerBadge(pack.safety[c.index])
         }
     }

@@ -43,7 +43,13 @@
 
     <!-- Results -->
     <string name="results">Results</string>
-    <string name="confidence">%1$d%% confidence</string>
+    <string name="confidence">%1$d%% match confidence</string>
+    <string name="match_confidence_label">match confidence</string>
+    <string name="match_confidence_info">The offline model compares what you photographed with the other species in your region, including how common they are there this month, and turns that into this match confidence. A high percent means this species came out ahead. It can still be wrong.</string>
+    <string name="match_confidence_info_cd">What match confidence means</string>
+    <string name="match_confidence_info_hide_cd">Hide match confidence explanation</string>
+    <string name="low_confidence_compare">Low confidence, compare carefully</string>
+    <string name="results_safety_note">%1$s Never eat a plant you haven\'t independently identified. This is not medical advice.</string>
     <string name="tier_high">High confidence</string>
     <string name="tier_medium">Medium confidence</string>
     <string name="tier_low">Low confidence</string>
@@ -63,6 +69,10 @@
     <string name="notice_not_reviewed">Not yet expert reviewed.</string>
     <string name="legal_warning">Psychoactive. Contains substances controlled in many countries. Possession or use may be illegal where you are. Toxic and deadly lookalikes exist.</string>
     <string name="footer">Never eat anything based only on this app.</string>
+    <plurals name="match_confidence_hint">
+        <item quantity="one">How closely this photo matches this species in the offline model. Not a guarantee.</item>
+        <item quantity="other">How closely these photos match this species in the offline model. Not a guarantee.</item>
+    </plurals>
 
     <!-- Species page -->
     <string name="lookalikes">Lookalikes</string>
@@ -134,7 +144,8 @@
     <string name="add_photo">Add photo</string>
     <string name="share_sighting">Share sighting</string>
     <string name="report_wrong">Wrong ID?</string>
-    <string name="share_text">I found what might be %1$s (%2$d%% confidence), identified offline with OpenWild. Confirm it on iNaturalist to help science.</string>
+    <string name="share_text">I found what might be %1$s (%2$d%% match confidence), identified offline with OpenWild. Confirm it on iNaturalist to help science.</string>
+    <string name="species_match_pill">%1$s · %2$d%% match</string>
     <string name="lookalike_line">Lookalike: %1$s — %2$s</string>
 
     <!-- regions (packs) -->

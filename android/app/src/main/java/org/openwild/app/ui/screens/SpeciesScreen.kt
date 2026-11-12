@@ -106,7 +106,13 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                         Pill(content.edibility.replace('_', ' '), Color.White, glass)
                     }
                     if (content?.psychoactive == true) Pill(stringResource(R.string.badge_psychoactive), Color.White, Psychedelic)
-                    if (fromTopResult) Pill(tierLabel(tier) + " · ${res!!.result.score}%", Color.White, glass)
+                    if (fromTopResult) {
+                        Pill(
+                            stringResource(R.string.species_match_pill, tierLabel(tier), res!!.result.score),
+                            Color.White,
+                            glass,
+                        )
+                    }
                 }
             }
         }
