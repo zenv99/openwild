@@ -66,9 +66,19 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
         }
         return
     }
+    var grid by remember { mutableStateOf(true) }
     var results by remember { mutableStateOf<List<Int>>(emptyList()) }
-    LaunchedEffect(pack.regionId, state.exploreQuery, state.exploreFilter) {
-        results = withContext(Dispatchers.Default) { pack.search(state.exploreQuery, state.exploreFilter) }
+    LaunchedEffect(pack.regionId, pack.version, state.exploreQuery, state.exploreFilter, grid) {
+        results = withContext(Dispatchers.Default) {
+            // Warm the safety table off the UI thread before rows and tiles read it.
+            runCatching { pack.safety }
+            val found = runCatching { pack.search(state.exploreQuery, state.exploreFilter) }.getOrDefault(emptyList())
+            if (grid && pack.hasPhotos) {
+                runCatching { found.sortedByDescending { it in pack.withPhoto } }.getOrDefault(found)
+            } else {
+                found
+            }
+        }
     }
     val filters = listOf(
         ExploreFilter.ALL to R.string.filter_all,
@@ -79,10 +89,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
         ExploreFilter.PSYCHOACTIVE to R.string.badge_psychoactive,
     )
 
-    var grid by remember { mutableStateOf(true) }
     val showGrid = grid && pack.hasPhotos
-    // Photo-first: species with a picture come first, each group still ordered by how common it is.
-    val shown = remember(results, showGrid) { if (showGrid) results.sortedByDescending { it in pack.withPhoto } else results }
     val full = GridItemSpan(Int.MAX_VALUE)
 
     LazyVerticalGrid(
@@ -128,11 +135,11 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
             }
         }
         if (showGrid) {
-            gridItems(shown, key = { it }) { i ->
+            gridItems(results, key = { it }) { i ->
                 SpeciesTile(pack, i) { vm.go(Screen.Species(i, Tier.LOW)) }
             }
         } else {
-            gridItems(shown, key = { it }) { i ->
+            gridItems(results, key = { it }) { i ->
                 val flags = pack.safety[i]
                 Row(
                     Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)

@@ -34,7 +34,7 @@ jobs:
           $AAPT dump xmltree $APK AndroidManifest.xml > manifest.txt
           echo "Permissions:"; grep "uses-permission" badging.txt || true
           # Only these permissions are allowed. INTERNET is for region downloads from GitHub only (PackManager.ALLOWED_HOSTS).
-          ALLOWED="android.permission.CAMERA android.permission.ACCESS_COARSE_LOCATION android.permission.INTERNET org.openwild.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+          ALLOWED="android.permission.CAMERA android.permission.ACCESS_COARSE_LOCATION android.permission.ACCESS_NETWORK_STATE android.permission.INTERNET org.openwild.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
           for p in $(grep "uses-permission" badging.txt | sed "s/.*name='\([^']*\)'.*/\1/"); do
             echo " $ALLOWED " | grep -q " $p " || { echo "FAIL: unexpected permission $p"; exit 1; }
           done
@@ -59,7 +59,7 @@ jobs:
         run: |
           VER="0.6.${OW_BUILD_NUMBER}"
           cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
-          NOTES="OpenWild ${VER}. Goes online only to download regions from GitHub; HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
+          NOTES="OpenWild ${VER}. Goes online only to check and download region packs from GitHub, and only downloads after you agree. HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
           Install: download OpenWild.apk on your Android phone, open it, allow installing from this source.
           Automatic updates: install Obtainium (free, open source) and add https://github.com/zenv99/openwild"
           # Versioned release: what updaters such as Obtainium follow.

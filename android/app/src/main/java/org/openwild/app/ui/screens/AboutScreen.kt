@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +35,10 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -59,6 +65,7 @@ import org.openwild.app.ui.theme.Lime
 @Composable
 fun AboutScreen(state: UiState, vm: AppViewModel) {
     val context = LocalContext.current
+    var lightningCopied by remember { mutableStateOf(false) }
     ScrollColumn {
         // Creator card
         Box(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(HeroGradient).padding(20.dp)) {
@@ -76,7 +83,10 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
                 Text(stringResource(R.string.donate_body))
                 Text(BuildConfig.LIGHTNING_ADDRESS, fontWeight = FontWeight.Bold)
                 Button(
-                    onClick = { Contribute.donateLightning(context) },
+                    onClick = {
+                        Contribute.copyLightningAddress(context)
+                        lightningCopied = true
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Lime, contentColor = ForestDeep),
                 ) {
@@ -85,6 +95,28 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
                     Text(stringResource(R.string.donate_lightning), fontWeight = FontWeight.Bold)
                 }
             }
+        }
+        if (lightningCopied && BuildConfig.SHOW_DONATIONS) {
+            AlertDialog(
+                onDismissRequest = { lightningCopied = false },
+                title = { Text(stringResource(R.string.donate_copied_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.donate_copied_body))
+                        SelectionContainer {
+                            Text(BuildConfig.LIGHTNING_ADDRESS, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { Contribute.openLightningWallet(context) }) {
+                        Text(stringResource(R.string.donate_open_wallet))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { lightningCopied = false }) { Text(stringResource(R.string.donate_done)) }
+                },
+            )
         }
 
         SectionCard(stringResource(R.string.feedback_title), Icons.Filled.Feedback, MaterialTheme.colorScheme.primary) {

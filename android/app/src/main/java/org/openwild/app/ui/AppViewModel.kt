@@ -11,17 +11,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.openwild.app.OpenWildApp
 import org.openwild.app.R
 import org.openwild.app.core.ConfidenceResult
+import org.openwild.app.core.FieldNote
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
+import org.openwild.app.core.PackUpdates
+import org.openwild.app.core.PackVersion
+import org.openwild.app.core.RegionChoice
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.core.RegionLocator
 import org.openwild.app.core.SafetyPolicy
 import org.openwild.app.core.Tier
+import org.openwild.app.data.FieldNotes
 import org.openwild.app.ml.ImageUtils
 import org.openwild.app.pack.Location
+import org.openwild.app.pack.Networks
 import org.openwild.app.pack.PackManager
 import org.openwild.app.pack.RegionPack
 import java.util.Calendar
@@ -65,7 +73,14 @@ sealed interface Screen {
 /** Bottom-navigation destinations. */
 val TopLevel: List<Screen> = listOf(Screen.Home, Screen.Explore, Screen.Packs, Screen.About)
 
+data class UpdateOffer(
+    val packs: List<PackManager.RemotePack>,
+    val bytes: Long,
+    val confirmMobileData: Boolean,
+)
+
 data class UiState(
+    val ready: Boolean = false,
     val disclaimerAccepted: Boolean = false,
     val stack: List<Screen> = listOf(Screen.Home),
     val survivalMode: Boolean = false,
@@ -89,6 +104,8 @@ data class UiState(
     val message: String? = null,
     val exploreQuery: String = "",
     val exploreFilter: RegionPack.ExploreFilter = RegionPack.ExploreFilter.ALL,
+    val updateOffer: UpdateOffer? = null,
+    val fieldNote: FieldNote? = null,
 ) {
     val screen: Screen get() = stack.last()
 }
@@ -97,6 +114,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val ow = app as OpenWildApp
     private val prefs = app.getSharedPreferences("openwild", 0)
+    private val fieldNotes = FieldNotes(app)
+    private val noteLock = Mutex()
+    private var updatesDismissed = false
     private val _state = MutableStateFlow(
         UiState(
             disclaimerAccepted = prefs.getBoolean("disclaimer", false),
@@ -120,6 +140,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             _state.update { it.copy(regions = regions) }
             refreshInstalled()
             loadActivePack()
+            _state.update { it.copy(ready = true) }
+            checkForPackUpdates()
         }
     }
 
@@ -152,6 +174,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun acceptDisclaimer() {
         prefs.edit().putBoolean("disclaimer", true).apply()
         _state.update { it.copy(disclaimerAccepted = true) }
+        checkForPackUpdates()
     }
 
     fun setSurvivalMode(on: Boolean) {
@@ -174,24 +197,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val loc = Location.lastKnown(app) ?: return@withContext null
             RegionLocator.locate(Location.bundledRegions(app), loc.first, loc.second)
         } ?: return@launch
+        // A suggestion only. The user still has to tap the region.
         _state.update { it.copy(suggestedRegion = region.name, suggestedRegionId = region.id) }
-        // Auto-select an installed pack for the detected region if none is active yet.
-        if (ow.packs.activeRegionId == null && _state.value.installed.any { it.regionId == region.id && it.compatible }) {
-            useRegion(region.id)
-        }
     }
 
     private suspend fun loadActivePack() {
         val installed = _state.value.installed.filter { it.compatible }
-        val id = ow.packs.activeRegionId?.takeIf { a -> installed.any { it.regionId == a } }
-            ?: installed.firstOrNull()?.regionId
+        val id = RegionChoice.activeId(ow.packs.activeRegionId, installed.map { it.regionId })
+        if (ow.packs.activeRegionId != null && id == null) ow.packs.activeRegionId = null
         val loaded = withContext(Dispatchers.IO) {
             id?.let { runCatching { RegionPack(ow.packs.fileFor(it)) }.getOrNull() }
         }
         pack?.close()
         pack = loaded
         identifier = loaded?.let { Identifier(it.index, it.species, it.params, it.projection) }
-        if (loaded != null) ow.packs.activeRegionId = loaded.regionId
         _state.update {
             it.copy(
                 activeRegionName = loaded?.regionName,
@@ -204,6 +223,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun useRegion(regionId: String) = viewModelScope.launch {
         ow.packs.activeRegionId = regionId
         loadActivePack()
+        checkForPackUpdates()
     }
 
     /** Install a region file chosen by the user. */
@@ -212,6 +232,46 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         refreshInstalled()
         r.onSuccess { useRegion(it) }
         _state.update { it.copy(message = r.exceptionOrNull()?.message) }
+    }
+
+    /** Fetch the public pack index and, once a region is chosen, offer updates. Never downloads by itself. */
+    fun checkForPackUpdates() = viewModelScope.launch {
+        if (!org.openwild.app.BuildConfig.ALLOW_NETWORK) return@launch
+        val fetched = withContext(Dispatchers.IO) { runCatching { ow.packs.fetchIndex() } }
+        val remote = fetched.getOrNull()
+        _state.update { it.copy(remote = remote ?: it.remote, remoteError = fetched.isFailure && it.remote.isEmpty() && remote == null) }
+        if (remote == null || updatesDismissed || ow.packs.activeRegionId == null || !_state.value.disclaimerAccepted) return@launch
+        val updates = PackUpdates.pending(
+            _state.value.installed.associate { it.regionId to it.version },
+            remote.map { PackVersion(it.regionId, it.version, it.size) },
+        )
+        if (updates.isEmpty()) {
+            _state.update { it.copy(updateOffer = null) }
+            return@launch
+        }
+        val metered = withContext(Dispatchers.Default) { Networks.isMetered(getApplication()) }
+        val bytes = updates.sumOf { it.bytes }
+        val byId = remote.associateBy { it.regionId }
+        _state.update {
+            it.copy(
+                updateOffer = UpdateOffer(
+                    packs = updates.mapNotNull { u -> byId[u.regionId] },
+                    bytes = bytes,
+                    confirmMobileData = PackUpdates.confirmMobileData(bytes, metered),
+                ),
+            )
+        }
+    }
+
+    fun acceptPackUpdates() {
+        val offer = _state.value.updateOffer ?: return
+        _state.update { it.copy(updateOffer = null) }
+        offer.packs.forEach { download(it) }
+    }
+
+    fun dismissPackUpdates() {
+        updatesDismissed = true
+        _state.update { it.copy(updateOffer = null) }
     }
 
     fun refreshRemote() = viewModelScope.launch {
@@ -240,6 +300,82 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         refreshInstalled()
         loadActivePack()
     }
+
+    // ---------- on-device notes (never uploaded unless the user taps submit) ----------
+    fun loadFieldNote(name: String) = viewModelScope.launch(Dispatchers.IO) {
+        val note = fieldNotes.get(name)
+        _state.update { s ->
+            val cur = s.fieldNote
+            val merged = if (cur?.scientificName == name) {
+                note.copy(
+                    text = cur.text.ifEmpty { note.text },
+                    rating = if (cur.rating != 0) cur.rating else note.rating,
+                    photos = (cur.photos + note.photos).distinct(),
+                )
+            } else {
+                note
+            }
+            s.copy(fieldNote = merged)
+        }
+    }
+
+    fun setFieldRating(name: String, rating: Int) {
+        val cur = _state.value.fieldNote?.takeIf { it.scientificName == name } ?: FieldNote(name)
+        _state.update { it.copy(fieldNote = cur.copy(rating = FieldNote.clampRating(rating))) }
+        persistCurrentNote(name)
+    }
+
+    fun setFieldText(name: String, text: String) {
+        val cur = _state.value.fieldNote?.takeIf { it.scientificName == name } ?: FieldNote(name)
+        _state.update { it.copy(fieldNote = cur.copy(text = text)) }
+        persistCurrentNote(name)
+    }
+
+    fun addFieldPhoto(name: String, uri: Uri) = viewModelScope.launch {
+        noteLock.withLock {
+            val bmp = withContext(Dispatchers.IO) { ImageUtils.load(getApplication(), uri, maxSide = 1600) } ?: return@withLock
+            val saved = withContext(Dispatchers.IO) { fieldNotes.addPhoto(name, bmp) }
+            if (!bmp.isRecycled) bmp.recycle()
+            mergeSavedNote(name, saved)
+        }
+    }
+
+    fun addFieldPhotoBitmap(name: String, bitmap: android.graphics.Bitmap) = viewModelScope.launch {
+        noteLock.withLock {
+            val saved = withContext(Dispatchers.IO) { fieldNotes.addPhoto(name, bitmap) }
+            if (!bitmap.isRecycled) bitmap.recycle()
+            mergeSavedNote(name, saved)
+        }
+    }
+
+    fun removeFieldPhoto(name: String, fileName: String) = viewModelScope.launch {
+        noteLock.withLock {
+            val saved = withContext(Dispatchers.IO) { fieldNotes.removePhoto(name, fileName) }
+            mergeSavedNote(name, saved)
+        }
+    }
+
+    private fun persistCurrentNote(name: String) {
+        viewModelScope.launch {
+            noteLock.withLock {
+                val latest = _state.value.fieldNote?.takeIf { it.scientificName == name } ?: return@withLock
+                withContext(Dispatchers.IO) { fieldNotes.save(latest) }
+            }
+        }
+    }
+
+    private fun mergeSavedNote(name: String, saved: FieldNote) {
+        val typed = _state.value.fieldNote?.takeIf { it.scientificName == name }
+        val merged = if (typed != null && typed.text != saved.text) saved.copy(text = typed.text, rating = typed.rating) else saved
+        if (typed != null && (typed.text != saved.text || typed.rating != saved.rating)) {
+            viewModelScope.launch {
+                noteLock.withLock { withContext(Dispatchers.IO) { fieldNotes.save(merged) } }
+            }
+        }
+        _state.update { it.copy(fieldNote = merged) }
+    }
+
+    fun fieldPhotoFile(fileName: String) = fieldNotes.photoFile(fileName)
 
     // ---------- capture & identify ----------
     fun setFilter(f: KingdomFilter) = _state.update { it.copy(filter = f) }

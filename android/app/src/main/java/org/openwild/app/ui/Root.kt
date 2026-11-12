@@ -14,6 +14,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudDownload
@@ -27,8 +28,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -76,12 +80,38 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
         if (state.disclaimerAccepted) locationPermission.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 
+    val choosing = state.ready && state.disclaimerAccepted && state.activeRegionName == null
     if (!state.disclaimerAccepted) {
         AlertDialog(
             onDismissRequest = {},
             title = { Text(stringResource(R.string.disclaimer_title)) },
             text = { Text(stringResource(R.string.disclaimer_body)) },
             confirmButton = { Button(onClick = vm::acceptDisclaimer) { Text(stringResource(R.string.disclaimer_accept)) } },
+        )
+    }
+    state.updateOffer?.let { offer ->
+        val size = if (offer.bytes <= 0) "—" else "%.0f MB".format(offer.bytes / 1_000_000.0)
+        val names = offer.packs.joinToString(", ") { it.name }
+        AlertDialog(
+            onDismissRequest = vm::dismissPackUpdates,
+            title = { Text(stringResource(R.string.update_offer_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        if (offer.confirmMobileData) R.string.update_offer_mobile else R.string.update_offer_body,
+                        names,
+                        size,
+                    ),
+                )
+            },
+            confirmButton = {
+                Button(onClick = vm::acceptPackUpdates) {
+                    Text(stringResource(if (offer.confirmMobileData) R.string.update_download_mobile else R.string.download))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = vm::dismissPackUpdates) { Text(stringResource(R.string.update_not_now)) }
+            },
         )
     }
 
@@ -94,7 +124,14 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
 
     val screen = state.screen
     val isTopLevel = screen in TopLevel
-    val title = when (screen) {
+    val navColors = NavigationBarItemDefaults.colors(
+        selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        selectedTextColor = MaterialTheme.colorScheme.onSurface,
+        indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    val title = if (choosing) stringResource(R.string.choose_region_title) else when (screen) {
         Screen.Home -> ""
         Screen.Capture -> stringResource(R.string.capture_title)
         Screen.Results -> stringResource(R.string.results)
@@ -108,7 +145,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
 
     Scaffold(
         topBar = {
-            if (screen != Screen.Home) {
+            if (choosing || screen != Screen.Home) {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
@@ -118,34 +155,42 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                         )
                     },
                     navigationIcon = {
-                        if (!isTopLevel) {
+                        if (!choosing && !isTopLevel) {
                             IconButton(onClick = { vm.back() }) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                             }
                         }
                     },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
                 )
             }
         },
         bottomBar = {
-            if (isTopLevel) {
+            if (isTopLevel && !choosing) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
                     NavigationBarItem(
                         selected = screen == Screen.Home, onClick = { vm.tab(Screen.Home) },
                         icon = { Icon(Icons.Filled.Home, null) }, label = { Text(stringResource(R.string.nav_identify)) },
+                        colors = navColors,
                     )
                     NavigationBarItem(
                         selected = screen == Screen.Explore, onClick = { vm.tab(Screen.Explore) },
                         icon = { Icon(Icons.Filled.Explore, null) }, label = { Text(stringResource(R.string.explore)) },
+                        colors = navColors,
                     )
                     NavigationBarItem(
                         selected = screen == Screen.Packs, onClick = { vm.tab(Screen.Packs) },
                         icon = { Icon(Icons.Filled.CloudDownload, null) }, label = { Text(stringResource(R.string.nav_packs)) },
+                        colors = navColors,
                     )
                     NavigationBarItem(
                         selected = screen == Screen.About, onClick = { vm.tab(Screen.About) },
                         icon = { Icon(Icons.Filled.Favorite, null) }, label = { Text(stringResource(R.string.nav_about)) },
+                        colors = navColors,
                     )
                 }
             }
@@ -154,7 +199,12 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
         containerColor = MaterialTheme.colorScheme.background,
     ) { pad ->
         Box(Modifier.padding(pad).fillMaxSize()) {
-            AnimatedContent(
+            when {
+                !state.ready -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+                choosing -> PacksScreen(state, vm)
+                else -> AnimatedContent(
                 targetState = screen,
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
                 label = "screen",
@@ -170,6 +220,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                     Screen.Explore -> ExploreScreen(state, vm)
                     Screen.About -> AboutScreen(state, vm)
                 }
+            }
             }
         }
     }

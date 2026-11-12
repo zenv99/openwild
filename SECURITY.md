@@ -4,14 +4,14 @@ OpenWild is built so that **nothing about you leaves your phone**. It goes onlin
 
 | Guarantee | How it's enforced |
 |---|---|
-| Internet only for region downloads | `INTERNET` is used solely by `PackManager` to fetch region packs from GitHub (this repo's "packs" release). It refuses any host other than github.com / githubusercontent.com, HTTPS only (plain http blocked by the network security config, system certificates only), and checks each pack's SHA-256 before installing. Nothing is uploaded: the requests carry no account, ID or location. CI fails the build if any other permission appears, if plain http is allowed, or if network code appears outside `PackManager`. |
+| Internet only for region downloads | `INTERNET` is used solely by `PackManager` to fetch the public pack index and region packs from GitHub (this repo's "packs" release). It refuses any host other than github.com / githubusercontent.com, HTTPS only (plain http blocked by the network security config, system certificates only), and checks each pack's SHA-256 before installing. A pack is downloaded only after you tap Download (including the update prompt). `ACCESS_NETWORK_STATE` is local only: it tells Wi-Fi from mobile data so a large update is not offered as a silent cellular download. Nothing is uploaded: the requests carry no account, ID or location. CI fails the build if any other permission appears, if plain http is allowed, or if network code appears outside `PackManager`. |
 | Works offline | Identification, search, safety info and photos all run from the downloaded pack with no signal. |
 | No tracking | No analytics, ads, crash reporters, accounts, or Google Play Services. |
 | No cloud backup | `allowBackup="false"` and backup/transfer rules exclude all app data. CI checks this. |
 | Not debuggable | Published APKs are release builds (minified, `debuggable=false`). CI checks this. |
 | Camera & photos | Used only on the device for identification; never saved outside the app's private cache. |
 | Location | Optional and coarse. Only used on the device to suggest your region. Deny it and pick a region manually. |
-| Sharing | "Share sighting", "Wrong ID?", "Feedback" and "Tip" only hand text/a photo to another app **when you tap them**. |
+| Sharing | "Share sighting", "Wrong ID?", "Feedback", "Submit to OpenWild" and "Tip" only hand text or a photo to another app **when you tap them**. Reviews and your photos stay in app-private storage until then. |
 | New regions | Downloaded in the Packs tab, or imported from a file you choose (Packs → Import file). |
 
 ## Why Android shows a warning when installing
