@@ -157,7 +157,7 @@ class RegionPack(file: File) : Closeable {
         return valuable to deadly
     }
 
-    enum class ExploreFilter { ALL, PLANTS, FUNGI, DEADLY, SURVIVAL, PSYCHOACTIVE }
+    enum class ExploreFilter { ALL, PLANTS, FUNGI, DEADLY, SURVIVAL, PSYCHOACTIVE, PHOTOS_WANTED }
 
     /** Offline search over scientific and common names, most-observed first. */
     fun search(query: String, filter: ExploreFilter, limit: Int = 300): List<Int> {
@@ -172,6 +172,7 @@ class RegionPack(file: File) : Closeable {
                     ExploreFilter.DEADLY -> flags!![i]?.isDeadly == true
                     ExploreFilter.SURVIVAL -> flags!![i]?.survival == "high_value"
                     ExploreFilter.PSYCHOACTIVE -> flags!![i]?.psychoactive == true
+                    ExploreFilter.PHOTOS_WANTED -> photosWanted(i)
                 }
             }
             .filter { i ->
@@ -238,6 +239,40 @@ class RegionPack(file: File) : Closeable {
         }
     }
 
+    /** Photo count per species and growth stage, read once (one small GROUP BY over the photo table). */
+    private val stageCounts: Map<Int, Map<String, Int>> by lazy {
+        synchronized(dbLock) {
+            if (!hasPhotos) return@synchronized emptyMap()
+            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo GROUP BY species_id, stage"
+            else "SELECT species_id, 'unspecified', COUNT(*) FROM photo GROUP BY species_id"
+            val out = HashMap<Int, HashMap<String, Int>>()
+            db.rawQuery(sql, null).use { c ->
+                while (c.moveToNext()) {
+                    val i = idToIndex[c.getLong(0)] ?: continue
+                    out.getOrPut(i) { HashMap() }[c.getString(1) ?: "unspecified"] = c.getInt(2)
+                }
+            }
+            out
+        }
+    }
+
+    fun photoCount(i: Int): Int = stageCounts[i]?.values?.sum() ?: 0
+
+    /** Fewer than 3 photos in total: shown with a "Photos wanted" badge. */
+    fun photosWanted(i: Int): Boolean = photoCount(i) < WANTED_MIN
+
+    /** Growth stages that still need photos (fewer than 3), close-ups first. */
+    fun photoGaps(i: Int): List<String> {
+        val have = stageCounts[i].orEmpty()
+        return WANTED_STAGES.filter { (have[it] ?: 0) < WANTED_MIN }
+    }
+
+    /** Species ranked for the "help wanted" list: most-seen plants with the fewest photos first. */
+    fun mostWanted(limit: Int = 50): List<Int> = species.ids.indices
+        .filter { photosWanted(it) }
+        .sortedByDescending { species.obsCounts[it] }
+        .take(limit)
+
     fun photos(i: Int): List<Photo> = synchronized(dbLock) {
         if (!hasPhotos || i !in species.ids.indices) return emptyList()
         val sql = if (hasStageColumn) {
@@ -258,6 +293,9 @@ class RegionPack(file: File) : Closeable {
     override fun close() = db.close()
 
     companion object {
+        const val WANTED_MIN = 3
+        val WANTED_STAGES = listOf("closeup", "leaves", "flower", "fruit", "bark", "seedling")
+
         private fun floats(blob: ByteArray): FloatArray {
             val buf = java.nio.ByteBuffer.wrap(blob).order(java.nio.ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
             return FloatArray(buf.remaining()).also { buf.get(it) }

@@ -1,0 +1,12 @@
+name: 🔁 Photo ID correction
+description: The app showed the wrong plant and you found the right one.
+title: "Correction: "
+labels: [correction]
+body:
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Filled in by the app. No photo or location is included.
+    validations:
+      required: true

@@ -59,6 +59,7 @@ sealed interface Screen {
     data class Species(val index: Int, val tier: Tier) : Screen
     /** Swipe through the ranked matches for the last identification, most likely first. */
     data class Matches(val start: Int = 0) : Screen
+    data class AddPhotos(val index: Int) : Screen
     data object Packs : Screen
     data object Survival : Screen
     data object Credits : Screen

@@ -1,0 +1,67 @@
+name: Community photos -> library
+
+# A maintainer adds the label "approved" to a "photo-contribution" issue after checking the photos
+# (right plant, the person's own work, nothing private). This job downloads them, strips all metadata,
+# credits the photographer, commits them under content/community/, thanks them and rebuilds the pack.
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: community-photos
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'approved'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml pillow
+      - name: Collect approved contributions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X GET "repos/${{ github.repository }}/issues" -f labels=photo-contribution,approved -f state=open \
+            -f per_page=100 --paginate --jq '[.[] | {number, body, html_url}]' | jq -s add > /tmp/issues.json
+          jq length /tmp/issues.json
+      - name: Ingest (re-encode, strip metadata, credit)
+        working-directory: pipeline
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -m openwild_pipeline.cli community-ingest /tmp/issues.json --out /tmp/result.json
+      - name: Commit, thank contributors, rebuild packs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git add content/community
+          if git commit -m "Community photos: add approved contributions"; then
+            git pull --rebase --autostash origin main
+            git push origin HEAD:main
+            ADDED=1
+          fi
+          for n in $(jq -r '.by_issue[]' /tmp/result.json); do
+            gh issue comment "$n" --body "Thank you! Your photos are in the OpenWild library with your name on them. They'll appear in the app with the next pack update (usually within a few hours). 🌿"
+            gh issue close "$n" --reason completed
+          done
+          jq -r '.rejected | to_entries[] | "\(.key)\t\(.value)"' /tmp/result.json | while IFS=$'\t' read -r n why; do
+            gh issue comment "$n" --body "Thanks for sending these! We couldn't add them yet: $why. Please edit the issue and a maintainer will look again."
+            gh issue edit "$n" --remove-label approved
+          done
+          if [ -n "${ADDED:-}" ]; then
+            for r in $(ls content/community); do
+              gh workflow run bali-photos.yml --ref main -f region="$r" -f max_species="" -f publish=true
+            done
+          fi

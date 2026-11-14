@@ -605,6 +605,12 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     d = config.DATA_REGIONS / region_id
     photos_path = config.WORK / "photos_commercial" / region_id / "photos.csv"
     photos = list(csv.DictReader(open(photos_path, encoding="utf-8"))) if photos_path.exists() else []
+    # Community photos (users' own, CC BY 4.0) go first, so they become each plant's cover and lead the gallery.
+    from .community import load as load_community
+    community = load_community(region_id)
+    if community:
+        print(f"COMMUNITY {len(community)} photos for {len({r['scientific_name'].lower() for r in community})} species", flush=True)
+    photos = community + photos
     from .freemodel import preprocess
 
     usable = []
@@ -671,6 +677,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
         min_photos_for_image_protos=1, photos_per_species=photos_per_species, photos_per_key_species=photos_per_species,
         keep_each_prototype=True,
         sources=[
+            "OpenWild community photographers (their own photos, CC BY 4.0)",
             "GBIF species list for this region (occurrence counts)",
             "Wikimedia Commons files under " + ", ".join(sorted(config.PHOTO_LICENSES)),
             "GBIF occurrence media (including iNaturalist observers' photos) under " + ", ".join(sorted(config.PHOTO_LICENSES)),

@@ -1,5 +1,8 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.ui.stageLabel
+import org.openwild.app.ui.PhotoWanted
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
@@ -104,6 +107,7 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
 
     ScrollColumn {
         SpeciesPhotoHeader(pack, index, sp.commonNames[index] ?: sp.scientificNames[index])
+        PhotoHelpCard(pack.photoCount(index), pack.photoGaps(index)) { vm.go(Screen.AddPhotos(index)) }
 
         // Header, coloured by danger level
         Box(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(headerBrush(content)).padding(20.dp)) {
@@ -264,5 +268,33 @@ private fun SurvivalCard(c: SpeciesContent) {
     SectionCard(stringResource(R.string.survival), Icons.Filled.HealthAndSafety, tint) {
         Text(c.survivalPriority.replace('_', ' ').replaceFirstChar { it.uppercase() }, fontWeight = FontWeight.Bold)
         if (c.survivalUses.isNotEmpty()) Text(stringResource(R.string.survival_uses, c.survivalUses.joinToString(", ")))
+    }
+}
+
+/** Every plant asks for more photos: close-ups and missing growth stages. Louder when it has almost none. */
+@Composable
+private fun PhotoHelpCard(count: Int, gaps: List<String>, onAdd: () -> Unit) {
+    val urgent = count < org.openwild.app.pack.RegionPack.WANTED_MIN
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large)
+            .background(if (urgent) PhotoWanted.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceContainer)
+            .clickable(onClick = onAdd).padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Filled.PhotoCamera, null, tint = PhotoWanted, modifier = Modifier.size(28.dp))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                stringResource(if (urgent) R.string.species_photos_urgent else R.string.species_photos_more),
+                style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold,
+            )
+            val need = gaps.map { stageLabel(it) }
+            Text(
+                if (need.isEmpty()) stringResource(R.string.species_photos_body_full)
+                else stringResource(R.string.species_photos_body, need.joinToString(", ")),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        Text(stringResource(R.string.species_photos_add), color = PhotoWanted, fontWeight = FontWeight.Bold)
     }
 }

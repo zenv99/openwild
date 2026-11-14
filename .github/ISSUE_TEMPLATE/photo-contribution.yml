@@ -1,0 +1,51 @@
+name: 📷 Plant photos
+description: Share your own plant photos. Your name goes on every photo we use.
+title: "Photos: "
+labels: [photo-contribution]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping build the best free plant library on earth! 🌿
+        **Best photos:** very close, sharp, daylight. One part per photo: leaf top, leaf underside, flower, fruit (whole and cut), stem or bark, seedling, whole plant. Three or more per stage is ideal.
+        Photos posted here are public. The OpenWild app removes location data before saving them, and we strip all metadata again before adding them.
+  - type: input
+    id: species
+    attributes:
+      label: Species
+      description: Scientific name as shown in the app.
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: Region
+      placeholder: ID-BA
+    validations:
+      required: true
+  - type: input
+    id: credit
+    attributes:
+      label: Credit
+      description: The name to show on your photos (any name or nickname).
+    validations:
+      required: true
+  - type: input
+    id: stages
+    attributes:
+      label: Stages
+      description: Filled in by the app.
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: Licence
+      options:
+        - label: I took these photos myself and release them under CC BY 4.0, credited to the name above.
+          required: true
+  - type: textarea
+    id: photos
+    attributes:
+      label: Photos
+      description: Attach the photos the app saved to Pictures/OpenWild (tap here, then attach files).
+    validations:
+      required: true

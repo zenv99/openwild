@@ -1,5 +1,8 @@
 package org.openwild.app.ui
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.icons.filled.PhotoCamera
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.foundation.Image
@@ -150,6 +153,7 @@ fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick
             }
         }
         Box(Modifier.align(Alignment.TopStart).padding(8.dp)) { DangerBadge(flags, fungus = pack.species.isFungus[i]) }
+        if (pack.photosWanted(i)) PhotosWantedBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
     }
 }
 
@@ -167,13 +171,14 @@ private fun PagerDots(count: Int, current: Int, modifier: Modifier = Modifier) {
 private val LifeStages = listOf("seedling", "leaves", "flower", "fruit", "closeup")
 
 @Composable
-private fun stageLabel(stage: String): String = stringResource(
+fun stageLabel(stage: String): String = stringResource(
     when (stage) {
         "seedling" -> R.string.stage_seedling
         "leaves" -> R.string.stage_leaves
         "flower" -> R.string.stage_flower
         "fruit" -> R.string.stage_fruit
         "closeup" -> R.string.stage_closeup
+        "bark" -> R.string.stage_bark
         "field" -> R.string.stage_field
         "specimen" -> R.string.stage_specimen
         else -> R.string.stage_unspecified
@@ -292,8 +297,40 @@ private fun LifeStageStrip(photos: List<Pair<RegionPack.Photo, ImageBitmap>>) {
     }
 }
 
+/** Small camera pill: this plant still needs photos. Tapping it (where offered) opens "Add your photos". */
+@Composable
+fun PhotosWantedBadge(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
+    Row(
+        modifier.clip(RoundedCornerShape(50)).background(PhotoWanted.copy(alpha = 0.92f))
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Filled.PhotoCamera, null, tint = Color.White, modifier = Modifier.size(13.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(stringResource(R.string.photos_wanted_badge), color = Color.White, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+val PhotoWanted = Color(0xFFE07A1F)
+private const val COMMUNITY_SUFFIX = " (OpenWild community)"
+
 @Composable
 private fun PhotoCredit(p: RegionPack.Photo, color: Color) {
+    val obs = p.observer
+    if (obs != null && obs.endsWith(COMMUNITY_SUFFIX)) {
+        // Community photographers get their name in front, highlighted.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.PhotoCamera, null, tint = PhotoWanted, modifier = Modifier.size(14.dp))
+            Spacer(Modifier.width(4.dp))
+            Text(
+                stringResource(R.string.photo_credit_community, obs.removeSuffix(COMMUNITY_SUFFIX)),
+                style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
+                color = if (color == Color.Unspecified) MaterialTheme.colorScheme.onSurface else color,
+            )
+        }
+        return
+    }
     Text(
         stringResource(R.string.photo_credit, p.observer?.takeIf { it.isNotBlank() } ?: stringResource(R.string.photo_credit_unknown),
             p.license.uppercase().replace('-', ' ')),

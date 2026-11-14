@@ -256,5 +256,34 @@
     <string name="correction_saved">Saved on your phone. Thank you.</string>
     <string name="correction_saved_detail">Saved: it was %1$s. Send it to help improve photo ID? (No photo or location is sent.)</string>
     <string name="correction_send">Send</string>
+    <string name="stage_bark">Stem / bark</string>
+    <string name="filter_photos_wanted">📷 Photos wanted</string>
+    <string name="photos_wanted_badge">Photos wanted</string>
+    <string name="photo_credit_community">Photo by %1$s · OpenWild community</string>
+    <string name="home_photographer_title">Be an OpenWild plant photographer</string>
+    <string name="home_photographer_body">%1$d plants in %2$s still need photos. Your name goes on every photo we use. Tap to see which.</string>
+    <string name="species_photos_urgent">📷 Photos wanted for this plant</string>
+    <string name="species_photos_more">📷 Help us get better photos</string>
+    <string name="species_photos_body">Still needed: %1$s. Get very close. Your name goes on the photo.</string>
+    <string name="species_photos_body_full">Close-ups from more angles make photo ID more accurate. Your name goes on the photo.</string>
+    <string name="species_photos_add">Add</string>
+    <string name="contrib_title">Add your photos</string>
+    <string name="contrib_why">Help build the best plant library on earth</string>
+    <string name="contrib_tips">Get very close and fill the frame with one part per photo: leaf top, leaf underside, flower, fruit (whole and cut open), stem or bark, seedling, then the whole plant. Sharp, in daylight, several angles. 3 or more per stage is ideal. Never touch or taste a plant you don't know.</string>
+    <string name="contrib_needed">Most needed: %1$s (★)</string>
+    <string name="contrib_stage_prompt">What does this photo show?</string>
+    <string name="contrib_take">Take photo</string>
+    <string name="contrib_gallery">From gallery</string>
+    <string name="contrib_remove">Remove</string>
+    <string name="contrib_credit">Your name for the credit</string>
+    <string name="contrib_credit_help">Shown on every photo we use. Any name or nickname.</string>
+    <string name="contrib_consent">I took these photos myself and release them under CC BY 4.0, so anyone can use them, credited to my name.</string>
+    <string name="contrib_privacy">Location and camera details are removed. Photos you submit are posted publicly on GitHub, where a volunteer checks them before they go in the app.</string>
+    <string name="contrib_submit">Save %1$d photos and open the upload form</string>
+    <string name="contrib_save_photos">Save or send your photos</string>
+    <string name="contrib_save_failed">Couldn't save the photos. Please try again.</string>
+    <string name="contrib_next_title">%1$d photos saved to Pictures/OpenWild</string>
+    <string name="contrib_next_steps">On the form: tap Photos, attach the photos from Pictures/OpenWild, then Submit. A GitHub account is needed (free). Thank you!</string>
+    <string name="contrib_open_form">Open the form again</string>
 </resources>
 

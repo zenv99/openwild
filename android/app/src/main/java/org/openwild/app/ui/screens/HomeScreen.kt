@@ -1,5 +1,7 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.ui.PhotoWanted
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.foundation.layout.aspectRatio
 import org.openwild.app.ui.PhotoMorph
 import org.openwild.app.core.Tier
@@ -151,6 +153,31 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 }
                 PhotoRow(stringResource(R.string.home_deadly_row), guide.second, pack, vm) {
                     vm.setExploreFilter(RegionPack.ExploreFilter.DEADLY); vm.tab(Screen.Explore)
+                }
+            }
+
+            // ---------- Be a plant photographer: the community builds the library ----------
+            if (pack != null && state.activeRegionName != null) {
+                val wanted = remember(pack.regionId, pack.version) { pack.mostWanted(limit = pack.species.size) }
+                if (wanted.isNotEmpty()) {
+                    Card(
+                        Modifier.fillMaxWidth().clickable {
+                            vm.setExploreFilter(RegionPack.ExploreFilter.PHOTOS_WANTED); vm.tab(Screen.Explore)
+                        },
+                        colors = CardDefaults.cardColors(containerColor = PhotoWanted.copy(alpha = 0.14f)),
+                    ) {
+                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.PhotoCamera, null, tint = PhotoWanted, modifier = Modifier.size(36.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.home_photographer_title), style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    stringResource(R.string.home_photographer_body, wanted.size, state.activeRegionName),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

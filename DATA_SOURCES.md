@@ -50,3 +50,16 @@ Rules: poison always beats food; a food claim from one source, or without docume
 | Tropical fruit | Peggy Greb, USDA Agricultural Research Service | Public domain | https://commons.wikimedia.org/wiki/File:ARS_tropical_fruit_no_labels.jpg |
 
 Fetched and licence-checked by `.github/workflows/hero-images.yml` (refuses anything that isn't public domain, CC0, CC BY or CC BY-SA). The app shows the credit under the animation. The resized fly agaric image remains under CC BY-SA 4.0.
+
+## Community photos (the long-term library)
+
+OpenWild users can add their own plant photos from any species page ("Add your photos"). They choose the name
+to be credited and release the photos under **CC BY 4.0**. The app re-encodes the photos (removing GPS
+position, time and camera details), saves them to Pictures/OpenWild and opens the "Plant photos" form on
+GitHub, where the user attaches and submits them. A maintainer checks each submission (right plant, the
+person's own work, nothing private) and adds the `approved` label; the `community-photos` workflow then
+strips metadata again, stores the photos under `content/community/<region>/` with the credit, thanks the
+contributor and rebuilds the pack. Community photos are shown first and credited "Photo by NAME · OpenWild
+community". Over time they replace stock photos that carry non-commercial terms.
+
+Plants that still need photos are marked "Photos wanted" in the app, and listed in `docs/photos-wanted/`.

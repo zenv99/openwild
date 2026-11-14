@@ -83,3 +83,20 @@ def download(url: str, dest: Path, chunk: int = 1 << 20) -> Path:
                 f.write(buf)
     part.rename(dest)
     return dest
+
+
+def get_bytes(url: str, timeout: int = 60, max_bytes: int = 25 << 20) -> bytes:
+    """Fetch a small file (e.g. an image attached to a GitHub issue). Sends GITHUB_TOKEN to GitHub only."""
+    import os
+
+    headers = {"User-Agent": USER_AGENT}
+    host = urllib.parse.urlparse(url).hostname or ""
+    tok = os.environ.get("GITHUB_TOKEN")
+    if tok and (host == "github.com" or host.endswith(".githubusercontent.com")):
+        headers["Authorization"] = f"Bearer {tok}"
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = resp.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise ValueError("file too large")
+    return data

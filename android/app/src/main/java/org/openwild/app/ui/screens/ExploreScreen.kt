@@ -1,5 +1,6 @@
 package org.openwild.app.ui.screens
 
+import org.openwild.app.ui.PhotosWantedBadge
 import org.openwild.app.ui.SpeciesThumb
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -90,6 +91,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
         ExploreFilter.PLANTS to R.string.kind_plant,
         ExploreFilter.FUNGI to R.string.kind_fungus,
         ExploreFilter.PSYCHOACTIVE to R.string.badge_psychoactive,
+        ExploreFilter.PHOTOS_WANTED to R.string.filter_photos_wanted,
     )
 
     var grid by remember { mutableStateOf(true) }
@@ -176,7 +178,10 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                         Text(pack.species.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    DangerBadge(flags, fungus = pack.species.isFungus[i])
+                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        DangerBadge(flags, fungus = pack.species.isFungus[i])
+                        if (pack.photosWanted(i)) PhotosWantedBadge()
+                    }
                 }
             }
         }

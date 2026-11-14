@@ -11,6 +11,7 @@ Typical first run (see pipeline/README.md):
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import sys
 from pathlib import Path
@@ -561,6 +562,43 @@ def main(argv=None):
     sp.add_argument("--out", default=None)
     sp.add_argument("--photos", type=int, default=5, help="display photos per species (fingerprints use all)")
     sp.add_argument("--evaluate", default=None, help="write a photo-ID accuracy report (JSON + Markdown) to this folder")
+    def cmd_community_ingest(a):
+        import json as _j
+        from .community import ingest_issues
+        from .http import get_bytes
+
+        issues = _j.load(open(a.issues, encoding="utf-8"))
+        known = {}
+        for d in config.DATA_REGIONS.iterdir():
+            f = d / "species.csv"
+            if f.exists():
+                known[d.name] = {r["scientific_name"].lower() for r in csv.DictReader(open(f, encoding="utf-8"))}
+        res = ingest_issues(issues, get_bytes, known)
+        _j.dump({"added": len(res["added"]), "by_issue": sorted({r["issue"] for r in res["added"]}),
+                 "rejected": res["rejected"]}, open(a.out, "w"), indent=1)
+        print(f"COMMUNITY added {len(res['added'])} photos; rejected {res['rejected']}")
+
+    def cmd_photos_wanted(a):
+        from .community import wanted
+        photos_csv = config.WORK / "photos_commercial" / a.region / "photos.csv"
+        rows = wanted(a.region, photos_csv, top=a.top)
+        out = Path(a.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with open(out, "w", encoding="utf-8") as fh:
+            fh.write(f"# Photos wanted: {a.region}\n\nMost-seen plants with the fewest photos. Close-ups of every stage help most.\n\n")
+            fh.write("| Plant | Photos now |\n|---|---|\n")
+            for r in rows:
+                nm = f"{r['common_name']} (*{r['scientific_name']}*)" if r["common_name"] else f"*{r['scientific_name']}*"
+                fh.write(f"| {nm} | {r['photos']} |\n")
+        print(f"WANTED {sum(r['photos'] < 3 for r in rows)} of top {len(rows)} need photos -> {out}")
+
+    sp = add("community-ingest", cmd_community_ingest, "add approved community photo contributions (issues JSON)")
+    sp.add_argument("issues")
+    sp.add_argument("--out", default="community-result.json")
+    sp = add("photos-wanted", cmd_photos_wanted, "list the most-seen species with the fewest photos")
+    sp.add_argument("region")
+    sp.add_argument("--top", type=int, default=300)
+    sp.add_argument("--out", required=True)
     sp = add("guide-pack", cmd_guide_pack, "offline field-guide pack from data/regions/<id> (no photo model needed)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=1)

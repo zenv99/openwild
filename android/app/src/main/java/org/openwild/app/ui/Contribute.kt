@@ -76,7 +76,93 @@ object Contribute {
             appendLine()
             appendLine("_No photo or location is included. Attach a photo only if you want to._")
         }
-        open(context, "${BuildConfig.REPO_URL}/issues/new?title=${Uri.encode(title)}&body=${Uri.encode(body)}&labels=correction")
+        open(context, "${BuildConfig.REPO_URL}/issues/new?template=correction.yml&title=${Uri.encode(title)}&details=${Uri.encode(body)}")
+    }
+
+    /** One photo picked for a contribution, tagged with the growth stage it shows. */
+    data class StagedPhoto(val uri: Uri, val stage: String)
+
+    /**
+     * Saves the user's photos to Pictures/OpenWild, re-encoded as plain JPEG (this drops EXIF: GPS position,
+     * time, camera serial), named "Genus_species__stage__n.jpg" so the stage survives the upload. Returns the
+     * number saved. Android 8-9 (no scoped gallery folder) get a share sheet instead.
+     */
+    fun savePhotosForContribution(context: Context, scientificName: String, photos: List<StagedPhoto>): Int {
+        val base = scientificName.replace(Regex("[^A-Za-z0-9]+"), "_").trim('_')
+        val stamp = System.currentTimeMillis() / 1000
+        var saved = 0
+        val shareUris = ArrayList<Uri>()
+        photos.forEachIndexed { k, p ->
+            val bmp = decodeUpright(context, p.uri, maxSide = 2048) ?: return@forEachIndexed
+            val name = "${base}__${p.stage}__${k + 1}_$stamp.jpg"
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                val values = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, name)
+                    put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                    put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/OpenWild")
+                }
+                val r = context.contentResolver
+                val uri = r.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return@forEachIndexed
+                r.openOutputStream(uri)?.use { bmp.compress(Bitmap.CompressFormat.JPEG, 90, it) } ?: return@forEachIndexed
+            } else {
+                val dir = File(context.cacheDir, "share/contrib").apply { mkdirs() }
+                val f = File(dir, name)
+                f.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+                shareUris += FileProvider.getUriForFile(context, "${context.packageName}.share", f)
+            }
+            bmp.recycle()
+            saved++
+        }
+        if (shareUris.isNotEmpty()) {
+            val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "image/jpeg"
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, shareUris)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(intent, context.getString(R.string.contrib_save_photos)))
+        }
+        return saved
+    }
+
+    /** Opens the "Plant photos" issue form, pre-filled. The user attaches the saved photos and submits. */
+    fun openPhotoContribution(context: Context, regionId: String, scientificName: String, credit: String, photos: List<StagedPhoto>) {
+        val stages = photos.groupingBy { it.stage }.eachCount().entries.joinToString(", ") { "${it.key} x${it.value}" }
+        val url = "${BuildConfig.REPO_URL}/issues/new?template=photo-contribution.yml" +
+            "&title=${Uri.encode("Photos: $scientificName")}" +
+            "&species=${Uri.encode(scientificName)}&region=${Uri.encode(regionId)}" +
+            "&credit=${Uri.encode(credit)}&stages=${Uri.encode(stages)}"
+        open(context, url)
+    }
+
+    /** Decode a picked/taken photo upright (applies EXIF rotation) and no larger than [maxSide]. */
+    fun decodeUpright(context: Context, uri: Uri, maxSide: Int): Bitmap? = runCatching {
+        val r = context.contentResolver
+        val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        r.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, bounds) }
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxSide) sample *= 2
+        val raw = r.openInputStream(uri)?.use {
+            android.graphics.BitmapFactory.decodeStream(it, null, android.graphics.BitmapFactory.Options().apply { inSampleSize = sample })
+        } ?: return null
+        val rot = r.openInputStream(uri)?.use {
+            when (android.media.ExifInterface(it).getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, 1)) {
+                android.media.ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+                android.media.ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                android.media.ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> 0f
+            }
+        } ?: 0f
+        val scale = minOf(1f, maxSide.toFloat() / maxOf(raw.width, raw.height))
+        if (rot == 0f && scale == 1f) return raw
+        val m = android.graphics.Matrix().apply { postRotate(rot); postScale(scale, scale) }
+        Bitmap.createBitmap(raw, 0, 0, raw.width, raw.height, m, true).also { if (it !== raw) raw.recycle() }
+    }.getOrNull()
+
+    /** A fresh file the system camera writes into (inside the app's private share cache). */
+    fun newCameraFile(context: Context): Uri {
+        val dir = File(context.cacheDir, "share/camera").apply { mkdirs() }
+        val f = File(dir, "shot_${System.nanoTime()}.jpg")
+        return FileProvider.getUriForFile(context, "${context.packageName}.share", f)
     }
 
     /** Opens the user's Lightning wallet; if none is installed, copies the address instead. */
