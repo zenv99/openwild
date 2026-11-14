@@ -717,7 +717,6 @@ Antidesma puncticulatum,edible,Listed as edible fruit,,food,Wikipedia categories
 Antirrhinum siculum,edible,Listed as culinary herb,,food,Wikipedia categories + Wikidata,Plantae,3739282
 Aphanomyces cochlioides,edible_cooked,Listed as leaf vegetable,,food,Wikipedia categories + Wikidata,Plantae,3202938
 Apios americana,edible,"Listed as edible nut or seed, root vegetable, traditional food plant",,food,Wikipedia categories + Wikidata,Plantae,2966796
-Apis mellifera,edible,Listed as culinary herb,,food,Wikipedia categories + Wikidata,Plantae,1341976
 Apium graveolens,edible,"Listed as leaf vegetable, root vegetable, spice plant; also a medicinal plant, tumbuhan obat (medicinal plant)",,food;medicinal,Wikipedia categories + Wikidata,Plantae,5371879
 Apium insulare,edible_cooked,Listed as bush food,,food,Wikipedia categories + Wikidata,Plantae,5539761
 Apium prostratum,edible_cooked,"Listed as bush food, leaf vegetable, vegetable",,food,Wikipedia categories + Wikidata,Plantae,5371881
@@ -1178,7 +1177,7 @@ Canavalia gladiata,edible,Listed as edible nut or seed,,food,Wikipedia categorie
 Candolleomyces candolleanus,edible,Listed as edible mushroom,,food,Wikipedia categories + Wikidata,Fungi,12008655
 Canella winterana,edible,Listed as spice plant; also a medicinal plant,,food;medicinal,Wikipedia categories + Wikidata,Plantae,3877834
 Canna indica,edible_cooked,Listed as crop,,food,Wikipedia categories + Wikidata,Plantae,8034409
-Cannabis indica,psychoactive,,"Listed as a psychoactive plant. Can cause confusion, panic and poisoning; illegal in many countries.",,Wikipedia categories + Wikidata,Plantae,5602696
+Cannabis indica,psychoactive,,"Listed as a psychoactive plant. Can cause confusion, panic and poisoning; illegal in many countries.",cordage,Wikipedia categories + Wikidata,Plantae,5602696
 Cannabis sativa,psychoactive,,"Listed as a psychoactive plant. Can cause confusion, panic and poisoning; illegal in many countries.",cordage,Wikipedia categories + Wikidata,Plantae,5361880
 Cantharellula umbonata,edible,Listed as edible mushroom,,food,Wikipedia categories + Wikidata,Fungi,2532395
 Cantharellus alborufescens,edible,Listed as edible mushroom,,food,Wikipedia categories + Wikidata,Fungi,5249523
@@ -2280,6 +2279,7 @@ Gahnia aspera,edible_cooked,Listed as bush food,,food,Wikipedia categories + Wik
 Galanthus nivalis,toxic,,Listed as a poisonous plant.,,Wikipedia categories + Wikidata,Plantae,2855356
 Galega officinalis,medicinal,Used as a medicinal plant,,medicinal,Wikipedia categories + Wikidata,Plantae,2975667
 Galeopsis tetrahit,medicinal,Used as a medicinal plant,,medicinal,Wikipedia categories + Wikidata,Plantae,5341300
+Galerina indica,psychoactive,,"Listed as a psychoactive mushroom. Can cause confusion, panic and poisoning; illegal in many countries.",,Wikipedia categories + Wikidata,Fungi,7604811
 Galerina marginata,deadly,,Listed as a deadly mushroom. Can kill.,,Wikipedia categories + Wikidata,Fungi,2533848
 Galerina steglichii,psychoactive,,"Listed as a psychoactive mushroom. Can cause confusion, panic and poisoning; illegal in many countries.",,Wikipedia categories + Wikidata,Fungi,2533806
 Galerina sulciceps,deadly,,Listed as a deadly mushroom. Can kill.,,Wikipedia categories + Wikidata,Fungi,3342798
@@ -3473,7 +3473,7 @@ Ornithogalum umbellatum,medicinal,Used as a medicinal plant,,medicinal,Wikipedia
 Orobanche californica,medicinal,Used as a medicinal plant,,medicinal,Wikipedia categories + Wikidata,Plantae,3173261
 Orobanche fasciculata,medicinal,Used as a medicinal plant,,medicinal,Wikipedia categories + Wikidata,Plantae,3173262
 Orostachys japonica,medicinal,"Used as a medicinal plant, tanaman obat (medicinal plant)",,medicinal,Wikipedia categories + Wikidata,Plantae,7334756
-Oroxylum indicum,medicinal,"Used as a medicinal plant, tumbuhan obat (medicinal plant), used in Chinese medicine",,medicinal,Wikipedia categories + Wikidata,Plantae,4090936
+Oroxylum indicum,medicinal,Used as a tumbuhan obat (medicinal plant),,medicinal,Wikipedia categories + Wikidata,Plantae,4090936
 Orthosiphon aristatus,medicinal,"Used as a medicinal plant, tumbuhan obat (medicinal plant)",,medicinal,Wikipedia categories + Wikidata,Plantae,7308026
 Orychophragmus violaceus,edible_cooked,Listed as vegetable,,food,Wikipedia categories + Wikidata,Plantae,3041285
 Oryza barthii,edible,Listed as edible nut or seed,,food,Wikipedia categories + Wikidata,Plantae,2703457
@@ -5549,7 +5549,6 @@ Vangueria infausta,edible_cooked,Listed as crop,,food,Wikipedia categories + Wik
 Vangueria madagascariensis,edible_cooked,Listed as crop,,food,Wikipedia categories + Wikidata,Plantae,2917777
 Vanilla planifolia,edible,"Listed as crop, rempah (spice), spice plant; also a tumbuhan obat (medicinal plant)",,food;medicinal,Wikipedia categories + Wikidata,Plantae,2803398
 Vanilla pompona,edible,"Listed as crop, rempah (spice), spice plant; also a tumbuhan obat (medicinal plant)",,food;medicinal,Wikipedia categories + Wikidata,Plantae,2803463
-Vanilla tahitensis,edible,"Listed as crop, rempah (spice), spice plant; also a tumbuhan obat (medicinal plant)",,food;medicinal,Wikipedia categories + Wikidata,Plantae,2803401
 Vasconcellea pubescens,edible,"Listed as buah (edible fruit), crop, edible fruit",,food,Wikipedia categories + Wikidata,Plantae,3838768
 Ventilago viminalis,edible_cooked,Listed as bush food; also a medicinal plant,,food;medicinal,Wikipedia categories + Wikidata,Plantae,3877416
 Venturia inaequalis,edible,Listed as edible fruit,,food,Wikipedia categories + Wikidata,Plantae,5262796
@@ -5633,7 +5632,6 @@ Vitis betulifolia,edible,Listed as edible fruit,,food,Wikipedia categories + Wik
 Vitis blancoi,edible,Listed as edible fruit,,food,Wikipedia categories + Wikidata,Plantae,5658788
 Vitis bryoniifolia,edible,Listed as edible fruit,,food,Wikipedia categories + Wikidata,Plantae,7293792
 Vitis californica,edible,"Listed as edible fruit, traditional food plant",,food,Wikipedia categories + Wikidata,Plantae,5372406
-Vitis champinii,edible,Listed as edible fruit,,food,Wikipedia categories + Wikidata,Plantae,5372393
 Vitis chunganensis,edible,Listed as edible fruit,,food,Wikipedia categories + Wikidata,Plantae,5658551
 Vitis chungii,edible,Listed as edible fruit,,food,Wikipedia categories + Wikidata,Plantae,5658548
 Vitis cinerea,edible,"Listed as edible fruit, traditional food plant",,food,Wikipedia categories + Wikidata,Plantae,5372379
