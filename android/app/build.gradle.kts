@@ -46,11 +46,22 @@ android {
         }
     }
 
+    // Private release key, supplied by CI from GitHub secrets (never committed). Without it (forks,
+    // local builds) the release APK falls back to the public dev key and cannot update an official install.
+    val releaseStore = System.getenv("OW_KEYSTORE")?.takeIf { file(it).exists() }
+    if (releaseStore != null) {
+        signingConfigs.create("release") {
+            storeFile = file(releaseStore)
+            storePassword = System.getenv("OW_STORE_PASSWORD")
+            keyAlias = System.getenv("OW_KEY_ALIAS")
+            keyPassword = System.getenv("OW_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
-            // Not debuggable, shrunk and obfuscated. Signed with the repo key until a private
-            // release key is added as a GitHub secret (see SECURITY.md).
-            signingConfig = signingConfigs.getByName("debug")
+            // Not debuggable, shrunk and obfuscated. Signed with the private release key when CI has it.
+            signingConfig = signingConfigs.getByName(if (releaseStore != null) "release" else "debug")
             isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true

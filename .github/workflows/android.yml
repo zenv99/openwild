@@ -22,10 +22,32 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
+      - name: Private release key (from GitHub secrets; absent on forks and pull requests)
+        env:
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.p12"
+            echo "OW_KEYSTORE=$RUNNER_TEMP/release.p12" >> "$GITHUB_ENV"
+            echo "Release key: present"
+          else
+            echo "Release key: not set, using the public dev key"
+          fi
       - name: Unit tests and release APK
         env:
           OW_BUILD_NUMBER: ${{ github.run_number }}
+          OW_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          OW_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          OW_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
+      - name: Signing certificate
+        run: |
+          SIGNER=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)apksigner
+          $SIGNER verify --print-certs app/build/outputs/apk/release/app-release.apk | tee certs.txt
+          FP=$(grep -m1 "SHA-256 digest" certs.txt | sed 's/.*: //')
+          echo "OW_CERT_SHA256=$FP" >> "$GITHUB_ENV"
+          if [ -n "${OW_KEYSTORE:-}" ]; then echo "OW_SIGNED=release" >> "$GITHUB_ENV"; else echo "OW_SIGNED=dev" >> "$GITHUB_ENV"; fi
+          rm -f "$RUNNER_TEMP/release.p12"
       - name: Security gate (permissions, HTTPS only, not debuggable, no backup)
         run: |
           AAPT=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)aapt
@@ -61,7 +83,8 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
           NOTES="OpenWild ${VER}. Goes online only to download regions from GitHub; HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
           Install: download OpenWild.apk on your Android phone, open it, allow installing from this source.
-          Automatic updates: install Obtainium (free, open source) and add https://github.com/zenv99/openwild"
+          Automatic updates: install Obtainium (free, open source) and add https://github.com/zenv99/openwild
+          Signed with the ${OW_SIGNED} key. Certificate SHA-256: ${OW_CERT_SHA256}"
           # Versioned release: what updaters such as Obtainium follow.
           gh release create "v${VER}" OpenWild.apk --title "OpenWild ${VER}" --notes "$NOTES" --latest
           # Stable download link that always points at the newest build.
