@@ -31,7 +31,12 @@ def test_commercial_licences_reject_nc_and_unknown():
     assert commercial_license(None) is None
 
 
-def test_inaturalist_urls_are_refused():
+def test_inaturalist_urls_follow_policy(monkeypatch):
+    from openwild_pipeline import config as _c
+
+    # Free, non-commercial app: iNaturalist photos are used under their own CC licences.
+    assert not is_inaturalist("https://inaturalist-open-data.s3.amazonaws.com/photos/1/original.jpg")
+    monkeypatch.setattr(_c, "ALLOW_INATURALIST", False)
     assert is_inaturalist("https://inaturalist-open-data.s3.amazonaws.com/photos/1/original.jpg")
     assert is_inaturalist(None, "https://www.inaturalist.org/photos/1")
     assert not is_inaturalist("https://commons.wikimedia.org/wiki/File:Coconut.jpg")
@@ -70,11 +75,20 @@ def test_pack_stores_only_commercial_webp_and_keeps_each_stage(tmp_path):
     )
     con = sqlite3.connect(out)
     photos = con.execute("SELECT license, stage, observer FROM photo ORDER BY rank").fetchall()
-    # iNaturalist filtering is the fetcher's job; the pack still refuses NC.
-    assert ("cc-by-nc", "flower", "Ann") not in photos
-    assert {row[0] for row in photos} <= {"cc0", "cc-by", "cc-by-sa"}
-    assert ("cc-by-sa", "flower", "Bo") in photos
+    # Free, non-commercial app: CC BY-NC is allowed (credited). Identical image bytes are stored once.
+    assert ("cc-by-nc", "flower", "Ann") in photos
+    assert ("cc-by-sa", "flower", "Bo") not in photos  # same file as Ann's
+    assert {row[0] for row in photos} <= {"cc0", "cc-by", "cc-by-sa", "cc-by-nc", "cc-by-nc-sa"}
     assert con.execute("SELECT COUNT(*) FROM prototype").fetchone()[0] == 2
+
+
+def test_commercial_mode_still_refuses_nc_and_nd(monkeypatch):
+    from openwild_pipeline import config
+
+    assert config.photo_license("CC BY-ND 4.0") is None
+    monkeypatch.setattr(config, "PHOTO_LICENSES", config.COMMERCIAL_LICENSES)
+    assert config.photo_license("CC BY-NC 4.0") is None
+    assert config.photo_license("CC BY-SA 3.0") == "cc-by-sa"
 
 
 def test_gbif_licence_filter_and_no_inaturalist(monkeypatch):
@@ -96,8 +110,9 @@ def test_gbif_licence_filter_and_no_inaturalist(monkeypatch):
     monkeypatch.setattr(cp, "get_json", fake)
     out = cp.from_gbif(123)
     assert seen["license"] == list(cp.GBIF_COMMERCIAL)
-    assert [c["url"] for c in out] == ["https://n/a.jpg", "https://p/b.jpg"]
-    assert {c["license"] for c in out} == {"cc0", "cc-by-sa"}
+    # iNaturalist and CC BY-NC are allowed for the free app; order follows GBIF's.
+    assert [c["url"] for c in out] == ["https://inat/x.jpg", "https://n/a.jpg", "https://p/b.jpg", "https://o/c.jpg"]
+    assert {c["license"] for c in out} == {"cc0", "cc-by", "cc-by-sa", "cc-by-nc"}
 
 
 def test_licence_versions_ports_and_public_domain():
@@ -115,3 +130,28 @@ def test_http_encodes_repeated_params():
 
     q = urllib.parse.urlencode({"license": ["CC0_1_0", "CC_BY_4_0"], "limit": "100"}, doseq=True)
     assert q == "license=CC0_1_0&license=CC_BY_4_0&limit=100"
+
+
+def test_three_per_stage_round_robin(tmp_path, monkeypatch):
+    from openwild_pipeline import commercial_photos as cp
+
+    def fake_download(url, dest):
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(url.encode() * 200)
+        return True
+
+    monkeypatch.setattr(cp, "_download", fake_download)
+    cands = [{"url": f"https://x/{st}{i}", "stage": st, "license": "cc-by", "observer": "", "page": "", "source": "gbif"}
+             for st in ("flower", "fruit", "leaves", "field") for i in range(5)]
+    got = cp._take(cands, tmp_path, "Musa acuminata")
+    stages = [g["stage"] for g in got]
+    assert stages[:4] == ["leaves", "flower", "fruit", "field"]          # first photos show different stages
+    assert all(stages.count(s) == 3 for s in ("flower", "fruit", "leaves", "field"))
+
+
+def test_no_evidence_of_flowering_is_leaves():
+    from openwild_pipeline.commercial_photos import stage_from_text
+
+    assert stage_from_text("no evidence of flowering") == "leaves"
+    assert stage_from_text("flowering") == "flower"
+    assert stage_from_text("fruiting") == "fruit"

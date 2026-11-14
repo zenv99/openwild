@@ -548,7 +548,8 @@ def main(argv=None):
     def cmd_commercial_pack(a):
         from .commercial_photos import build_region_photo_pack
         out = Path(a.out) if a.out else None
-        build_region_photo_pack(a.region, version=a.version, out=out)
+        ev = Path(a.evaluate) if a.evaluate else None
+        build_region_photo_pack(a.region, version=a.version, out=out, photos_per_species=a.photos, evaluate_to=ev)
 
     sp = add("commercial-photos", cmd_commercial_photos, "download CC0/CC BY/CC BY-SA reference photos (no NC, no iNaturalist)")
     sp.add_argument("region")
@@ -558,6 +559,8 @@ def main(argv=None):
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=2026111201)
     sp.add_argument("--out", default=None)
+    sp.add_argument("--photos", type=int, default=5, help="display photos per species (fingerprints use all)")
+    sp.add_argument("--evaluate", default=None, help="write a photo-ID accuracy report (JSON + Markdown) to this folder")
     sp = add("guide-pack", cmd_guide_pack, "offline field-guide pack from data/regions/<id> (no photo model needed)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=1)

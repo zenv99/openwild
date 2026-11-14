@@ -220,9 +220,9 @@ def build_pack(
         for ph in rec.photos:
             if rank >= limit:
                 break
-            lic = config.commercial_license(ph.get("license"))
+            lic = config.photo_license(ph.get("license"))
             if lic is None:
-                continue  # never pack CC BY-NC, ND, or an unknown licence
+                continue  # never pack ND, an unknown licence, or anything outside PHOTO_LICENSES
             enc = encode_photo(ph["path"], cover=rank == 0)
             if enc is None or enc[1] in seen_bytes:
                 continue

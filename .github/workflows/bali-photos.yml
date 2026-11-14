@@ -1,7 +1,9 @@
-name: Region photos (commercial-ok, no iNaturalist) -> pack
+name: Region photos (open-licence, 3 per growth stage) -> pack + accuracy
 
-# Collects reference photos for every species in a region from Wikidata, GBIF and Wikimedia Commons
-# (CC0 / CC BY / CC BY-SA only; never iNaturalist; never PFAF), split across parallel machines because
+# Collects up to 3 reference photos per growth stage for every species in a region from GBIF (including
+# iNaturalist observers' photos), Wikidata and Wikimedia Commons, under the licences in config.PHOTO_LICENSES
+# (OpenWild is free and non-commercial: CC0, CC BY, CC BY-SA, CC BY-NC, CC BY-NC-SA; never ND; never PFAF),
+# split across parallel machines because
 # Commons throttles each connection. Then builds the region pack with the phone's own fingerprint model,
 # publishes it as the in-app download and, for Bali, updates the copy shipped inside the app.
 on:
@@ -48,8 +50,8 @@ jobs:
           path: |
             work/photos_commercial/${{ inputs.region }}
             work/cache/http
-          key: commercial-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
-          restore-keys: commercial-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-
+          key: photos-v2-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
+          restore-keys: photos-v2-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-
       - name: Collect photos (shard ${{ matrix.shard }}/6)
         timeout-minutes: 280
         env:
@@ -109,21 +111,29 @@ jobs:
           print("COVERAGE licences", collections.Counter(x["license"] for x in rows))
           print("COVERAGE stages", collections.Counter(x["stage"] for x in rows))
           PY
-      - name: Build pack (fingerprints with the phone's model)
+      - name: Build packs (fingerprints with the phone's model) + accuracy report
         if: inputs.publish == 'true'
         run: |
-          mkdir -p ../work/out
-          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$(date -u +%Y%m%d%H)" \
-            --out "../work/out/${{ inputs.region }}.owpack"
+          mkdir -p ../work/out ../work/light
+          V="$(date -u +%Y%m%d%H)"
+          # Full download: up to 12 display photos per species (3 per growth stage); accuracy report.
+          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos 12 \
+            --out "../work/out/${{ inputs.region }}.owpack" --evaluate "../data/regions/${{ inputs.region }}/eval"
+          # Light copy shipped inside the app: first 3 photos (already one per stage).
+          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos 3 \
+            --out "../work/light/${{ inputs.region }}.owpack"
           python - <<'PY'
           import sqlite3
-          c = sqlite3.connect("../work/out/${{ inputs.region }}.owpack")
-          print("PACK species", c.execute("SELECT COUNT(*) FROM species").fetchone()[0],
-                "with photos", c.execute("SELECT COUNT(DISTINCT species_id) FROM photo").fetchone()[0],
-                "photos", c.execute("SELECT COUNT(*) FROM photo").fetchone()[0],
-                "with photo ID", c.execute("SELECT COUNT(DISTINCT species_id) FROM prototype").fetchone()[0])
+          for kind in ("out", "light"):
+              c = sqlite3.connect(f"../work/{kind}/${{ inputs.region }}.owpack")
+              print("PACK", kind, "species", c.execute("SELECT COUNT(*) FROM species").fetchone()[0],
+                    "with photos", c.execute("SELECT COUNT(DISTINCT species_id) FROM photo").fetchone()[0],
+                    "photos", c.execute("SELECT COUNT(*) FROM photo").fetchone()[0],
+                    "with photo ID", c.execute("SELECT COUNT(DISTINCT species_id) FROM prototype").fetchone()[0],
+                    "stages", dict(c.execute("SELECT stage, COUNT(*) FROM photo GROUP BY stage")))
           PY
-          ls -la ../work/out
+          ls -la ../work/out ../work/light
+          cat "../data/regions/${{ inputs.region }}/eval/ACCURACY.md" | head -30
       - name: Publish as the in-app download (release "packs")
         if: inputs.publish == 'true'
         working-directory: .
@@ -143,7 +153,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           R="${{ inputs.region }}"
-          cp "work/out/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
+          cp "work/light/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
           (cd pipeline && python - <<'PY'
           from pathlib import Path
           import sqlite3
@@ -155,8 +165,8 @@ jobs:
           )
           git config user.name "openwild-data-bot"
           git config user.email "openwild-data-bot@users.noreply.github.com"
-          git add android/app/src/main/assets/packs/
-          git commit -m "Bali pack: photos for more species (commercial-ok sources, no iNaturalist)" || echo "No changes"
+          git add android/app/src/main/assets/packs/ "data/regions/$R/eval"
+          git commit -m "Bali pack: up to 3 photos per growth stage, more species, photo-ID accuracy report" || echo "No changes"
           git pull --rebase --autostash origin main
           git push origin HEAD:main
           gh workflow run android.yml --ref main

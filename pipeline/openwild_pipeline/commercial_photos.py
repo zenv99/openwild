@@ -48,10 +48,13 @@ SKIP_TITLE = (
 
 
 def stage_from_text(text: str | None) -> str | None:
-    """Map a title or GBIF life-stage string to a stage. Seedling is tested before 'seed'."""
+    """Map a title or GBIF life-stage string to a stage. Seedling is tested before 'seed'.
+    iNaturalist's 'no evidence of flowering' means a vegetative plant: leaves, not flower."""
     if not text:
         return None
     low = text.lower()
+    if "no evidence" in low or "vegetative" in low or "sterile" in low:
+        return "leaves"
     for stage, words in STAGE_WORDS:
         if any(w in low for w in words):
             return stage
@@ -59,6 +62,9 @@ def stage_from_text(text: str | None) -> str | None:
 
 
 def is_inaturalist(*parts: str | None) -> bool:
+    """True only if iNaturalist content is NOT allowed by the current policy and this is iNaturalist."""
+    if config.ALLOW_INATURALIST:
+        return False
     blob = " ".join(p for p in parts if p).lower()
     return "inaturalist" in blob
 
@@ -215,7 +221,7 @@ def image_records(titled: list[tuple[str, str]], scientific: str) -> list[dict]:
 
             if is_inaturalist(info.get("url"), info.get("descriptionurl"), meta("Credit")):
                 continue
-            lic = config.commercial_license(meta("LicenseShortName")) or config.commercial_license(meta("LicenseUrl"))
+            lic = config.photo_license(meta("LicenseShortName")) or config.photo_license(meta("LicenseUrl"))
             if lic is None:
                 continue
             url = info.get("thumburl") or info.get("url")
@@ -309,10 +315,10 @@ def stage_from_gbif(occ: dict) -> str:
     return "field"
 
 
-GBIF_COMMERCIAL = ("CC0_1_0", "CC_BY_4_0")  # occurrence-level licences GBIF can filter on
+GBIF_COMMERCIAL = ("CC0_1_0", "CC_BY_4_0", "CC_BY_NC_4_0") if config.NONCOMMERCIAL_APP else ("CC0_1_0", "CC_BY_4_0")
 
 
-def from_gbif(taxon_key: int, want: int = 8, pages: int = 3) -> list[dict]:
+def from_gbif(taxon_key: int, want: int = 15, pages: int = 3) -> list[dict]:
     """Commercial-ok photos from GBIF (museums, herbaria, Pl@ntNet, Observation.org...), never iNaturalist.
     GBIF filters licences server-side, so each page of 100 is mostly usable instead of mostly iNaturalist."""
     out: list[dict] = []
@@ -326,7 +332,7 @@ def from_gbif(taxon_key: int, want: int = 8, pages: int = 3) -> list[dict]:
             print(f"gbif {taxon_key} failed: {e!r}", flush=True)
             break
         for occ in data.get("results") or []:
-            if str(occ.get("datasetKey") or "") == INAT_DATASET:
+            if str(occ.get("datasetKey") or "") == INAT_DATASET and not config.ALLOW_INATURALIST:
                 continue
             if is_inaturalist(occ.get("references"), occ.get("occurrenceID"), occ.get("institutionCode"), occ.get("publisher")):
                 continue
@@ -338,9 +344,12 @@ def from_gbif(taxon_key: int, want: int = 8, pages: int = 3) -> list[dict]:
                     continue
                 if (media.get("type") or "StillImage") != "StillImage":
                     continue
-                lic = config.commercial_license(media.get("license")) or config.commercial_license(occ.get("license"))
+                lic = config.photo_license(media.get("license")) or config.photo_license(occ.get("license"))
                 if lic is None or not ident:
                     continue
+                if "inaturalist" in ident.lower():
+                    from .gbif_photos import smaller_url
+                    ident = smaller_url(ident)
                 out.append({
                     "stage": stage,
                     "license": lic,
@@ -405,7 +414,14 @@ def _download(url: str, dest: Path) -> bool:
         return False
 
 
+PER_STAGE = 3        # photos kept per growth stage (seedling, leaves, flower, fruit, close-up)
+MAX_PER_SPECIES = 12
+
+
 def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
+    """Up to PER_STAGE photos for each growth stage, ordered round-robin across stages so the first
+    photos show different stages (a light pack that keeps only the first few still gets variety).
+    General field photos fill in when stages are missing; a herbarium sheet only if nothing else."""
     by: dict[str, list[dict]] = defaultdict(list)
     seen_url = set()
     for c in cands:
@@ -414,44 +430,53 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
         seen_url.add(c["url"])
         stage = c["stage"] if c["stage"] in (*STAGES, "field", "specimen") else "field"
         by[stage].append({**c, "stage": stage})
-    chosen = []
     hashes: set[str] = set()
-    order = list(STAGES) + ["field"]
-    for stage in order:
+
+    def fetch(c) -> dict | None:
+        digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
+        dest = img_dir / f"{digest}.img"
+        if not _download(c["url"], dest):
+            return None
+        file_hash = hashlib.sha1(dest.read_bytes()).hexdigest()
+        if file_hash in hashes:
+            return None
+        hashes.add(file_hash)
+        return {**c, "path": str(dest), "scientific_name": scientific}
+
+    per_stage: dict[str, list[dict]] = {}
+    for stage in STAGES:
+        got = []
         for c in by.get(stage, []):
-            digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
-            dest = img_dir / f"{digest}.img"
-            if not _download(c["url"], dest):
-                continue
-            file_hash = hashlib.sha1(dest.read_bytes()).hexdigest()
-            if file_hash in hashes:
-                continue
-            hashes.add(file_hash)
-            chosen.append({**c, "path": str(dest), "scientific_name": scientific})
+            if len(got) >= PER_STAGE:
+                break
+            r = fetch(c)
+            if r:
+                got.append(r)
+        if got:
+            per_stage[stage] = got
+    # Fill with general field photos: up to PER_STAGE, more if no stage photos were found at all.
+    field_cap = PER_STAGE if per_stage else PER_STAGE * 2
+    got = []
+    for c in by.get("field", []):
+        if len(got) >= field_cap:
             break
-        if len(chosen) >= 5:
-            break
-    # One per stage gives variety; if that left fewer than 3, top up from any living-plant photo.
-    if len(chosen) < 3:
-        for stage in order:
-            for c in by.get(stage, []):
-                if len(chosen) >= 3:
-                    break
-                digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
-                dest = img_dir / f"{digest}.img"
-                if any(x["url"] == c["url"] for x in chosen) or not _download(c["url"], dest):
-                    continue
-                file_hash = hashlib.sha1(dest.read_bytes()).hexdigest()
-                if file_hash in hashes:
-                    continue
-                hashes.add(file_hash)
-                chosen.append({**c, "path": str(dest), "scientific_name": scientific})
+        r = fetch(c)
+        if r:
+            got.append(r)
+    if got:
+        per_stage["field"] = got
+    chosen: list[dict] = []
+    for rnd in range(max((len(v) for v in per_stage.values()), default=0)):
+        for stage in (*STAGES, "field"):
+            lst = per_stage.get(stage, [])
+            if rnd < len(lst):
+                chosen.append(lst[rnd])
+    chosen = chosen[:MAX_PER_SPECIES]
     if not chosen:
         for c in by.get("specimen", []):
-            digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
-            dest = img_dir / f"{digest}.img"
-            if _download(c["url"], dest):
-                chosen.append({**c, "path": str(dest), "scientific_name": scientific})
+            r = fetch(c)
+            if r:
+                chosen.append(r)
                 break
     return chosen
 
@@ -566,7 +591,8 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     return csv_path
 
 
-def build_region_photo_pack(region_id: str, version: int, out: Path | None = None) -> Path:
+def build_region_photo_pack(region_id: str, version: int, out: Path | None = None, photos_per_species: int = 5,
+                            evaluate_to: Path | None = None) -> Path:
     """Species list + safety text + light WebP thumbs + one fingerprint per reference photo."""
     import json as _json
 
@@ -583,11 +609,11 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
 
     usable = []
     for p in photos:
-        lic = config.commercial_license(p.get("license"))
+        lic = config.photo_license(p.get("license"))
         path = Path(p.get("path") or "")
         if lic is None or not path.exists() or is_inaturalist(p.get("page"), p.get("url"), p.get("source")):
             continue
-        if p.get("source") == "inaturalist":
+        if p.get("source") == "inaturalist" and not config.ALLOW_INATURALIST:
             continue
         try:
             preprocess(path)
@@ -600,6 +626,9 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     by: dict[str, list[tuple[dict, np.ndarray]]] = defaultdict(list)
     for p, e in zip(usable, embs):
         by[p["scientific_name"].lower()].append((p, e))
+    if evaluate_to is not None and len(usable):
+        from .evaluate import leave_one_out, write_report
+        write_report(leave_one_out([p["scientific_name"] for p in usable], embs), evaluate_to, region_id)
 
     descs = {}
     if (d / "descriptions.csv").exists():
@@ -639,12 +668,12 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     dest = out or (config.ANDROID_ASSETS / "packs" / f"{region.id}.owpack")
     build_pack(
         dest, region.id, region.name, version, recs, load_curated(), guide_only=True,
-        min_photos_for_image_protos=1, photos_per_species=5, photos_per_key_species=5,
+        min_photos_for_image_protos=1, photos_per_species=photos_per_species, photos_per_key_species=photos_per_species,
         keep_each_prototype=True,
         sources=[
-            "GBIF species list for this region (occurrence counts; iNaturalist photos excluded)",
-            "Wikimedia Commons files under CC0, CC BY, or CC BY-SA",
-            "GBIF occurrence media under CC0, CC BY, or CC BY-SA, excluding iNaturalist",
+            "GBIF species list for this region (occurrence counts)",
+            "Wikimedia Commons files under " + ", ".join(sorted(config.PHOTO_LICENSES)),
+            "GBIF occurrence media (including iNaturalist observers' photos) under " + ", ".join(sorted(config.PHOTO_LICENSES)),
             "Kew World Checklist of Useful Plant Species (CC BY 4.0)",
             "Wikipedia descriptions (CC BY-SA)",
             "Wikidata (CC0)",
@@ -705,7 +734,7 @@ def _write_stats(pack: Path, region_id: str) -> None:
         "display_webp_quality": "65, or 60 when needed to stay near 8–20KB",
         "mean_image_bytes": int(sum(lengths) / len(lengths)) if lengths else 0,
         "max_image_bytes": max(lengths) if lengths else 0,
-        "licenses_allowed": sorted(config.COMMERCIAL_LICENSES),
+        "licenses_allowed": sorted(config.PHOTO_LICENSES),
         "excluded": ["CC BY-NC", "CC BY-ND", "iNaturalist dataset and inaturalist.org files", "PFAF images", "tropical.theferns.info"],
     }
     path = config.DATA_REGIONS / region_id / "photo_pack_stats.json"

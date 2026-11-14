@@ -36,6 +36,15 @@ ALLOWED_LICENSES = {"cc0", "cc-by", "cc-by-sa", "cc-by-nc", "cc-by-nc-sa"}
 # (share-alike) and is how most Wikimedia Commons files are published.
 COMMERCIAL_LICENSES = {"cc0", "cc-by", "cc-by-sa"}
 
+# OpenWild is free and non-commercial, so non-commercial Creative Commons licences (CC BY-NC, CC BY-NC-SA)
+# permit its use of a photo, with credit. No-derivatives (ND) licences are never used (we resize and
+# re-encode). Set NONCOMMERCIAL_APP = False to rebuild packs from commercial-ok photos only (for example,
+# if OpenWild is ever sold or carries ads).
+NONCOMMERCIAL_APP = True
+PHOTO_LICENSES = COMMERCIAL_LICENSES | ({"cc-by-nc", "cc-by-nc-sa"} if NONCOMMERCIAL_APP else set())
+# iNaturalist photos are used under each photographer's own CC licence (credited per photo).
+ALLOW_INATURALIST = NONCOMMERCIAL_APP
+
 # Model contract (must match the app's assets/embedder.json, written by export).
 # "dinov2s": free, no training — DINOv2 ViT-S/14 (Apache-2.0), runs on GitHub's CPUs. Default.
 # "distilled": BioCLIP 2 distilled into MobileNetV4 (needs a free Kaggle/Colab GPU; more accurate later).
@@ -86,6 +95,19 @@ def normalize_license(raw: str | None) -> str | None:
 
 def license_allowed(raw: str | None) -> bool:
     return normalize_license(raw) in ALLOWED_LICENSES
+
+
+def photo_license(raw: str | None) -> str | None:
+    """Normalised licence if a photo may ship in a pack under the current policy (PHOTO_LICENSES), else None.
+    ND and unknown licences are always refused."""
+    if not raw or not str(raw).strip():
+        return None
+    lic = normalize_license(str(raw))
+    if lic is None:
+        import re as _re
+        m = _re.search(r"licenses/(by(?:-nc)?(?:-sa)?(?:-nd)?)", str(raw).lower())
+        lic = "cc-" + m.group(1) if m else (commercial_license(raw))
+    return lic if lic in PHOTO_LICENSES else None
 
 
 def commercial_license(raw: str | None) -> str | None:
