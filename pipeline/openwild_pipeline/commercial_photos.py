@@ -561,7 +561,9 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, cr
     if key.isdigit():
         step("gbif", lambda: from_gbif(int(key)))
     # iNaturalist directly: huge, staged by observers; for species GBIF left short.
-    if living() < (KEY_TARGET if critical else 6):
+    inat_ok = critical or living() == 0 or __import__("os").environ.get("OW_INAT_FULL", "all") == "all" or \
+        bool(__import__("os").environ.get("OW_TOPUP"))
+    if inat_ok and living() < (KEY_TARGET if critical else 6):
         step("inat", lambda: from_inaturalist(name, want=60 if critical else 30))
     # Wikimedia Commons is slow and throttled: only walk it for species still short of photos.
     cat = (wiki or {}).get("cat")
@@ -679,9 +681,9 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     from .content import load_curated
     from .freemodel import embed_tflite
     from .pack import SpeciesRecord, build_pack
-    from .regions import get_region
+    from .regions import region_or_pack_meta
 
-    region = get_region(region_id)
+    region = region_or_pack_meta(region_id)
     d = config.DATA_REGIONS / region_id
     photos_path = config.WORK / "photos_commercial" / region_id / "photos.csv"
     photos = list(csv.DictReader(open(photos_path, encoding="utf-8"))) if photos_path.exists() else []

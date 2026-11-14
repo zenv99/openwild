@@ -1,0 +1,83 @@
+name: Photos scheduler (every region, Bali-level, 3 at a time)
+
+# Works through every published region, nearest to Bali first: a full photo pass, then iNaturalist
+# top-ups, repeating any pass that stopped at its time budget. At most MAX_ACTIVE regions run at once,
+# which keeps GitHub's 20 parallel jobs and the photo sites' rate limits in check. Progress is kept in
+# the "packs" release (photo-progress.json); regions finish when no pass hits its budget any more.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: photos-scheduler
+  cancel-in-progress: false
+
+jobs:
+  schedule:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Dispatch the next regions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release download packs -R "$REPO" -p index.json -p photo-progress.json -D /tmp/s --clobber || true
+          gh run list -R "$REPO" --workflow bali-photos.yml --limit 200 --json displayTitle,status,conclusion > /tmp/s/runs.json
+          python3 - <<'PY'
+          import json, os, subprocess
+          MAX_ACTIVE, CAP, PHOTOS, MAX_TOPUPS = 3, "5000", "6", 4
+          # Nearest to Bali first, then the rest smallest first (quick wins).
+          FIRST = ["ID", "TL", "MY", "SG", "BN", "PH", "TH", "VN", "KH", "LA", "MM", "PG", "AU", "FJ", "NZ",
+                   "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US-HI"]
+          SKIP = {"ID-BA", "WORLD"}
+          idx = json.load(open("/tmp/s/index.json"))["packs"]
+          try:
+              prog = json.load(open("/tmp/s/photo-progress.json"))
+          except Exception:
+              prog = {}
+          size = {p["region_id"]: p["species_count"] for p in idx}
+          order = [r for r in FIRST if r in size] + sorted((r for r in size if r not in FIRST and r not in SKIP), key=size.get)
+          runs = json.load(open("/tmp/s/runs.json"))
+          active = {r["displayTitle"].split()[1] for r in runs
+                    if r["status"] in ("queued", "in_progress", "waiting", "pending", "requested") and r["displayTitle"].startswith("Photos ")}
+          print("active:", sorted(active))
+          # A region whose last two runs failed is left alone until someone looks (avoids a retry loop).
+          recent = {}
+          for x in runs:  # newest first
+              if x["displayTitle"].startswith("Photos ") and x["status"] == "completed":
+                  recent.setdefault(x["displayTitle"].split()[1], []).append(x["conclusion"])
+          broken = {r for r, c in recent.items() if c[:2] == ["failure", "failure"]}
+          if broken:
+              print("::warning::needs a look (failed twice):", sorted(broken))
+          slots = MAX_ACTIVE - len(active)
+          for r in order:
+              if slots <= 0:
+                  break
+              if r in active or r in broken:
+                  continue
+              e = prog.get(r)
+              if e is None:
+                  topup = False
+              elif e["mode"] == "full" and e.get("budget_hit"):
+                  topup = False
+              elif e["mode"] == "full":
+                  topup = True
+              elif e.get("budget_hit") and e.get("topups", 0) < MAX_TOPUPS:
+                  topup = True
+              else:
+                  continue  # done
+              print("dispatch", r, "top-up" if topup else "full")
+              subprocess.run(["gh", "workflow", "run", "bali-photos.yml", "-R", os.environ["REPO"], "--ref", "main",
+                              "-f", f"region={r}", "-f", "max_species=", "-f", "publish=true",
+                              "-f", f"topup={'true' if topup else 'false'}", "-f", f"photo_cap={CAP}",
+                              "-f", f"photos={PHOTOS}", "-f", "chain=false"], check=True)
+              slots -= 1
+          done = [r for r in order if r in prog and prog[r]["mode"] == "topup" and not prog[r].get("budget_hit")]
+          print(f"SCHEDULE {len(done)}/{len(order)} regions finished")
+          PY

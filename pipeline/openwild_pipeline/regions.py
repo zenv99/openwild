@@ -102,3 +102,47 @@ def regions_from_naturalearth(geojson_path: Path, max_species: int = 6000) -> st
                 }
             )
     return yaml.safe_dump({"regions": out}, sort_keys=False, allow_unicode=True)
+
+
+def region_from_pack(pack_path, region_id: str) -> int:
+    """Write data/regions/<id>/species.csv, descriptions.csv and region.json from a published pack, so a
+    region that was built elsewhere can go through the photo pipeline. Returns the species count."""
+    import csv
+    import json
+    import sqlite3
+
+    d = config.DATA_REGIONS / region_id
+    d.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(pack_path)
+    meta = dict(con.execute("SELECT key, value FROM meta"))
+    rows = con.execute(
+        "SELECT gbif_key, scientific_name, kingdom, family, genus, common_name, common_names, obs_count, description, wiki_url "
+        "FROM species ORDER BY obs_count DESC"
+    ).fetchall()
+    with open(d / "species.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["gbif_key", "scientific_name", "kingdom", "family", "genus", "common_name", "common_names", "gbif_count", "source"])
+        for r in rows:
+            w.writerow([r[0] or "", r[1], r[2] or "Plantae", r[3] or "", r[4] or "", r[5] or "", r[6] or "", r[7] or 0, "pack"])
+    with open(d / "descriptions.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["scientific_name", "description", "wiki_url", "lang"])
+        for r in rows:
+            if r[8]:
+                w.writerow([r[1], r[8], r[9] or "", "en"])
+    name = meta.get("region_name") or meta.get("name") or region_id
+    (d / "region.json").write_text(json.dumps({"id": region_id, "name": name}), encoding="utf-8")
+    return len(rows)
+
+
+def region_or_pack_meta(region_id: str):
+    """The region from regions.yaml, or (for packs built elsewhere) a stand-in with its id and name."""
+    import json
+    from types import SimpleNamespace
+
+    try:
+        return get_region(region_id)
+    except KeyError:
+        f = config.DATA_REGIONS / region_id / "region.json"
+        info = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {"id": region_id, "name": region_id}
+        return SimpleNamespace(id=info["id"], name=info["name"])

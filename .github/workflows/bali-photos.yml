@@ -6,6 +6,7 @@ name: Region photos (open-licence, 3 per growth stage) -> pack + accuracy
 # split across parallel machines because
 # Commons throttles each connection. Then builds the region pack with the phone's own fingerprint model,
 # publishes it as the in-app download and, for Bali, updates the copy shipped inside the app.
+run-name: "Photos ${{ inputs.region }} (${{ inputs.topup == 'true' && 'top-up' || 'full' }})"
 on:
   workflow_dispatch:
     inputs:
@@ -21,6 +22,15 @@ on:
       topup:
         description: "Only revisit species with fewer than 3 photos (adds iNaturalist and other new photos)"
         default: "false"
+      photo_cap:
+        description: "Most-observed species to photograph, plus every poisonous/edible one (blank = all)"
+        default: ""
+      photos:
+        description: "Display photos per species in the download"
+        default: "12"
+      chain:
+        description: "After a full run, start a top-up automatically (the scheduler sets false)"
+        default: "true"
 
 permissions:
   contents: write
@@ -31,7 +41,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml
+      - name: Species list (from the published pack if the repo has none)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          if [ ! -f "data/regions/$R/species.csv" ]; then
+            gh release download packs -p "$R.owpack" -D /tmp/pk --clobber
+            (cd pipeline && python -m openwild_pipeline.cli region-from-pack "$R" "/tmp/pk/$R.owpack")
+          fi
+          wc -l "data/regions/$R/species.csv"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: region-${{ inputs.region }}
+          path: data/regions/${{ inputs.region }}
+          retention-days: 3
+
   collect:
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -47,6 +83,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy pyyaml pillow
+      - uses: actions/download-artifact@v4
+        with:
+          name: region-${{ inputs.region }}
+          path: data/regions/${{ inputs.region }}
       - name: Reuse photos from earlier runs
         uses: actions/cache/restore@v4
         with:
@@ -60,12 +100,24 @@ jobs:
         env:
           OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
           OW_TOPUP: ${{ inputs.topup == 'true' && '1' || '' }}
+          # Several regions run at once: keep iNaturalist at about one request per second in total, and in
+          # full passes use it only for poisonous/edible plants and plants with nothing yet.
+          OW_INAT_INTERVAL: ${{ inputs.photo_cap != '' && '18' || '6' }}
+          OW_INAT_FULL: ${{ inputs.photo_cap != '' && 'critical' || 'all' }}
         run: |
           ARGS="--shard ${{ matrix.shard }}/6"
-          if [ -n "${{ inputs.max_species }}" ]; then ARGS="$ARGS --max-species ${{ inputs.max_species }}"; fi
+          if [ -n "${{ inputs.max_species }}" ]; then ARGS="$ARGS --max-species ${{ inputs.max_species }}";
+          elif [ -n "${{ inputs.photo_cap }}" ]; then ARGS="$ARGS --max-species $(( (${{ inputs.photo_cap }} + 5) / 6 ))"; fi
           # Soft time budget: stop cleanly before the job limit so everything collected so far is saved and
           # packed; the next (top-up) run carries on from here.
-          timeout --signal=INT 230m python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS || echo "::warning::time budget reached; saving what was collected"
+          D="../work/photos_commercial/${{ inputs.region }}"
+          mkdir -p "$D"
+          if timeout --signal=INT 230m python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS; then
+            echo ok > "$D/status-shard${{ matrix.shard }}.txt"
+          else
+            echo "::warning::time budget reached; saving what was collected"
+            echo budget > "$D/status-shard${{ matrix.shard }}.txt"
+          fi
           cp "../work/photos_commercial/${{ inputs.region }}/photos.csv" "../work/photos_commercial/${{ inputs.region }}/photos-shard${{ matrix.shard }}.csv"
       - name: Save photos for the next run (always, even after a failure)
         if: always()
@@ -81,6 +133,7 @@ jobs:
           name: photos-${{ inputs.region }}-${{ matrix.shard }}
           path: |
             work/photos_commercial/${{ inputs.region }}/photos-shard${{ matrix.shard }}.csv
+            work/photos_commercial/${{ inputs.region }}/status-shard${{ matrix.shard }}.txt
             work/photos_commercial/${{ inputs.region }}/img
           retention-days: 3
 
@@ -98,6 +151,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy pyyaml pytest pillow ai-edge-litert
+      - uses: actions/download-artifact@v4
+        with:
+          name: region-${{ inputs.region }}
+          path: data/regions/${{ inputs.region }}
       - uses: actions/download-artifact@v4
         with:
           pattern: photos-${{ inputs.region }}-*
@@ -132,11 +189,11 @@ jobs:
           mkdir -p ../work/out ../work/light
           V="$(date -u +%Y%m%d%H)"
           # Full download: up to 12 display photos per species (3 per growth stage); accuracy report.
-          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos 12 \
+          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos "${{ inputs.photos || '12' }}" \
             --out "../work/out/${{ inputs.region }}.owpack" --evaluate "../data/regions/${{ inputs.region }}/eval"
           # Light copy shipped inside the app: first 3 photos (one per stage); fewer if it would not fit in git
           # (GitHub refuses files over 100 MB). The full pack is always one tap away in the Packs tab.
-          for N in 3 2 1; do
+          for N in $([ "${{ inputs.region }}" = "ID-BA" ] && echo "3 2 1"); do
             python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos $N \
               --out "../work/light/${{ inputs.region }}.owpack"
             SZ=$(stat -c %s "../work/light/${{ inputs.region }}.owpack")
@@ -145,7 +202,8 @@ jobs:
           done
           python - <<'PY'
           import sqlite3
-          for kind in ("out", "light"):
+          import os
+          for kind in [k for k in ("out", "light") if os.path.exists(f"../work/{k}/${{ inputs.region }}.owpack")]:
               c = sqlite3.connect(f"../work/{kind}/${{ inputs.region }}.owpack")
               print("PACK", kind, "species", c.execute("SELECT COUNT(*) FROM species").fetchone()[0],
                     "with photos", c.execute("SELECT COUNT(DISTINCT species_id) FROM photo").fetchone()[0],
@@ -167,6 +225,26 @@ jobs:
           (cd pipeline && python -m openwild_pipeline.cli pack-index --pack ../work/out/$R.owpack --index ../work/idx/index.json \
             --url "https://github.com/${{ github.repository }}/releases/download/packs/$R.owpack")
           gh release upload packs "work/out/$R.owpack" work/idx/index.json --clobber
+          # Progress for the scheduler: did any shard stop at its time budget? (then more passes are needed)
+          gh release download packs -p photo-progress.json -D work/idx --clobber || echo '{}' > work/idx/photo-progress.json
+          python3 - <<'PY'
+          import glob, json, re, time
+          r, mode = "${{ inputs.region }}", "${{ inputs.topup == 'true' && 'topup' || 'full' }}"
+          st = [open(f).read().strip() for f in glob.glob(f"work/photos_commercial/{r}/status-shard*.txt")]
+          acc = ""
+          try:
+              acc = re.search(r"Right plant shown first: ([0-9.]+%)", open(f"data/regions/{r}/eval/ACCURACY.md").read()).group(1)
+          except Exception:
+              pass
+          prog = json.load(open("work/idx/photo-progress.json"))
+          e = prog.get(r, {})
+          e.update({"mode": mode, "budget_hit": "budget" in st or not st, "top1": acc, "updated": time.strftime("%Y-%m-%dT%H:%MZ", time.gmtime()),
+                    "passes": e.get("passes", 0) + 1, "topups": e.get("topups", 0) + (mode == "topup")})
+          prog[r] = e
+          json.dump(prog, open("work/idx/photo-progress.json", "w"), indent=1, sort_keys=True)
+          print("PROGRESS", r, e)
+          PY
+          gh release upload packs work/idx/photo-progress.json --clobber
       - name: Update the copy shipped in the app, commit, rebuild the app
         if: inputs.publish == 'true' && inputs.region == 'ID-BA'
         working-directory: .
@@ -200,6 +278,6 @@ jobs:
           git commit -m "Bali pack: more photos per growth stage, more species, photo-ID accuracy report" || echo "No changes"
           git push origin HEAD:main
           gh workflow run android.yml --ref main
-          if [ "${{ inputs.topup }}" != "true" ]; then
+          if [ "${{ inputs.topup }}" != "true" ] && [ "${{ inputs.chain }}" != "false" ]; then
             gh workflow run bali-photos.yml --ref main -f region="$R" -f max_species="" -f publish=true -f topup=true
           fi

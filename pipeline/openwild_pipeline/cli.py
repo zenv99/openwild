@@ -592,6 +592,15 @@ def main(argv=None):
                 fh.write(f"| {nm} | {r['photos']} |\n")
         print(f"WANTED {sum(r['photos'] < 3 for r in rows)} of top {len(rows)} need photos -> {out}")
 
+    def cmd_region_from_pack(a):
+        from .regions import region_from_pack
+        n = region_from_pack(Path(a.pack), a.region)
+        print(f"REGION {a.region}: {n} species from {a.pack}")
+
+    sp = add("region-from-pack", cmd_region_from_pack, "write a region's species list from a published pack")
+    sp.add_argument("region")
+    sp.add_argument("pack")
+
     def cmd_add_parts(a):
         from .parts import add_parts_to_pack, load_pfaf
         pfaf = load_pfaf(config.REPO_ROOT / "content" / "evidence" / "pfaf_facts.csv")
