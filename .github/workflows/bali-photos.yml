@@ -134,9 +134,15 @@ jobs:
           # Full download: up to 12 display photos per species (3 per growth stage); accuracy report.
           python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos 12 \
             --out "../work/out/${{ inputs.region }}.owpack" --evaluate "../data/regions/${{ inputs.region }}/eval"
-          # Light copy shipped inside the app: first 3 photos (already one per stage).
-          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos 3 \
-            --out "../work/light/${{ inputs.region }}.owpack"
+          # Light copy shipped inside the app: first 3 photos (one per stage); fewer if it would not fit in git
+          # (GitHub refuses files over 100 MB). The full pack is always one tap away in the Packs tab.
+          for N in 3 2 1; do
+            python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos $N \
+              --out "../work/light/${{ inputs.region }}.owpack"
+            SZ=$(stat -c %s "../work/light/${{ inputs.region }}.owpack")
+            echo "LIGHT photos=$N size=$((SZ/1000000)) MB"
+            [ "$SZ" -lt 90000000 ] && break
+          done
           python - <<'PY'
           import sqlite3
           for kind in ("out", "light"):
@@ -168,7 +174,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           R="${{ inputs.region }}"
-          cp "work/light/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
+          # Start from the newest main (another run may have committed meanwhile), keeping this run's outputs.
+          mkdir -p /tmp/keep && cp -r "data/regions/$R/eval" /tmp/keep/eval
+          git fetch -q origin main && git reset -q --hard origin/main
+          mkdir -p "data/regions/$R" && rm -rf "data/regions/$R/eval" && cp -r /tmp/keep/eval "data/regions/$R/eval"
+          SZ=$(stat -c %s "work/light/$R.owpack")
+          if [ "$SZ" -ge 95000000 ]; then
+            echo "::warning::light pack $((SZ/1000000)) MB is too big for git; keeping the bundled copy, the full pack is published"
+          else
+            cp "work/light/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
+          fi
           (cd pipeline && python - <<'PY'
           from pathlib import Path
           import sqlite3
@@ -182,8 +197,7 @@ jobs:
           git config user.email "openwild-data-bot@users.noreply.github.com"
           (cd pipeline && python -m openwild_pipeline.cli photos-wanted "$R" --top 300 --out "../docs/photos-wanted/$R.md")
           git add android/app/src/main/assets/packs/ "data/regions/$R/eval" docs/photos-wanted
-          git commit -m "Bali pack: up to 3 photos per growth stage, more species, photo-ID accuracy report" || echo "No changes"
-          git pull --rebase --autostash origin main
+          git commit -m "Bali pack: more photos per growth stage, more species, photo-ID accuracy report" || echo "No changes"
           git push origin HEAD:main
           gh workflow run android.yml --ref main
           if [ "${{ inputs.topup }}" != "true" ]; then
