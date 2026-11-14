@@ -18,7 +18,9 @@ USER_AGENT = "OpenWild-pipeline/0.1 (free non-commercial plant & fungi ID; githu
 _host_lock = threading.Lock()
 _host_next: dict[str, float] = {}
 # Minimum seconds between requests per host (Wikimedia asks API clients to be gentle).
-MIN_INTERVAL = {"wikipedia.org": 0.08, "wikidata.org": 0.2, "wikimedia.org": 0.05, "api.gbif.org": 0.05}
+# Commons' API throttles hard (requests stall ~60 s) when hit in parallel: about 2 requests a second.
+MIN_INTERVAL = {"commons.wikimedia.org": 0.5, "wikipedia.org": 0.08, "wikidata.org": 0.2, "wikimedia.org": 0.05,
+                "api.gbif.org": 0.05}
 
 
 def _pace(url: str) -> None:
@@ -34,7 +36,7 @@ def _pace(url: str) -> None:
         time.sleep(wait)
 
 
-def get_json(url: str, params: dict | None = None, cache: bool = True, retries: int = 7) -> dict:
+def get_json(url: str, params: dict | None = None, cache: bool = True, retries: int = 7, timeout: int = 60) -> dict:
     if params:
         url = f"{url}?{urllib.parse.urlencode(params, doseq=True)}"
     key = hashlib.sha1(url.encode()).hexdigest()
@@ -45,7 +47,7 @@ def get_json(url: str, params: dict | None = None, cache: bool = True, retries: 
         _pace(url)
         try:
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
                 data = json.loads(resp.read().decode())
             if cache:
                 path.parent.mkdir(parents=True, exist_ok=True)

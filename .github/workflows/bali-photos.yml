@@ -44,13 +44,14 @@ jobs:
           path: |
             work/photos_commercial/${{ inputs.region }}
             work/cache/http
-          key: commercial-${{ inputs.region }}-${{ github.run_id }}
-          restore-keys: commercial-${{ inputs.region }}-
+          key: commercial-${{ inputs.region }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
+          restore-keys: commercial-${{ inputs.region }}-${{ inputs.max_species != '' && 'test' || 'full' }}-
       - run: pytest -q
       - name: Collect photos
         timeout-minutes: 240
         env:
           OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
+          OW_SPREAD: ${{ inputs.max_species != '' && '1' || '' }}
         run: |
           ARGS=""
           if [ -n "${{ inputs.max_species }}" ]; then ARGS="--max-species ${{ inputs.max_species }}"; fi

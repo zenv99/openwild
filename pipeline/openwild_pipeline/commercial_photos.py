@@ -130,8 +130,13 @@ def wikidata_lookup(names: list[str], keys: dict[str, str] | None = None) -> dic
     return found
 
 
+_COMMONS_SLOTS = threading.Semaphore(2)  # at most 2 Commons API calls in flight; the rest queue politely
+
+
 def _commons_api(params: dict) -> dict:
-    return get_json("https://commons.wikimedia.org/w/api.php", {"format": "json", **params}, retries=2)
+    with _COMMONS_SLOTS:
+        return get_json("https://commons.wikimedia.org/w/api.php", {"format": "json", "maxlag": "5", **params},
+                        retries=3, timeout=25)
 
 
 def category_members(title: str, cmtype: str, limit: int) -> list[str]:
@@ -467,18 +472,23 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path) ->
         timing[label] = (round(_t.monotonic() - t0, 1), len(got))
         cands.extend(got)
 
-    cat = (wiki or {}).get("cat")
-    if cat:
-        step("cat", lambda: from_commons_category(cat, name))
+    def living() -> int:
+        return sum(1 for c in cands if c.get("stage") != "specimen")
+
+    # Cheap and reliable first: the Wikidata lead image (one call) and GBIF (licence-filtered).
     step("p18", lambda: from_p18((wiki or {}).get("images") or [], name))
-    desc = descriptions.get(name.lower()) or {}
-    if desc.get("wiki_url") and len(cands) < 3:
-        step("wiki", lambda: from_wikipedia(desc["wiki_url"], name))
-    if len(cands) < 3:
-        step("search", lambda: from_commons_search(name))
     key = row.get("gbif_key") or ""
-    if len(cands) < 5 and key.isdigit():
+    if key.isdigit():
         step("gbif", lambda: from_gbif(int(key)))
+    # Wikimedia Commons is slow and throttled: only walk it for species still short of photos.
+    cat = (wiki or {}).get("cat")
+    if cat and living() < 3:
+        step("cat", lambda: from_commons_category(cat, name))
+    desc = descriptions.get(name.lower()) or {}
+    if desc.get("wiki_url") and living() < 1:
+        step("wiki", lambda: from_wikipedia(desc["wiki_url"], name))
+    if living() < 1:
+        step("search", lambda: from_commons_search(name))
     t0 = _t.monotonic()
     chosen = _take(cands, img_dir, name)
     timing["download"] = (round(_t.monotonic() - t0, 1), len(chosen))
@@ -499,7 +509,9 @@ def fetch_commercial_photos(region: str, max_species: int | None = None) -> Path
     rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
     rows.sort(key=lambda r: -float(r.get("gbif_count") or 0))
     if max_species:
-        rows = rows[:max_species]
+        # OW_SPREAD=1 samples across the whole list (rare species too), for realistic test runs.
+        step = max(1, len(rows) // max_species) if __import__("os").environ.get("OW_SPREAD") else 1
+        rows = rows[::step][:max_species]
     descriptions = {}
     if (d / "descriptions.csv").exists():
         descriptions = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
