@@ -61,6 +61,40 @@ def stage_from_text(text: str | None) -> str | None:
     return None
 
 
+# Substrings that always mean a specimen sheet or an illustration...
+SHEET_SUBSTR = ("herbarium", "herbier", "specimen", "exsiccat", "isotype", "holotype", "lectotype", "syntype",
+                "illustration", "botanical_magazine", "flora_de_filipinas", "medizinal-pflanzen")
+# ...and whole words that do (matched as words, so "plateau" is not "plate").
+SHEET_WORDS = {"drawing", "plate", "tafel", "planche", "lamina", "blanco", "hortus", "kohler", "köhler", "curtis"}
+
+
+def sheet_fraction(path) -> float:
+    """Share of the picture that is near-white, unsaturated paper (0..1)."""
+    import numpy as np
+    from PIL import Image
+
+    im = Image.open(path).convert("RGB").resize((96, 96))
+    a = np.asarray(im).astype(np.float32)
+    mx, mn = a.max(2), a.min(2)
+    return float(((mx > 190) & ((mx - mn) / (mx + 1e-6) < 0.12)).mean())
+
+
+def looks_like_sheet(path=None, *texts: str | None, threshold: float = 0.40) -> bool:
+    """Herbarium sheets, label pages and old botanical drawings on white paper: never shown or used.
+    Judged by the source title/URL and by how much of the picture is plain white paper."""
+    import re
+
+    blob = " ".join(t for t in texts if t).lower().replace("%20", "_").replace(" ", "_")
+    if any(w in blob for w in SHEET_SUBSTR) or SHEET_WORDS & set(re.split(r"[^a-zà-ÿ]+", blob)):
+        return True
+    if path:
+        try:
+            return sheet_fraction(path) > threshold
+        except Exception:  # noqa: BLE001
+            return False
+    return False
+
+
 def is_inaturalist(*parts: str | None) -> bool:
     """True only if iNaturalist content is NOT allowed by the current policy and this is iNaturalist."""
     if config.ALLOW_INATURALIST:
@@ -463,7 +497,7 @@ MAX_PER_SPECIES = 12
 def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
     """Up to PER_STAGE photos for each growth stage, ordered round-robin across stages so the first
     photos show different stages (a light pack that keeps only the first few still gets variety).
-    General field photos fill in when stages are missing; a herbarium sheet only if nothing else."""
+    General field photos fill in when stages are missing. Herbarium sheets and drawings are never used."""
     by: dict[str, list[dict]] = defaultdict(list)
     seen_url = set()
     for c in cands:
@@ -475,9 +509,14 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
     hashes: set[str] = set()
 
     def fetch(c) -> dict | None:
+        if c.get("stage") == "specimen" or looks_like_sheet(None, c.get("page"), c.get("url")):
+            return None
         digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
         dest = img_dir / f"{digest}.img"
         if not _download(c["url"], dest):
+            return None
+        if looks_like_sheet(dest):  # white paper: a herbarium sheet or an old drawing
+            dest.unlink(missing_ok=True)
             return None
         file_hash = hashlib.sha1(dest.read_bytes()).hexdigest()
         if file_hash in hashes:
@@ -513,14 +552,8 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
             lst = per_stage.get(stage, [])
             if rnd < len(lst):
                 chosen.append(lst[rnd])
-    chosen = chosen[:MAX_PER_SPECIES]
-    if not chosen:
-        for c in by.get("specimen", []):
-            r = fetch(c)
-            if r:
-                chosen.append(r)
-                break
-    return chosen
+    # Herbarium sheets are never used: a plant with no living photo shows no photo.
+    return chosen[:MAX_PER_SPECIES]
 
 
 KEY_TARGET = 12  # photos wanted for each poisonous or edible plant
@@ -699,6 +732,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     from .freemodel import preprocess
 
     usable = []
+    sheets = 0
     for p in photos:
         lic = config.photo_license(p.get("license"))
         path = Path(p.get("path") or "")
@@ -706,12 +740,16 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             continue
         if p.get("source") == "inaturalist" and not config.ALLOW_INATURALIST:
             continue
+        if p.get("stage") == "specimen" or looks_like_sheet(path, p.get("page"), p.get("url")):
+            sheets += 1
+            continue
         try:
             preprocess(path)
         except Exception as e:  # noqa: BLE001
             print(f"skip unreadable photo {p.get('scientific_name')}: {e!r}", flush=True)
             continue
         usable.append({**p, "license": lic})
+    print(f"SHEETS removed {sheets} herbarium sheets / drawings on white paper", flush=True)
     model = config.ANDROID_ASSETS / "embedder.tflite"
     embs = _cached_embeddings([Path(p["path"]) for p in usable], model, photos_path.parent / "emb_cache.npz")
     by: dict[str, list[tuple[dict, np.ndarray]]] = defaultdict(list)

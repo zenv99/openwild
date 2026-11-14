@@ -195,7 +195,7 @@ class RegionPack(file: File) : Closeable {
     private fun thumbnailLocked(i: Int): ByteArray? {
         if (!hasPhotos || i !in species.ids.indices) return null
         return db.rawQuery(
-            "SELECT thumb FROM photo WHERE species_id = ? ORDER BY rank LIMIT 1",
+            "SELECT thumb FROM photo WHERE species_id = ?$NOT_SHEET ORDER BY rank LIMIT 1",
             arrayOf(species.ids[i].toString()),
         ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
     }
@@ -206,7 +206,7 @@ class RegionPack(file: File) : Closeable {
     private fun coverLocked(i: Int): ByteArray? {
         if (!hasPhotos || i !in species.ids.indices) return null
         return db.rawQuery(
-            "SELECT image FROM photo WHERE species_id = ? ORDER BY rank LIMIT 1",
+            "SELECT image FROM photo WHERE species_id = ?$NOT_SHEET ORDER BY rank LIMIT 1",
             arrayOf(species.ids[i].toString()),
         ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
     }
@@ -214,7 +214,7 @@ class RegionPack(file: File) : Closeable {
     /** Indices of species that have a photo (for photo-first browsing). */
     val withPhoto: Set<Int> by lazy {
         synchronized(dbLock) {
-            if (!hasPhotos) emptySet() else db.rawQuery("SELECT DISTINCT species_id FROM photo", null).use { c ->
+            if (!hasPhotos) emptySet() else db.rawQuery("SELECT DISTINCT species_id FROM photo WHERE 1=1$NOT_SHEET", null).use { c ->
                 buildSet { while (c.moveToNext()) idToIndex[c.getLong(0)]?.let { add(it) } }
             }
         }
@@ -243,7 +243,7 @@ class RegionPack(file: File) : Closeable {
     private val stageCounts: Map<Int, Map<String, Int>> by lazy {
         synchronized(dbLock) {
             if (!hasPhotos) return@synchronized emptyMap()
-            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo GROUP BY species_id, stage"
+            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo WHERE stage != 'specimen' GROUP BY species_id, stage"
             else "SELECT species_id, 'unspecified', COUNT(*) FROM photo GROUP BY species_id"
             val out = HashMap<Int, HashMap<String, Int>>()
             db.rawQuery(sql, null).use { c ->
@@ -276,7 +276,7 @@ class RegionPack(file: File) : Closeable {
     fun photos(i: Int): List<Photo> = synchronized(dbLock) {
         if (!hasPhotos || i !in species.ids.indices) return emptyList()
         val sql = if (hasStageColumn) {
-            "SELECT image, observer, license, url, stage FROM photo WHERE species_id = ? ORDER BY rank"
+            "SELECT image, observer, license, url, stage FROM photo WHERE species_id = ?$NOT_SHEET ORDER BY rank"
         } else {
             "SELECT image, observer, license, url FROM photo WHERE species_id = ? ORDER BY rank"
         }
@@ -291,6 +291,9 @@ class RegionPack(file: File) : Closeable {
     }
 
     override fun close() = db.close()
+
+    /** Herbarium sheets (scanned specimens on white paper) are never shown. Older packs still contain some. */
+    private val NOT_SHEET: String get() = if (hasStageColumn) " AND stage != 'specimen'" else ""
 
     companion object {
         const val WANTED_MIN = 3

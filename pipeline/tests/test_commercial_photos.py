@@ -171,3 +171,20 @@ def test_inaturalist_source_stages_and_licences(monkeypatch):
     out = cp.from_inaturalist("Plumeria rubra")
     assert len(out) == 1  # all-rights-reserved photo and parent-taxon observation skipped
     assert out[0]["stage"] == "flower" and out[0]["license"] == "cc-by-nc" and out[0]["url"].endswith("/medium.jpg")
+
+
+def test_white_paper_sheets_are_rejected(tmp_path):
+    from PIL import Image
+    from openwild_pipeline.commercial_photos import looks_like_sheet
+
+    sheet = tmp_path / "sheet.jpg"
+    im = Image.new("RGB", (200, 300), (245, 243, 238))
+    im.paste((90, 70, 40), (60, 80, 120, 220))  # a dried brown specimen in the middle
+    im.save(sheet)
+    leaf = tmp_path / "leaf.jpg"
+    Image.new("RGB", (200, 300), (40, 120, 50)).save(leaf)
+    assert looks_like_sheet(sheet) and not looks_like_sheet(leaf)
+    assert looks_like_sheet(None, "https://commons.wikimedia.org/wiki/File:Vitex_pinnata_Blanco2.427-cropped.jpg")
+    assert looks_like_sheet(None, "Herbarium specimen of Ficus")
+    assert not looks_like_sheet(None, "https://www.inaturalist.org/observations/1")
+    assert not looks_like_sheet(None, "File:Bromo_plateau_grass.jpg")
