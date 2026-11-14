@@ -112,7 +112,7 @@ jobs:
           print("COVERAGE stages", collections.Counter(x["stage"] for x in rows))
           PY
       - name: Build packs (fingerprints with the phone's model) + accuracy report
-        if: inputs.publish == 'true'
+        if: inputs.publish == 'true' || inputs.max_species != ''
         run: |
           mkdir -p ../work/out ../work/light
           V="$(date -u +%Y%m%d%H)"
