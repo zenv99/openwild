@@ -708,7 +708,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             continue
         usable.append({**p, "license": lic})
     model = config.ANDROID_ASSETS / "embedder.tflite"
-    embs = embed_tflite([Path(p["path"]) for p in usable], model) if usable else np.zeros((0, config.EMBED_DIM), np.float32)
+    embs = _cached_embeddings([Path(p["path"]) for p in usable], model, photos_path.parent / "emb_cache.npz")
     by: dict[str, list[tuple[dict, np.ndarray]]] = defaultdict(list)
     for p, e in zip(usable, embs):
         by[p["scientific_name"].lower()].append((p, e))
@@ -827,3 +827,31 @@ def _write_stats(pack: Path, region_id: str) -> None:
     path = config.DATA_REGIONS / region_id / "photo_pack_stats.json"
     path.write_text(json.dumps(stats, indent=2) + "\n")
     print(json.dumps(stats, indent=2), flush=True)
+
+
+def _cached_embeddings(paths: list[Path], model: Path, cache: Path) -> np.ndarray:
+    """Phone-model fingerprints, reusing earlier ones (keyed by file path, size and model file size), so the
+    full pack, the light pack and later top-up runs fingerprint each photo only once."""
+    from .freemodel import embed_tflite
+
+    if not paths:
+        return np.zeros((0, config.EMBED_DIM), np.float32)
+    tag = f"{model.stat().st_size}"
+    known: dict[str, np.ndarray] = {}
+    if cache.exists():
+        try:
+            z = np.load(cache, allow_pickle=False)
+            if str(z["tag"]) == tag:
+                known = dict(zip(z["keys"].tolist(), z["vecs"]))
+        except Exception:  # noqa: BLE001
+            known = {}
+    keys = [f"{p}|{p.stat().st_size}" for p in paths]
+    todo = [i for i, k in enumerate(keys) if k not in known]
+    print(f"FINGERPRINTS {len(paths)} photos, {len(paths) - len(todo)} cached, {len(todo)} new", flush=True)
+    if todo:
+        new = embed_tflite([paths[i] for i in todo], model)
+        for i, v in zip(todo, new):
+            known[keys[i]] = v
+        ks = list(known)
+        np.savez(cache, tag=np.array(tag), keys=np.array(ks), vecs=np.stack([known[k] for k in ks]).astype(np.float32))
+    return np.stack([known[k] for k in keys]).astype(np.float32)
