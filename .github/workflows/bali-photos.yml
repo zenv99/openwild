@@ -48,7 +48,7 @@ jobs:
           python-version: "3.12"
       - run: pip install numpy pyyaml pillow
       - name: Reuse photos from earlier runs
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             work/photos_commercial/${{ inputs.region }}
@@ -63,9 +63,20 @@ jobs:
         run: |
           ARGS="--shard ${{ matrix.shard }}/6"
           if [ -n "${{ inputs.max_species }}" ]; then ARGS="$ARGS --max-species ${{ inputs.max_species }}"; fi
-          python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS
+          # Soft time budget: stop cleanly before the job limit so everything collected so far is saved and
+          # packed; the next (top-up) run carries on from here.
+          timeout --signal=INT 230m python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS || echo "::warning::time budget reached; saving what was collected"
           cp "../work/photos_commercial/${{ inputs.region }}/photos.csv" "../work/photos_commercial/${{ inputs.region }}/photos-shard${{ matrix.shard }}.csv"
+      - name: Save photos for the next run (always, even after a failure)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            work/photos_commercial/${{ inputs.region }}
+            work/cache/http
+          key: photos-v2-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: photos-${{ inputs.region }}-${{ matrix.shard }}
           path: |
