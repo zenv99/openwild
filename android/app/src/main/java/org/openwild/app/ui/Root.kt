@@ -2,6 +2,7 @@
 
 package org.openwild.app.ui
 
+import org.openwild.app.ui.screens.MatchBrowserScreen
 import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -113,6 +114,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
         Screen.Home -> ""
         Screen.Capture -> stringResource(R.string.capture_title)
         Screen.Results -> stringResource(R.string.results)
+        is Screen.Matches -> stringResource(R.string.matches_title)
         is Screen.Species -> vm.pack?.species?.scientificNames?.getOrNull(screen.index) ?: ""
         Screen.Packs -> stringResource(R.string.region_packs)
         Screen.Survival -> stringResource(R.string.survival_guide)
@@ -178,6 +180,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                     Screen.Home -> HomeScreen(state, vm)
                     Screen.Capture -> CaptureScreen(state, vm)
                     Screen.Results -> ResultsScreen(state, vm)
+                    is Screen.Matches -> MatchBrowserScreen(s.start, state, vm)
                     is Screen.Species -> SpeciesScreen(s.index, s.tier, state, vm)
                     Screen.Packs -> PacksScreen(state, vm)
                     Screen.Survival -> SurvivalScreen(vm)

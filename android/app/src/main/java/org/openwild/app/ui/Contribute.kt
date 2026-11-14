@@ -58,6 +58,27 @@ object Contribute {
         open(context, "${BuildConfig.REPO_URL}/issues/new?title=${Uri.encode(title)}&body=${Uri.encode(body)}&labels=wrong-id")
     }
 
+    /**
+     * Opens a pre-filled correction report (a GitHub issue the user can read and edit before sending).
+     * Contains only species names, match scores and pack/model versions: no photo, no location, no account.
+     * Collected corrections are used to measure and tune photo ID.
+     */
+    fun sendCorrection(context: Context, c: org.openwild.app.data.ReviewStore.Correction) {
+        val title = "Correction: app said ${c.predicted}, it was ${c.chosen}"
+        val body = buildString {
+            appendLine("**App said:** ${c.predicted}")
+            appendLine("**It was:** ${c.chosen} " + if (c.chosenRank > 0) "(match #${c.chosenRank} in the list)" else "(not in the list, found by search)")
+            appendLine("**Top matches:** ${c.topMatches}")
+            appendLine("**Photos used:** ${c.photoCount}")
+            appendLine("**Region pack:** ${c.regionId} v${c.packVersion} · model ${c.modelId}")
+            appendLine()
+            appendLine("**How sure are you, and what told you?** ")
+            appendLine()
+            appendLine("_No photo or location is included. Attach a photo only if you want to._")
+        }
+        open(context, "${BuildConfig.REPO_URL}/issues/new?title=${Uri.encode(title)}&body=${Uri.encode(body)}&labels=correction")
+    }
+
     /** Opens the user's Lightning wallet; if none is installed, copies the address instead. */
     fun donateLightning(context: Context) {
         val address = BuildConfig.LIGHTNING_ADDRESS

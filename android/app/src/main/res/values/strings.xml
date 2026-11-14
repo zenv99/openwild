@@ -242,5 +242,19 @@
     <string name="stage_unspecified">Photo</string>
     <string name="photo_stage_missing">No openly licensed %1$s photo</string>
     <string name="photo_none">No openly licensed photo for this species. A missing photo is left blank — OpenWild does not substitute another picture.</string>
+    <string name="matches_title">Is it one of these?</string>
+    <string name="matches_position">Match %1$d of %2$d, most likely first. Swipe for the next.</string>
+    <string name="matches_search_page">Not in the list? Search every species.</string>
+    <string name="matches_browse">Not right? Browse %1$d likely matches</string>
+    <string name="matches_this_is_it">This is it</string>
+    <string name="matches_details">Details</string>
+    <string name="matches_next">Next match →</string>
+    <string name="matches_not_listed">Not in the list? Find it by name</string>
+    <string name="matches_pick">Pick</string>
+    <string name="matches_deadly_hint">This match can be deadly. Never eat a plant because it looks like a picture.</string>
+    <string name="your_photo">Your photo</string>
+    <string name="correction_saved">Saved on your phone. Thank you.</string>
+    <string name="correction_saved_detail">Saved: it was %1$s. Send it to help improve photo ID? (No photo or location is sent.)</string>
+    <string name="correction_send">Send</string>
 </resources>
 

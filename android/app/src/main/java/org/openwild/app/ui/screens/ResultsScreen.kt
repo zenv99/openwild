@@ -1,5 +1,7 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.material.icons.filled.ViewCarousel
+import androidx.compose.material3.Button
 import org.openwild.app.ui.theme.Leaf
 import org.openwild.app.ui.SpeciesThumb
 import androidx.compose.foundation.Image
@@ -126,11 +128,18 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
             }
         }
 
+        // Wrong plant? Browse every likely match, most likely first, and pick the right one.
+        Button(onClick = { vm.go(Screen.Matches(0)) }, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.ViewCarousel, null, Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.matches_browse, res.candidates.size))
+        }
+
         if (res.candidates.size > 1) {
             SectionTitle(stringResource(R.string.other_candidates))
-            res.candidates.drop(1).forEach { c ->
-                // Non-top candidates are always treated as LOW for safety gating.
-                CandidateRow(vm, c) { vm.go(Screen.Species(c.index, Tier.LOW)) }
+            res.candidates.drop(1).take(4).forEachIndexed { k, c ->
+                // Opens the match browser at this candidate; species pages from there stay LOW tier.
+                CandidateRow(vm, c) { vm.go(Screen.Matches(k + 1)) }
             }
         }
 

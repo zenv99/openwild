@@ -57,6 +57,8 @@ sealed interface Screen {
     data object Capture : Screen
     data object Results : Screen
     data class Species(val index: Int, val tier: Tier) : Screen
+    /** Swipe through the ranked matches for the last identification, most likely first. */
+    data class Matches(val start: Int = 0) : Screen
     data object Packs : Screen
     data object Survival : Screen
     data object Credits : Screen
@@ -342,7 +344,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val month = Calendar.getInstance().get(Calendar.MONTH) + 1
             val r = id.identify(embeddings, s.filter, month)
             val deadly = SafetyPolicy.deadlyCandidates(r) { p.content(it)?.isDeadly == true }
-            val cands = r.order.take(5).map { Candidate(it, r.probs[it], p.content(it)?.isDeadly == true) }
+            // Keep a long ranked list so the user can browse down to the right plant if the first is wrong.
+            val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], p.content(it)?.isDeadly == true) }
             IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside })
         }
         _state.update { it.copy(busy = false, result = res) }
@@ -355,7 +358,29 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (_state.value.screen != Screen.Capture) go(Screen.Capture)
     }
 
+    /**
+     * The user says the photo shows [chosenIndex] (found at [rank] in the list, 0 if found by search).
+     * Saved on the phone only. Returns the stored correction, ready for an optional user-tapped send.
+     */
+    fun recordCorrection(chosenIndex: Int, rank: Int): ReviewStore.Correction? {
+        val p = pack ?: return null
+        val res = _state.value.result ?: return null
+        val names = p.species.scientificNames
+        val top = res.candidates.take(5).joinToString("; ") { "${names[it.index]} ${(it.prob * 100).toInt()}%" }
+        val c = ReviewStore.Correction(
+            id = 0, regionId = p.regionId, packVersion = p.version, modelId = p.modelId,
+            predicted = names[res.result.top], chosen = names[chosenIndex], chosenRank = rank,
+            topMatches = top, photoCount = res.photoCount, createdAt = System.currentTimeMillis(), sent = false,
+        )
+        val id = ow.reviews.saveCorrection(c)
+        _state.update { it.copy(message = getApplication<Application>().getString(R.string.correction_saved)) }
+        return c.copy(id = id)
+    }
+
+    fun markCorrectionSent(id: Long) = viewModelScope.launch(Dispatchers.IO) { ow.reviews.markSent(id) }
+
     companion object {
+        const val MAX_MATCHES = 30
         const val MAX_PHOTOS = 5
 
         fun defaultPartFor(filter: KingdomFilter, n: Int): PhotoPart = when (filter) {
