@@ -48,6 +48,8 @@ import org.openwild.app.ui.theme.Caution
 import org.openwild.app.ui.theme.CautionBg
 import org.openwild.app.ui.theme.Danger
 import org.openwild.app.ui.theme.DangerBg
+import org.openwild.app.ui.theme.OnDangerBg
+import org.openwild.app.ui.theme.OnCautionBg
 import org.openwild.app.ui.theme.Psychedelic
 import org.openwild.app.ui.theme.PsychedelicBg
 import org.openwild.app.ui.theme.Safe
@@ -73,7 +75,7 @@ fun WarningBox(text: String, danger: Boolean = true) {
     ) {
         Icon(Icons.Filled.Warning, contentDescription = null, tint = if (danger) Danger else Caution)
         Spacer(Modifier.width(12.dp))
-        Text(text, color = if (danger) Color(0xFF7F0000) else Color(0xFF4A3000), fontWeight = FontWeight.SemiBold)
+        Text(text, color = if (danger) OnDangerBg else OnCautionBg, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -206,4 +208,29 @@ fun Footer() {
 @Composable
 fun SectionTitle(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+}
+
+
+/**
+ * Optional: suggest the user's region from the phone's approximate location. Nothing is asked until the
+ * user taps this, and the location never leaves the phone.
+ */
+@Composable
+fun UseLocationButton(vm: AppViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) vm.detectRegion() }
+    androidx.compose.material3.OutlinedButton(
+        onClick = {
+            val ok = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (ok) vm.detectRegion() else launcher.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Icon(androidx.compose.material.icons.Icons.Filled.MyLocation, null, Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.use_my_location))
+    }
 }

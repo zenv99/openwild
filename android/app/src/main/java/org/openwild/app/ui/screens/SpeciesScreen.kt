@@ -147,7 +147,7 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                     }
                     Text(
                         stringResource(R.string.lookalike_line, lk.name, lk.danger.uppercase()),
-                        color = Danger, fontWeight = FontWeight.Bold,
+                        color = org.openwild.app.ui.theme.OnDangerBg, fontWeight = FontWeight.Bold,
                     )
                 }
             }

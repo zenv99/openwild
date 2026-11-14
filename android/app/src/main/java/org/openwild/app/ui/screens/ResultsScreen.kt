@@ -169,7 +169,7 @@ fun displayName(vm: AppViewModel, i: Int): String {
 private fun CandidateRow(vm: AppViewModel, c: Candidate, onClick: () -> Unit) {
     val pack = vm.pack ?: return
     val sp = pack.species
-    val ink = if (c.isDeadly) Color(0xFF7F0000) else MaterialTheme.colorScheme.onSurface
+    val ink = if (c.isDeadly) org.openwild.app.ui.theme.OnDangerBg else MaterialTheme.colorScheme.onSurface
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
             .background(if (c.isDeadly) DangerBg else MaterialTheme.colorScheme.surfaceContainer)

@@ -47,6 +47,10 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
     var query by rememberSaveable { mutableStateOf("") }
     val q = query.trim().lowercase()
     val ready = state.bundled.filter { it.complete }.associateBy { it.regionId }
+    val remote = state.remote.associateBy { it.regionId }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (org.openwild.app.BuildConfig.ALLOW_NETWORK && state.remote.isEmpty()) vm.refreshRemote()
+    }
     val regions = state.regions.filter { r ->
         q.isEmpty() || r.name.lowercase().contains(q) || r.id.lowercase().contains(q)
     }
@@ -77,6 +81,9 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        if (state.suggestedRegionId == null && q.isEmpty()) {
+            item { org.openwild.app.ui.UseLocationButton(vm) }
+        }
         state.suggestedRegionId?.let { id ->
             state.regions.firstOrNull { it.id == id }?.let { suggested ->
                 if (q.isEmpty()) {
@@ -84,14 +91,14 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                         Text(stringResource(R.string.near_you), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
                         Text(stringResource(R.string.near_you_install), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    item { ChoiceRow(suggested, ready[suggested.id], state.installingRegion == suggested.id, vm) }
+                    item { ChoiceRow(suggested, ready[suggested.id], remote[suggested.id], state.installingRegion == suggested.id, state.downloading[suggested.id], vm) }
                 }
             }
         }
         grouped.forEach { (continent, list) ->
             item { Text(continent, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp)) }
             items(list, key = { it.id }) { region ->
-                ChoiceRow(region, ready[region.id], state.installingRegion == region.id, vm)
+                ChoiceRow(region, ready[region.id], remote[region.id], state.installingRegion == region.id, state.downloading[region.id], vm)
             }
         }
         item { Spacer(Modifier.size(24.dp)) }
@@ -99,7 +106,10 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
 }
 
 @Composable
-private fun ChoiceRow(region: RegionInfo, pack: PackManager.BundledPack?, installing: Boolean, vm: AppViewModel) {
+private fun ChoiceRow(
+    region: RegionInfo, pack: PackManager.BundledPack?, online: PackManager.RemotePack?,
+    installing: Boolean, progress: Float?, vm: AppViewModel,
+) {
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -109,17 +119,27 @@ private fun ChoiceRow(region: RegionInfo, pack: PackManager.BundledPack?, instal
         Column(Modifier.weight(1f)) {
             Text(region.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Text(
-                if (pack != null) stringResource(R.string.status_ready, pack.version, pack.speciesCount) else stringResource(R.string.status_not_ready),
+                when {
+                    progress != null -> stringResource(R.string.status_downloading, (progress * 100).toInt())
+                    pack != null -> stringResource(R.string.status_ready, pack.version, pack.speciesCount)
+                    online != null -> stringResource(R.string.status_online, online.speciesCount, (online.size / 1_000_000.0).let { if (it < 1) 1.0 else it }.toInt())
+                    else -> stringResource(R.string.status_not_ready)
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         when {
-            installing -> CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
+            installing || progress != null -> CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
             pack != null -> Button(onClick = { vm.installRegion(region.id) }) {
                 Icon(Icons.Filled.Download, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.install_pack))
+            }
+            online != null -> Button(onClick = { vm.download(online) }) {
+                Icon(Icons.Filled.Download, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.download))
             }
             else -> Box(Modifier.size(10.dp).clip(CircleShape).background(MaterialTheme.colorScheme.outlineVariant))
         }

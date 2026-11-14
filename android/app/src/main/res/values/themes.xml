@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.OpenWild" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">#1B4332</item>
+    <!-- Dark from the first frame (no white flash). The in-app setting can still switch to light. -->
+    <style name="Theme.OpenWild" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0B1410</item>
+        <item name="android:statusBarColor">#0B1410</item>
+        <item name="android:navigationBarColor">#0B1410</item>
     </style>
 </resources>

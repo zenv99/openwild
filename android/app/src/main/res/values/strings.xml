@@ -215,7 +215,7 @@
     <string name="explore_empty">Nothing in %1$s matches that search.</string>
 
     <string name="choose_region_title">Choose your region</string>
-    <string name="choose_region_body">Pick a region to install on this phone. Identification only uses species recorded there, and it works offline after the pack is installed. Bali is the first finished pack. Other regions are listed, but their packs are not finished — nothing is downloaded or invented for them.</string>
+    <string name="choose_region_body">Pick a region. Bali has full photo ID with thousands of photos. Every other region is a field guide (plant names, poison warnings, lookalikes), and we add photos every week. Packs work offline once downloaded.</string>
     <string name="region_not_ready">%1$s doesn\'t have a finished pack yet.</string>
     <string name="install_pack">Install</string>
     <string name="installing_pack">Installing…</string>
@@ -285,5 +285,7 @@
     <string name="contrib_next_title">%1$d photos saved to Pictures/OpenWild</string>
     <string name="contrib_next_steps">On the form: tap Photos, attach the photos from Pictures/OpenWild, then Submit. A GitHub account is needed (free). Thank you!</string>
     <string name="contrib_open_form">Open the form again</string>
+    <string name="use_my_location">Find my region (optional, uses approximate location)</string>
+    <string name="status_online">Download · %1$d species · %2$d MB</string>
 </resources>
 

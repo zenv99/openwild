@@ -145,6 +145,9 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
             )
         }
 
+        if (state.suggestedRegionId == null && q.isEmpty()) {
+            item { org.openwild.app.ui.UseLocationButton(vm) }
+        }
         // Near you
         state.suggestedRegionId?.let { id ->
             state.regions.firstOrNull { it.id == id }?.let { r ->

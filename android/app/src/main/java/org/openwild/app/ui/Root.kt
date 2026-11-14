@@ -74,12 +74,7 @@ fun OpenWildRoot(vm: AppViewModel = viewModel()) {
 @Composable
 private fun RootBody(state: UiState, vm: AppViewModel) {
 
-    val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) vm.detectRegion()
-    }
-    LaunchedEffect(state.disclaimerAccepted) {
-        if (state.disclaimerAccepted) locationPermission.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
-    }
+    // Location is never requested automatically: only when the user taps "Use my location".
 
     if (!state.disclaimerAccepted) {
         AlertDialog(
