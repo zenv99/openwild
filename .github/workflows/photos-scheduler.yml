@@ -30,12 +30,13 @@ jobs:
           gh release download packs -R "$REPO" -p index.json -p photo-progress.json -D /tmp/s --clobber || true
           gh run list -R "$REPO" --workflow bali-photos.yml --limit 200 --json displayTitle,status,conclusion > /tmp/s/runs.json
           python3 - <<'PY'
-          import json, os, subprocess
+          import json, os, subprocess, time
           MAX_ACTIVE, CAP, PHOTOS, MAX_TOPUPS = 3, "5000", "6", 4
           # Nearest to Bali first, then the rest smallest first (quick wins).
           FIRST = ["ID", "TL", "MY", "SG", "BN", "PH", "TH", "VN", "KH", "LA", "MM", "PG", "AU", "FJ", "NZ",
                    "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US-HI"]
-          SKIP = {"ID-BA", "WORLD"}
+          SKIP = {"WORLD"}
+          REFRESH_DAYS = 30
           idx = json.load(open("/tmp/s/index.json"))["packs"]
           try:
               prog = json.load(open("/tmp/s/photo-progress.json"))
@@ -62,6 +63,9 @@ jobs:
               if r in active or r in broken:
                   continue
               e = prog.get(r)
+              fresh = False
+              if r == "ID-BA" and e is None:
+                  continue  # Bali is handled by its own runs until it has a progress entry
               if e is None:
                   topup = False
               elif e["mode"] == "full" and e.get("budget_hit"):
@@ -71,12 +75,16 @@ jobs:
               elif e.get("budget_hit") and e.get("topups", 0) < MAX_TOPUPS:
                   topup = True
               else:
-                  continue  # done
-              print("dispatch", r, "top-up" if topup else "full")
+                  age = (time.time() - time.mktime(time.strptime(e["updated"], "%Y-%m-%dT%H:%MZ"))) / 86400
+                  if age < REFRESH_DAYS:
+                      continue  # done for now
+                  topup, fresh = True, True  # monthly refresh: new university, community and open photos
+              print("dispatch", r, "refresh" if fresh else ("top-up" if topup else "full"))
               subprocess.run(["gh", "workflow", "run", "bali-photos.yml", "-R", os.environ["REPO"], "--ref", "main",
                               "-f", f"region={r}", "-f", "max_species=", "-f", "publish=true",
                               "-f", f"topup={'true' if topup else 'false'}", "-f", f"photo_cap={CAP}",
-                              "-f", f"photos={PHOTOS}", "-f", "chain=false"], check=True)
+                              "-f", f"photos={'12' if r == 'ID-BA' else PHOTOS}", "-f", "chain=false",
+                              "-f", f"fresh={'true' if fresh else 'false'}"] + ([] if r != "ID-BA" else []), check=True)
               slots -= 1
           done = [r for r in order if r in prog and prog[r]["mode"] == "topup" and not prog[r].get("budget_hit")]
           print(f"SCHEDULE {len(done)}/{len(order)} regions finished")

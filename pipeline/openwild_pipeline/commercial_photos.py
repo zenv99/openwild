@@ -626,6 +626,9 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
             seen_pages.add(r0.get("page") or "")
         tdone_path = out_dir / "topup_done.txt"
         tdone = set(tdone_path.read_text(encoding="utf-8").splitlines()) if tdone_path.exists() else set()
+        if __import__("os").environ.get("OW_TOPUP_FRESH"):  # monthly refresh: look again for new open photos
+            tdone = set()
+            tdone_path.unlink(missing_ok=True)
         todo = [r for r in rows if r["scientific_name"] not in tdone and
                 have.get(r["scientific_name"], 0) < (KEY_TARGET if r["scientific_name"].lower() in key else 3)]
         print(f"TOPUP {region}: {len(todo)} species short of photos "
