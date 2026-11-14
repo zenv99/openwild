@@ -16,6 +16,8 @@ data class SpeciesContent(
     /** "species" (full entry), "quick" (one-liner), or "genus"/"family" when only a group-level warning applies. */
     val level: String = "species",
     val groupTaxon: String? = null,
+    /** Part by part (seeds, fruit, flowers, leaves, stem, bark, roots, sap): food or poison. */
+    val parts: List<PartInfo> = emptyList(),
 ) {
     val isGroupLevel: Boolean get() = level == "genus" || level == "family"
     val isDeadly: Boolean get() = toxicity == "deadly" || edibility == "deadly"
@@ -38,6 +40,11 @@ data class SpeciesContent(
     )
 
     data class Feeling(val tasteTexture: String? = null, val effects: String? = null, val risks: String? = null)
+}
+
+/** status: deadly | toxic | harmful | experts_only | edible_cooked | caution | edible */
+data class PartInfo(val part: String, val status: String, val note: String) {
+    val isFood: Boolean get() = status == "edible" || status == "edible_cooked" || status == "caution"
 }
 
 data class Lookalike(val name: String, val danger: String, val speciesId: Long?)

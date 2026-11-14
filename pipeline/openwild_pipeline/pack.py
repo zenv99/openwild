@@ -178,6 +178,9 @@ def build_pack(
             (int(w.shape[0]), int(w.shape[1]), w.astype("<f4").tobytes(), mean.astype("<f4").tobytes()),
         )
 
+    from .parts import build_parts, load_pfaf
+    pfaf_path = config.REPO_ROOT / "content" / "evidence" / "pfaf_facts.csv"
+    pfaf_rows = load_pfaf(pfaf_path) if pfaf_path.exists() else {}
     rules_for_photos = load_group_rules() if group_rules is None else group_rules
     quick_for_photos = load_quick() if quick_rows is None else quick_rows
     # Species with real eating/poison info get extra photos (people will study them closely).
@@ -260,6 +263,9 @@ def build_pack(
         # A one-liner tagged for another kingdom (e.g. a fruit category that swept up a fungal disease) is ignored.
         row_ok = not q or not q.get("kingdom") or q["kingdom"] == rec.kingdom
         content = resolve(curated, rules, rec.scientific_name, rec.genus, rec.family, rows if row_ok else {})
+        if content is not None:
+            # Part-by-part: which of seeds, fruit, flowers, leaves, stem, bark, roots, sap are food or poison.
+            content = {**content, "parts": build_parts(content, pfaf_rows.get(key), rec.kingdom == "Fungi")}
         covered[content["level"] if content else "none"] += 1
         con.execute("INSERT INTO content VALUES (?, ?)", (name_to_id[key], json.dumps(content or finalize(None))))
         for lk in (entry or {}).get("lookalikes") or []:

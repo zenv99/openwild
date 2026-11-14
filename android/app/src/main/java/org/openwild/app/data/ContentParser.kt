@@ -49,6 +49,14 @@ object ContentParser {
                 legalWarning = o.str("legal_warning"),
                 level = o.str("level") ?: "species",
                 groupTaxon = o.str("group_taxon"),
+                parts = o.optJSONArray("parts")?.let { a ->
+                    (0 until a.length()).mapNotNull { i ->
+                        a.optJSONObject(i)?.let { r ->
+                            val part = r.str("part") ?: return@let null
+                            org.openwild.app.core.PartInfo(part, r.str("status") ?: "toxic", r.str("note") ?: "")
+                        }
+                    }
+                } ?: emptyList(),
             )
         } catch (e: Exception) {
             null

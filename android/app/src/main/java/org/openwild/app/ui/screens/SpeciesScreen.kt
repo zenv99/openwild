@@ -1,5 +1,6 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.material.icons.filled.Eco
 import org.openwild.app.ui.stageLabel
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -158,7 +159,13 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
 
         if (state.survivalMode && content != null) SurvivalCard(content)
 
-        // 3. If eaten: harms → benefits → feeling
+        // 3. Part by part: which parts are food and which are poison. Poison always shows; food only
+        // when the identification is confident enough to show eating information.
+        if (content != null && !sp.isFungus[index] && (content.parts.isNotEmpty() || content.hasSafetyData)) {
+            PartsCard(content, showFood = vis.showBenefits)
+        }
+
+        // 4. If eaten: harms → benefits → feeling
         if (vis.showHarms) {
             SectionCard(stringResource(R.string.harms), Icons.Filled.Warning, Danger) {
                 val h = content?.harms
@@ -296,5 +303,58 @@ private fun PhotoHelpCard(count: Int, gaps: List<String>, onAdd: () -> Unit) {
             )
         }
         Text(stringResource(R.string.species_photos_add), color = PhotoWanted, fontWeight = FontWeight.Bold)
+    }
+}
+
+private val PartOrder = listOf("all", "seeds", "fruit", "flowers", "leaves", "stem", "bark", "roots", "sap")
+
+@Composable
+private fun partLabel(part: String): String = stringResource(
+    when (part) {
+        "all" -> R.string.part_all
+        "seeds" -> R.string.part_seeds
+        "fruit" -> R.string.part_fruit
+        "flowers" -> R.string.part_flowers
+        "leaves" -> R.string.part_leaves
+        "stem" -> R.string.part_stem
+        "bark" -> R.string.part_bark
+        "roots" -> R.string.part_roots
+        else -> R.string.part_sap
+    },
+)
+
+@Composable
+private fun PartsCard(content: org.openwild.app.core.SpeciesContent, showFood: Boolean) {
+    val rows = content.parts.sortedBy { PartOrder.indexOf(it.part) }
+    SectionCard(stringResource(R.string.parts_title), Icons.Filled.Eco, if (content.isDeadly) Danger else Leaf) {
+        rows.forEach { r ->
+            val hidden = r.isFood && !showFood
+            val (label, color) = when {
+                hidden -> stringResource(R.string.part_status_hidden) to MaterialTheme.colorScheme.onSurfaceVariant
+                r.status == "deadly" -> stringResource(R.string.part_status_deadly) to Danger
+                r.status == "toxic" -> stringResource(R.string.part_status_toxic) to Danger
+                r.status == "harmful" -> stringResource(R.string.part_status_harmful) to Caution
+                r.status == "experts_only" -> stringResource(R.string.part_status_experts) to Caution
+                r.status == "edible_cooked" -> stringResource(R.string.part_status_cooked) to Caution
+                r.status == "caution" -> stringResource(R.string.part_status_caution) to Caution
+                else -> stringResource(R.string.part_status_edible) to org.openwild.app.ui.theme.Safe
+            }
+            Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.Top) {
+                Text(partLabel(r.part), style = MaterialTheme.typography.titleSmall, modifier = Modifier.width(110.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(label, color = color, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                    if (!hidden && r.note.isNotBlank()) Text(r.note, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+        val listed = rows.map { it.part }.toSet()
+        if ("all" !in listed && listed.size < 8) {
+            Text(
+                stringResource(if (content.isDeadly) R.string.parts_other_deadly else R.string.parts_other_unknown),
+                style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold,
+                color = if (content.isDeadly) Danger else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(stringResource(R.string.parts_disclaimer), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

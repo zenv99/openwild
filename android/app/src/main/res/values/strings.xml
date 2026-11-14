@@ -287,5 +287,26 @@
     <string name="contrib_open_form">Open the form again</string>
     <string name="use_my_location">Find my region (optional, uses approximate location)</string>
     <string name="status_online">Download · %1$d species · %2$d MB</string>
+    <string name="parts_title">Part by part</string>
+    <string name="part_all">All parts</string>
+    <string name="part_seeds">Seeds / nuts</string>
+    <string name="part_fruit">Fruit</string>
+    <string name="part_flowers">Flowers</string>
+    <string name="part_leaves">Leaves</string>
+    <string name="part_stem">Stem / stalk</string>
+    <string name="part_bark">Bark</string>
+    <string name="part_roots">Roots / tubers</string>
+    <string name="part_sap">Sap / latex</string>
+    <string name="part_status_deadly">☠ DEADLY</string>
+    <string name="part_status_toxic">⚠ POISONOUS</string>
+    <string name="part_status_harmful">⚠ Harmful</string>
+    <string name="part_status_experts">✋ Don’t eat</string>
+    <string name="part_status_cooked">🔥 Food, cooked only</string>
+    <string name="part_status_caution">⚠ Food, with care</string>
+    <string name="part_status_edible">✓ Reported food</string>
+    <string name="part_status_hidden">Food info hidden until the ID is confident</string>
+    <string name="parts_other_deadly">Other parts: treat as deadly.</string>
+    <string name="parts_other_unknown">Other parts: no information. Don’t eat them.</string>
+    <string name="parts_disclaimer">From PFAF, Kew and our curated safety notes. Not expert reviewed. Never eat a plant on a photo match alone.</string>
 </resources>
 
