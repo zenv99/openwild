@@ -523,7 +523,20 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
     return chosen
 
 
-def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path) -> list[dict]:
+KEY_TARGET = 12  # photos wanted for each poisonous or edible plant
+
+
+def safety_species(rows: list[dict]) -> set[str]:
+    """Species with poison or food information: curated entries, quick facts, and genera with group rules."""
+    from .content import load_curated, load_group_rules, load_quick
+
+    names = set(load_curated()) | set(load_quick())
+    genera = {t for (rank, t) in load_group_rules() if rank == "genus"}
+    names |= {r["scientific_name"].lower() for r in rows if (r.get("genus") or r["scientific_name"].split()[0]).lower() in genera}
+    return names
+
+
+def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, critical: bool = False) -> list[dict]:
     """Up to 5 photos per species from every commercial-ok source, best (most stage variety) first:
     Commons category with stage subcategories, the Wikidata lead image, Wikipedia page images,
     a Commons title search, then GBIF (licence-filtered, never iNaturalist)."""
@@ -548,11 +561,11 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path) ->
     if key.isdigit():
         step("gbif", lambda: from_gbif(int(key)))
     # iNaturalist directly: huge, staged by observers; for species GBIF left short.
-    if living() < 6:
-        step("inat", lambda: from_inaturalist(name))
+    if living() < (KEY_TARGET if critical else 6):
+        step("inat", lambda: from_inaturalist(name, want=60 if critical else 30))
     # Wikimedia Commons is slow and throttled: only walk it for species still short of photos.
     cat = (wiki or {}).get("cat")
-    if cat and living() < 3:
+    if cat and living() < (KEY_TARGET if critical else 3):
         step("cat", lambda: from_commons_category(cat, name))
     desc = descriptions.get(name.lower()) or {}
     if desc.get("wiki_url") and living() < 1:
@@ -577,7 +590,10 @@ def _take_preview(cands: list[dict]) -> set[str]:
 def fetch_commercial_photos(region: str, max_species: int | None = None, shard: tuple[int, int] | None = None) -> Path:
     d = config.DATA_REGIONS / region
     rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
-    rows.sort(key=lambda r: -float(r.get("gbif_count") or 0))
+    # Life-or-death plants first: anything with poison or food information (curated, quick facts, risky
+    # genera) is collected before everything else and gets more photos; then most-observed first.
+    key = safety_species(rows)
+    rows.sort(key=lambda r: (r["scientific_name"].lower() not in key, -float(r.get("gbif_count") or 0)))
     if shard:
         i, n = shard
         rows = rows[i::n]  # interleaved, so every shard gets common and rare species alike
@@ -608,8 +624,10 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
             seen_pages.add(r0.get("page") or "")
         tdone_path = out_dir / "topup_done.txt"
         tdone = set(tdone_path.read_text(encoding="utf-8").splitlines()) if tdone_path.exists() else set()
-        todo = [r for r in rows if have.get(r["scientific_name"], 0) < 3 and r["scientific_name"] not in tdone]
-        print(f"TOPUP {region}: {len(todo)} species with fewer than 3 photos", flush=True)
+        todo = [r for r in rows if r["scientific_name"] not in tdone and
+                have.get(r["scientific_name"], 0) < (KEY_TARGET if r["scientific_name"].lower() in key else 3)]
+        print(f"TOPUP {region}: {len(todo)} species short of photos "
+              f"({sum(r['scientific_name'].lower() in key for r in todo)} safety-critical, target {KEY_TARGET})", flush=True)
     else:
         todo = [r for r in rows if r["scientific_name"] not in done]
     print(f"{region}: {len(rows)} species, {len(done)} already collected, {len(todo)} to go", flush=True)
@@ -639,7 +657,7 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
         def one(r, info=info):
             name = r["scientific_name"]
             try:
-                photos = collect_species(r, info.get(name) or {}, descriptions, img_dir)
+                photos = collect_species(r, info.get(name) or {}, descriptions, img_dir, critical=name.lower() in key)
                 if topup:  # keep only photos we don't already have
                     photos = [p for p in photos if (p.get("page") or "") not in seen_pages]
             except Exception as e:  # noqa: BLE001
