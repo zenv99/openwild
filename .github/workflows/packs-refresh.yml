@@ -44,4 +44,17 @@ jobs:
             gh release upload packs "$R.owpack" --clobber
             rm -f "$R.owpack"
           done
+          # Merge into the newest index right before uploading (another workflow may have published meanwhile).
+          cp index.json mine.json
+          gh release download packs -p index.json --clobber
+          python3 - <<'PY'
+          import json
+          mine = {p["region_id"]: p for p in json.load(open("mine.json"))["packs"]}
+          skip = set("${{ inputs.skip }}".split())
+          cur = json.load(open("index.json"))
+          packs = {p["region_id"]: p for p in cur["packs"]}
+          packs.update({k: v for k, v in mine.items() if k not in skip})
+          json.dump({"format": 1, "packs": sorted(packs.values(), key=lambda p: p["region_id"])}, open("index.json", "w"), indent=1)
+          print("index:", len(packs), "packs")
+          PY
           gh release upload packs index.json --clobber
