@@ -229,7 +229,7 @@ fun UseLocationButton(vm: AppViewModel) {
         },
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Icon(androidx.compose.material.icons.Icons.Filled.MyLocation, null, Modifier.size(18.dp))
+        Icon(androidx.compose.material.icons.Icons.Filled.Place, null, Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
         Text(stringResource(R.string.use_my_location))
     }
