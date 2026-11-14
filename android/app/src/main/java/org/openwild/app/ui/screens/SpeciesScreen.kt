@@ -349,8 +349,14 @@ private fun PartsCard(content: org.openwild.app.core.SpeciesContent, showFood: B
         }
         val listed = rows.map { it.part }.toSet()
         if ("all" !in listed && listed.size < 8) {
+            val msg = when {
+                rows.isEmpty() && content.isDeadly -> R.string.parts_none_deadly
+                rows.isEmpty() -> R.string.parts_none
+                content.isDeadly -> R.string.parts_other_deadly
+                else -> R.string.parts_other_unknown
+            }
             Text(
-                stringResource(if (content.isDeadly) R.string.parts_other_deadly else R.string.parts_other_unknown),
+                stringResource(msg),
                 style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold,
                 color = if (content.isDeadly) Danger else MaterialTheme.colorScheme.onSurfaceVariant,
             )

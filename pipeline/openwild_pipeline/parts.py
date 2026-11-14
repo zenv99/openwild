@@ -177,3 +177,31 @@ def load_pfaf(path) -> dict[str, dict]:
 
     lines = [ln for ln in open(path, encoding="utf-8") if not ln.startswith("#")]
     return {r["scientific_name"].lower(): r for r in csv.DictReader(lines)}
+
+
+def add_parts_to_pack(pack_path, pfaf: dict[str, dict], version: int) -> int:
+    """Add the part-by-part table to every species' content in an existing pack, and bump its version.
+    Returns the number of species that got at least one part row."""
+    import json
+    import sqlite3
+
+    con = sqlite3.connect(pack_path)
+    n = 0
+    rows = con.execute(
+        "SELECT c.species_id, c.json, s.scientific_name, s.kingdom FROM content c JOIN species s ON s.id = c.species_id"
+    ).fetchall()
+    for sid, js, name, kingdom in rows:
+        try:
+            content = json.loads(js) if js else {}
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(content, dict):
+            continue
+        content["parts"] = build_parts(content, pfaf.get((name or "").lower()), kingdom == "Fungi")
+        n += bool(content["parts"])
+        con.execute("UPDATE content SET json = ? WHERE species_id = ?", (json.dumps(content), sid))
+    con.execute("INSERT OR REPLACE INTO meta (key, value) VALUES ('pack_version', ?)", (str(version),))
+    con.commit()
+    con.execute("VACUUM")
+    con.close()
+    return n

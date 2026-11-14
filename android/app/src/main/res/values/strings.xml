@@ -308,5 +308,7 @@
     <string name="parts_other_deadly">Other parts: treat as deadly.</string>
     <string name="parts_other_unknown">Other parts: no information. Don’t eat them.</string>
     <string name="parts_disclaimer">From PFAF, Kew and our curated safety notes. Not expert reviewed. Never eat a plant on a photo match alone.</string>
+    <string name="parts_none">No part-by-part information yet. Don’t eat any part.</string>
+    <string name="parts_none_deadly">Treat every part as deadly.</string>
 </resources>
 

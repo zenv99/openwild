@@ -1,0 +1,47 @@
+name: Refresh published region packs (part-by-part safety)
+
+# Adds the part-by-part food/poison table to every published region pack in place, bumps each pack's
+# version so the app offers the update, and republishes them with a new index. Bali is rebuilt by the
+# photo workflow instead.
+on:
+  workflow_dispatch:
+    inputs:
+      skip:
+        description: "Region ids to leave alone (space separated)"
+        default: "ID-BA"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: packs-release
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml
+      - name: Update every pack
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          mkdir -p work/refresh && cd work/refresh
+          gh release download packs -p index.json --clobber
+          V="$(date -u +%Y%m%d%H)"
+          for R in $(python3 -c "import json;print(' '.join(p['region_id'] for p in json.load(open('index.json'))['packs']))"); do
+            case " ${{ inputs.skip }} " in *" $R "*) echo "skip $R"; continue;; esac
+            gh release download packs -p "$R.owpack" --clobber
+            (cd ../../pipeline && python -m openwild_pipeline.cli add-parts "../work/refresh/$R.owpack" --version "$V")
+            (cd ../../pipeline && python -m openwild_pipeline.cli pack-index --pack "../work/refresh/$R.owpack" --index ../work/refresh/index.json \
+              --url "https://github.com/${{ github.repository }}/releases/download/packs/$R.owpack")
+            gh release upload packs "$R.owpack" --clobber
+            rm -f "$R.owpack"
+          done
+          gh release upload packs index.json --clobber

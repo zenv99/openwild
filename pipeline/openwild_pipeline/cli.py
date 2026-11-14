@@ -592,6 +592,15 @@ def main(argv=None):
                 fh.write(f"| {nm} | {r['photos']} |\n")
         print(f"WANTED {sum(r['photos'] < 3 for r in rows)} of top {len(rows)} need photos -> {out}")
 
+    def cmd_add_parts(a):
+        from .parts import add_parts_to_pack, load_pfaf
+        pfaf = load_pfaf(config.REPO_ROOT / "content" / "evidence" / "pfaf_facts.csv")
+        n = add_parts_to_pack(Path(a.pack), pfaf, a.version)
+        print(f"PARTS {Path(a.pack).name}: {n} species with part-by-part info, version {a.version}")
+
+    sp = add("add-parts", cmd_add_parts, "add part-by-part food/poison info to an existing pack (bumps its version)")
+    sp.add_argument("pack")
+    sp.add_argument("--version", type=int, required=True)
     sp = add("community-ingest", cmd_community_ingest, "add approved community photo contributions (issues JSON)")
     sp.add_argument("issues")
     sp.add_argument("--out", default="community-result.json")
