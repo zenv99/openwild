@@ -311,15 +311,15 @@ private val PartOrder = listOf("all", "seeds", "fruit", "flowers", "leaves", "st
 @Composable
 private fun partLabel(part: String): String = stringResource(
     when (part) {
-        "all" -> R.string.part_all
-        "seeds" -> R.string.part_seeds
-        "fruit" -> R.string.part_fruit
-        "flowers" -> R.string.part_flowers
-        "leaves" -> R.string.part_leaves
-        "stem" -> R.string.part_stem
-        "bark" -> R.string.part_bark
-        "roots" -> R.string.part_roots
-        else -> R.string.part_sap
+        "all" -> R.string.pp_all
+        "seeds" -> R.string.pp_seeds
+        "fruit" -> R.string.pp_fruit
+        "flowers" -> R.string.pp_flowers
+        "leaves" -> R.string.pp_leaves
+        "stem" -> R.string.pp_stem
+        "bark" -> R.string.pp_bark
+        "roots" -> R.string.pp_roots
+        else -> R.string.pp_sap
     },
 )
 
