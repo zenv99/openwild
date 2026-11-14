@@ -542,7 +542,8 @@ def main(argv=None):
     sp.add_argument("--photos-shown", type=int, default=3, help="photos per species stored for display")
     def cmd_commercial_photos(a):
         from .commercial_photos import fetch_commercial_photos
-        fetch_commercial_photos(a.region, max_species=a.max_species)
+        shard = tuple(int(x) for x in a.shard.split("/")) if a.shard else None
+        fetch_commercial_photos(a.region, max_species=a.max_species, shard=shard)
 
     def cmd_commercial_pack(a):
         from .commercial_photos import build_region_photo_pack
@@ -552,6 +553,7 @@ def main(argv=None):
     sp = add("commercial-photos", cmd_commercial_photos, "download CC0/CC BY/CC BY-SA reference photos (no NC, no iNaturalist)")
     sp.add_argument("region")
     sp.add_argument("--max-species", type=int, default=None)
+    sp.add_argument("--shard", default=None, help="i/n: this run's share of the species, e.g. 0/6")
     sp = add("commercial-pack", cmd_commercial_pack, "build a region pack: species, safety, light WebP, on-device fingerprints")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=2026111201)

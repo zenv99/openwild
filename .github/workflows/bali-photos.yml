@@ -1,9 +1,9 @@
 name: Region photos (commercial-ok, no iNaturalist) -> pack
 
-# Collects reference photos for every species in a region from Wikimedia Commons, Wikidata,
-# Wikipedia and GBIF (CC0 / CC BY / CC BY-SA only; never iNaturalist; never PFAF), builds the
-# region pack with the phone's own fingerprint model, publishes it as the in-app download, and
-# (for the bundled region) updates the copy shipped inside the app.
+# Collects reference photos for every species in a region from Wikidata, GBIF and Wikimedia Commons
+# (CC0 / CC BY / CC BY-SA only; never iNaturalist; never PFAF), split across parallel machines because
+# Commons throttles each connection. Then builds the region pack with the phone's own fingerprint model,
+# publishes it as the in-app download and, for Bali, updates the copy shipped inside the app.
 on:
   workflow_dispatch:
     inputs:
@@ -11,7 +11,7 @@ on:
         description: "Region id"
         default: "ID-BA"
       max_species:
-        description: "Limit species (blank = all). For a quick test."
+        description: "Limit species per shard (blank = all). For a quick test."
         default: ""
       publish:
         description: "Publish the pack and update the app (true/false)"
@@ -26,9 +26,52 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  photos:
+  collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5]
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml pillow
+      - name: Reuse photos from earlier runs
+        uses: actions/cache@v4
+        with:
+          path: |
+            work/photos_commercial/${{ inputs.region }}
+            work/cache/http
+          key: commercial-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
+          restore-keys: commercial-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-
+      - name: Collect photos (shard ${{ matrix.shard }}/6)
+        timeout-minutes: 280
+        env:
+          OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
+        run: |
+          ARGS="--shard ${{ matrix.shard }}/6"
+          if [ -n "${{ inputs.max_species }}" ]; then ARGS="$ARGS --max-species ${{ inputs.max_species }}"; fi
+          python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS
+          cp "../work/photos_commercial/${{ inputs.region }}/photos.csv" "../work/photos_commercial/${{ inputs.region }}/photos-shard${{ matrix.shard }}.csv"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photos-${{ inputs.region }}-${{ matrix.shard }}
+          path: |
+            work/photos_commercial/${{ inputs.region }}/photos-shard${{ matrix.shard }}.csv
+            work/photos_commercial/${{ inputs.region }}/img
+          retention-days: 3
+
+  build:
+    needs: collect
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
     defaults:
       run:
         working-directory: pipeline
@@ -38,30 +81,27 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy pyyaml pytest pillow ai-edge-litert
-      - name: Reuse photos from earlier runs
-        uses: actions/cache@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: |
-            work/photos_commercial/${{ inputs.region }}
-            work/cache/http
-          key: commercial-${{ inputs.region }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
-          restore-keys: commercial-${{ inputs.region }}-${{ inputs.max_species != '' && 'test' || 'full' }}-
-      - run: pytest -q
-      - name: Collect photos
-        timeout-minutes: 240
-        env:
-          OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
-          OW_SPREAD: ${{ inputs.max_species != '' && '1' || '' }}
-        run: |
-          ARGS=""
-          if [ -n "${{ inputs.max_species }}" ]; then ARGS="--max-species ${{ inputs.max_species }}"; fi
-          python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS
-      - name: Coverage
+          pattern: photos-${{ inputs.region }}-*
+          path: work/photos_commercial/${{ inputs.region }}
+          merge-multiple: true
+      - name: Merge shards and report coverage
         run: |
           python - <<'PY'
-          import csv, collections
+          import csv, collections, glob
           r = "${{ inputs.region }}"
-          rows = list(csv.DictReader(open(f"../work/photos_commercial/{r}/photos.csv", encoding="utf-8")))
+          d = f"../work/photos_commercial/{r}"
+          rows, fields = [], None
+          for f in sorted(glob.glob(f"{d}/photos-shard*.csv")):
+              with open(f, encoding="utf-8") as fh:
+                  rd = csv.DictReader(fh)
+                  fields = fields or rd.fieldnames
+                  rows += list(rd)
+          with open(f"{d}/photos.csv", "w", newline="", encoding="utf-8") as fh:
+              w = csv.DictWriter(fh, fieldnames=fields)
+              w.writeheader()
+              w.writerows(rows)
           sp = collections.Counter(x["scientific_name"] for x in rows)
           total = sum(1 for _ in open(f"../data/regions/{r}/species.csv", encoding="utf-8")) - 1
           print(f"COVERAGE {len(sp)}/{total} species with photos, {len(rows)} photos")
@@ -75,6 +115,15 @@ jobs:
           mkdir -p ../work/out
           python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$(date -u +%Y%m%d%H)" \
             --out "../work/out/${{ inputs.region }}.owpack"
+          python - <<'PY'
+          import sqlite3
+          c = sqlite3.connect("../work/out/${{ inputs.region }}.owpack")
+          print("PACK species", c.execute("SELECT COUNT(*) FROM species").fetchone()[0],
+                "with photos", c.execute("SELECT COUNT(DISTINCT species_id) FROM photo").fetchone()[0],
+                "photos", c.execute("SELECT COUNT(*) FROM photo").fetchone()[0],
+                "with photo ID", c.execute("SELECT COUNT(DISTINCT species_id) FROM prototype").fetchone()[0])
+          PY
+          ls -la ../work/out
       - name: Publish as the in-app download (release "packs")
         if: inputs.publish == 'true'
         working-directory: .
@@ -97,8 +146,8 @@ jobs:
           cp "work/out/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
           (cd pipeline && python - <<'PY'
           from pathlib import Path
-          from openwild_pipeline.commercial_photos import _write_catalog
           import sqlite3
+          from openwild_pipeline.commercial_photos import _write_catalog
           p = Path("../android/app/src/main/assets/packs/ID-BA.owpack")
           v = int(dict(sqlite3.connect(p).execute("SELECT key, value FROM meta"))["pack_version"])
           _write_catalog(p, "ID-BA", v)

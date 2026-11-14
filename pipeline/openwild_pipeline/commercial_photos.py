@@ -504,7 +504,7 @@ def _take_preview(cands: list[dict]) -> set[str]:
     return {c["stage"] for c in cands if c["stage"] in STAGES or c["stage"] == "field"}
 
 
-def fetch_commercial_photos(region: str, max_species: int | None = None) -> Path:
+def fetch_commercial_photos(region: str, max_species: int | None = None, shard: tuple[int, int] | None = None) -> Path:
     d = config.DATA_REGIONS / region
     rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
     rows.sort(key=lambda r: -float(r.get("gbif_count") or 0))
@@ -515,6 +515,9 @@ def fetch_commercial_photos(region: str, max_species: int | None = None) -> Path
     descriptions = {}
     if (d / "descriptions.csv").exists():
         descriptions = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
+    if shard:
+        i, n = shard
+        rows = rows[i::n]  # interleaved, so every shard gets common and rare species alike
     out_dir = config.WORK / "photos_commercial" / region
     img_dir = out_dir / "img"
     out_dir.mkdir(parents=True, exist_ok=True)
