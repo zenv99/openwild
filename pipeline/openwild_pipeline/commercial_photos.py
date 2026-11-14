@@ -508,6 +508,9 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     d = config.DATA_REGIONS / region
     rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
     rows.sort(key=lambda r: -float(r.get("gbif_count") or 0))
+    if shard:
+        i, n = shard
+        rows = rows[i::n]  # interleaved, so every shard gets common and rare species alike
     if max_species:
         # OW_SPREAD=1 samples across the whole list (rare species too), for realistic test runs.
         step = max(1, len(rows) // max_species) if __import__("os").environ.get("OW_SPREAD") else 1
@@ -515,9 +518,7 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     descriptions = {}
     if (d / "descriptions.csv").exists():
         descriptions = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
-    if shard:
-        i, n = shard
-        rows = rows[i::n]  # interleaved, so every shard gets common and rare species alike
+
     out_dir = config.WORK / "photos_commercial" / region
     img_dir = out_dir / "img"
     out_dir.mkdir(parents=True, exist_ok=True)
