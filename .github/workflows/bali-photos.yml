@@ -49,6 +49,8 @@ jobs:
       - run: pytest -q
       - name: Collect photos
         timeout-minutes: 240
+        env:
+          OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
         run: |
           ARGS=""
           if [ -n "${{ inputs.max_species }}" ]; then ARGS="--max-species ${{ inputs.max_species }}"; fi

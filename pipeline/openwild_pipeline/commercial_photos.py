@@ -455,21 +455,39 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path) ->
     """Up to 5 photos per species from every commercial-ok source, best (most stage variety) first:
     Commons category with stage subcategories, the Wikidata lead image, Wikipedia page images,
     a Commons title search, then GBIF (licence-filtered, never iNaturalist)."""
+    import time as _t
+
     name = row["scientific_name"]
     cands: list[dict] = []
+    timing = {}
+
+    def step(label, fn):
+        t0 = _t.monotonic()
+        got = fn()
+        timing[label] = (round(_t.monotonic() - t0, 1), len(got))
+        cands.extend(got)
+
     cat = (wiki or {}).get("cat")
     if cat:
-        cands.extend(from_commons_category(cat, name))
-    cands.extend(from_p18((wiki or {}).get("images") or [], name))
+        step("cat", lambda: from_commons_category(cat, name))
+    step("p18", lambda: from_p18((wiki or {}).get("images") or [], name))
     desc = descriptions.get(name.lower()) or {}
     if desc.get("wiki_url") and len(cands) < 3:
-        cands.extend(from_wikipedia(desc["wiki_url"], name))
+        step("wiki", lambda: from_wikipedia(desc["wiki_url"], name))
     if len(cands) < 3:
-        cands.extend(from_commons_search(name))
+        step("search", lambda: from_commons_search(name))
     key = row.get("gbif_key") or ""
     if len(cands) < 5 and key.isdigit():
-        cands.extend(from_gbif(int(key)))
-    return _take(cands, img_dir, name)
+        step("gbif", lambda: from_gbif(int(key)))
+    t0 = _t.monotonic()
+    chosen = _take(cands, img_dir, name)
+    timing["download"] = (round(_t.monotonic() - t0, 1), len(chosen))
+    if TIMING:
+        print(f"TIMING {name}: {timing}", flush=True)
+    return chosen
+
+
+TIMING = bool(__import__("os").environ.get("OW_TIMING"))
 
 
 def _take_preview(cands: list[dict]) -> set[str]:
