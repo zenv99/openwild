@@ -18,6 +18,9 @@ on:
       publish:
         description: "Publish the pack and update the app (true/false)"
         default: "true"
+      topup:
+        description: "Only revisit species with fewer than 3 photos (adds iNaturalist and other new photos)"
+        default: "false"
 
 permissions:
   contents: write
@@ -56,6 +59,7 @@ jobs:
         timeout-minutes: 280
         env:
           OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
+          OW_TOPUP: ${{ inputs.topup == 'true' && '1' || '' }}
         run: |
           ARGS="--shard ${{ matrix.shard }}/6"
           if [ -n "${{ inputs.max_species }}" ]; then ARGS="$ARGS --max-species ${{ inputs.max_species }}"; fi
@@ -171,3 +175,6 @@ jobs:
           git pull --rebase --autostash origin main
           git push origin HEAD:main
           gh workflow run android.yml --ref main
+          if [ "${{ inputs.topup }}" != "true" ]; then
+            gh workflow run bali-photos.yml --ref main -f region="$R" -f max_species="" -f publish=true -f topup=true
+          fi

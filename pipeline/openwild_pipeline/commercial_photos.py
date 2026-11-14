@@ -364,6 +364,48 @@ def from_gbif(taxon_key: int, want: int = 15, pages: int = 3) -> list[dict]:
     return out
 
 
+INAT_API = "https://api.inaturalist.org/v1/observations"
+INAT_LICENSES = "cc0,cc-by,cc-by-sa,cc-by-nc,cc-by-nc-sa"
+# iNaturalist "Plant Phenology" annotation (attribute 12) -> our growth stages.
+INAT_PHENOLOGY = {13: "flower", 15: "flower", 14: "fruit", 21: "leaves"}
+
+
+def from_inaturalist(scientific: str, want: int = 30) -> list[dict]:
+    """Open-licence photos straight from iNaturalist observations (research grade and needs-ID), most-voted
+    first, with growth stage from the observers' phenology annotations. Only used when the app is non-commercial."""
+    if not config.ALLOW_INATURALIST:
+        return []
+    try:
+        data = get_json(INAT_API, {
+            "taxon_name": scientific, "photos": "true", "photo_license": INAT_LICENSES,
+            "quality_grade": "research,needs_id", "per_page": str(want), "order_by": "votes",
+        }, retries=2, timeout=40)
+    except Exception as e:  # noqa: BLE001
+        print(f"inat {scientific} failed: {e!r}", flush=True)
+        return []
+    out = []
+    want_name = scientific.lower().split()
+    for obs in data.get("results") or []:
+        tname = ((obs.get("taxon") or {}).get("name") or "").lower().split()
+        if tname[:2] != want_name[:2]:
+            continue  # a different (e.g. parent) taxon
+        stage = "field"
+        for a in obs.get("annotations") or []:
+            if a.get("controlled_attribute_id") == 12 and a.get("controlled_value_id") in INAT_PHENOLOGY:
+                stage = INAT_PHENOLOGY[a["controlled_value_id"]]
+        user = obs.get("user") or {}
+        for ph in (obs.get("photos") or [])[:3]:
+            lic = config.photo_license(ph.get("license_code"))
+            url = (ph.get("url") or "").replace("/square.", "/medium.")
+            if lic is None or not url:
+                continue
+            out.append({
+                "stage": stage, "license": lic, "observer": (user.get("name") or user.get("login") or "")[:200],
+                "page": f"https://www.inaturalist.org/observations/{obs.get('id')}", "url": url, "source": "inaturalist",
+            })
+    return out
+
+
 def from_commons_search(scientific: str, limit: int = 20) -> list[dict]:
     """Files on Wikimedia Commons whose title names this species (catches files outside any category)."""
     try:
@@ -505,6 +547,9 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path) ->
     key = row.get("gbif_key") or ""
     if key.isdigit():
         step("gbif", lambda: from_gbif(int(key)))
+    # iNaturalist directly: huge, staged by observers; for species GBIF left short.
+    if living() < 6:
+        step("inat", lambda: from_inaturalist(name))
     # Wikimedia Commons is slow and throttled: only walk it for species still short of photos.
     cat = (wiki or {}).get("cat")
     if cat and living() < 3:
@@ -554,7 +599,19 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     if not csv_path.exists():
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             csv.DictWriter(f, fieldnames=fields).writeheader()
-    todo = [r for r in rows if r["scientific_name"] not in done]
+    topup = bool(__import__("os").environ.get("OW_TOPUP"))
+    have: dict[str, int] = {}
+    seen_pages: set[str] = set()
+    if topup:
+        for r0 in csv.DictReader(open(csv_path, encoding="utf-8")):
+            have[r0["scientific_name"]] = have.get(r0["scientific_name"], 0) + 1
+            seen_pages.add(r0.get("page") or "")
+        tdone_path = out_dir / "topup_done.txt"
+        tdone = set(tdone_path.read_text(encoding="utf-8").splitlines()) if tdone_path.exists() else set()
+        todo = [r for r in rows if have.get(r["scientific_name"], 0) < 3 and r["scientific_name"] not in tdone]
+        print(f"TOPUP {region}: {len(todo)} species with fewer than 3 photos", flush=True)
+    else:
+        todo = [r for r in rows if r["scientific_name"] not in done]
     print(f"{region}: {len(rows)} species, {len(done)} already collected, {len(todo)} to go", flush=True)
     lock = threading.Lock()
     finished = {"n": len(done)}
@@ -565,7 +622,10 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
                 w = csv.DictWriter(f, fieldnames=fields)
                 for p in photos:
                     w.writerow({k: p.get(k, "") for k in fields})
-            if photos:  # species with nothing yet are retried on the next run
+            if topup:
+                with open(out_dir / "topup_done.txt", "a", encoding="utf-8") as f:
+                    f.write(name + "\n")
+            elif photos:  # species with nothing yet are retried on the next run
                 with open(done_path, "a", encoding="utf-8") as f:
                     f.write(name + "\n")
             finished["n"] += 1
@@ -580,6 +640,8 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
             name = r["scientific_name"]
             try:
                 photos = collect_species(r, info.get(name) or {}, descriptions, img_dir)
+                if topup:  # keep only photos we don't already have
+                    photos = [p for p in photos if (p.get("page") or "") not in seen_pages]
             except Exception as e:  # noqa: BLE001
                 print(f"FAIL {name}: {e!r}", flush=True)
                 return

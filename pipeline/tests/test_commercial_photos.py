@@ -155,3 +155,19 @@ def test_no_evidence_of_flowering_is_leaves():
     assert stage_from_text("no evidence of flowering") == "leaves"
     assert stage_from_text("flowering") == "flower"
     assert stage_from_text("fruiting") == "fruit"
+
+
+def test_inaturalist_source_stages_and_licences(monkeypatch):
+    from openwild_pipeline import commercial_photos as cp
+
+    data = {"results": [
+        {"id": 1, "taxon": {"name": "Plumeria rubra"}, "user": {"login": "made"},
+         "annotations": [{"controlled_attribute_id": 12, "controlled_value_id": 13}],
+         "photos": [{"url": "https://inaturalist-open-data.s3.amazonaws.com/photos/1/square.jpg", "license_code": "cc-by-nc"},
+                    {"url": "https://x/2/square.jpg", "license_code": None}]},
+        {"id": 2, "taxon": {"name": "Plumeria"}, "photos": [{"url": "https://x/3/square.jpg", "license_code": "cc0"}]},
+    ]}
+    monkeypatch.setattr(cp, "get_json", lambda *a, **k: data)
+    out = cp.from_inaturalist("Plumeria rubra")
+    assert len(out) == 1  # all-rights-reserved photo and parent-taxon observation skipped
+    assert out[0]["stage"] == "flower" and out[0]["license"] == "cc-by-nc" and out[0]["url"].endswith("/medium.jpg")
