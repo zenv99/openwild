@@ -1,0 +1,110 @@
+name: Region photos (commercial-ok, no iNaturalist) -> pack
+
+# Collects reference photos for every species in a region from Wikimedia Commons, Wikidata,
+# Wikipedia and GBIF (CC0 / CC BY / CC BY-SA only; never iNaturalist; never PFAF), builds the
+# region pack with the phone's own fingerprint model, publishes it as the in-app download, and
+# (for the bundled region) updates the copy shipped inside the app.
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region id"
+        default: "ID-BA"
+      max_species:
+        description: "Limit species (blank = all). For a quick test."
+        default: ""
+      publish:
+        description: "Publish the pack and update the app (true/false)"
+        default: "true"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: region-photos-${{ inputs.region }}
+  cancel-in-progress: false
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml pytest pillow ai-edge-litert
+      - name: Reuse photos from earlier runs
+        uses: actions/cache@v4
+        with:
+          path: |
+            work/photos_commercial/${{ inputs.region }}
+            work/cache/http
+          key: commercial-${{ inputs.region }}-${{ github.run_id }}
+          restore-keys: commercial-${{ inputs.region }}-
+      - run: pytest -q
+      - name: Collect photos
+        timeout-minutes: 240
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.max_species }}" ]; then ARGS="--max-species ${{ inputs.max_species }}"; fi
+          python -m openwild_pipeline.cli commercial-photos "${{ inputs.region }}" $ARGS
+      - name: Coverage
+        run: |
+          python - <<'PY'
+          import csv, collections
+          r = "${{ inputs.region }}"
+          rows = list(csv.DictReader(open(f"../work/photos_commercial/{r}/photos.csv", encoding="utf-8")))
+          sp = collections.Counter(x["scientific_name"] for x in rows)
+          total = sum(1 for _ in open(f"../data/regions/{r}/species.csv", encoding="utf-8")) - 1
+          print(f"COVERAGE {len(sp)}/{total} species with photos, {len(rows)} photos")
+          print("COVERAGE sources", collections.Counter(x["source"] for x in rows))
+          print("COVERAGE licences", collections.Counter(x["license"] for x in rows))
+          print("COVERAGE stages", collections.Counter(x["stage"] for x in rows))
+          PY
+      - name: Build pack (fingerprints with the phone's model)
+        if: inputs.publish == 'true'
+        run: |
+          mkdir -p ../work/out
+          python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$(date -u +%Y%m%d%H)" \
+            --out "../work/out/${{ inputs.region }}.owpack"
+      - name: Publish as the in-app download (release "packs")
+        if: inputs.publish == 'true'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          mkdir -p work/idx
+          gh release download packs -p index.json -D work/idx --clobber || echo '{"packs": []}' > work/idx/index.json
+          (cd pipeline && python -m openwild_pipeline.cli pack-index --pack ../work/out/$R.owpack --index ../work/idx/index.json \
+            --url "https://github.com/${{ github.repository }}/releases/download/packs/$R.owpack")
+          gh release upload packs "work/out/$R.owpack" work/idx/index.json --clobber
+      - name: Update the copy shipped in the app, commit, rebuild the app
+        if: inputs.publish == 'true' && inputs.region == 'ID-BA'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          cp "work/out/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
+          (cd pipeline && python - <<'PY'
+          from pathlib import Path
+          from openwild_pipeline.commercial_photos import _write_catalog
+          import sqlite3
+          p = Path("../android/app/src/main/assets/packs/ID-BA.owpack")
+          v = int(dict(sqlite3.connect(p).execute("SELECT key, value FROM meta"))["pack_version"])
+          _write_catalog(p, "ID-BA", v)
+          PY
+          )
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git add android/app/src/main/assets/packs/
+          git commit -m "Bali pack: photos for more species (commercial-ok sources, no iNaturalist)" || echo "No changes"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
+          gh workflow run android.yml --ref main

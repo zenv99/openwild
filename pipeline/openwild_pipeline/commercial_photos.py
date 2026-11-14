@@ -93,15 +93,30 @@ def _chunks(items: list, n: int):
         yield items[i : i + n]
 
 
-def wikidata_lookup(names: list[str]) -> dict[str, dict]:
-    """scientific name -> {cat, images[]} from Wikidata P373 / P18."""
+def wikidata_lookup(names: list[str], keys: dict[str, str] | None = None) -> dict[str, dict]:
+    """scientific name -> {cat, images[]} from Wikidata P373 / P18.
+    Matches on the taxon name (P225) and, when given, the GBIF taxon key (P846), so a species listed
+    under another name on Wikidata still finds its item."""
     found: dict[str, dict] = {}
+    keys = keys or {}
+    by_key = {k: n for n, k in keys.items() if k}
+
+    def add(name, row):
+        slot = found.setdefault(name, {"cat": None, "images": []})
+        cat = row.get("cat", {}).get("value")
+        if cat and not slot["cat"]:
+            slot["cat"] = cat
+        image = row.get("image", {}).get("value")
+        if image and image not in slot["images"]:
+            slot["images"].append(image)
+
     for chunk in _chunks(names, 40):
         values = " ".join('"' + n.replace("\\", "\\\\").replace('"', "") + '"' for n in chunk)
+        kvals = " ".join(f'"{keys[n]}"' for n in chunk if keys.get(n))
         query = (
-            "SELECT ?name ?image ?cat WHERE { VALUES ?name { "
-            + values
-            + " } ?t wdt:P225 ?name. OPTIONAL { ?t wdt:P373 ?cat } OPTIONAL { ?t wdt:P18 ?image } }"
+            "SELECT ?name ?key ?image ?cat WHERE { { VALUES ?name { " + values + " } ?t wdt:P225 ?name. } "
+            + (f"UNION {{ VALUES ?key {{ {kvals} }} ?t wdt:P846 ?key. }} " if kvals else "")
+            + "OPTIONAL { ?t wdt:P373 ?cat } OPTIONAL { ?t wdt:P18 ?image } }"
         )
         try:
             data = get_json("https://query.wikidata.org/sparql", {"format": "json", "query": query})
@@ -109,16 +124,9 @@ def wikidata_lookup(names: list[str]) -> dict[str, dict]:
             print(f"wikidata batch failed: {e!r}", flush=True)
             continue
         for row in data.get("results", {}).get("bindings", []):
-            name = row.get("name", {}).get("value")
-            if not name:
-                continue
-            slot = found.setdefault(name, {"cat": None, "images": []})
-            cat = row.get("cat", {}).get("value")
-            if cat and not slot["cat"]:
-                slot["cat"] = cat
-            image = row.get("image", {}).get("value")
-            if image:
-                slot["images"].append(image)
+            name = row.get("name", {}).get("value") or by_key.get(row.get("key", {}).get("value", ""))
+            if name:
+                add(name, row)
     return found
 
 
@@ -296,40 +304,70 @@ def stage_from_gbif(occ: dict) -> str:
     return "field"
 
 
-def from_gbif(taxon_key: int) -> list[dict]:
-    try:
-        data = get_json(f"{config.GBIF_API}/occurrence/search", {
-            "taxonKey": str(taxon_key), "mediaType": "StillImage", "limit": "20",
-        }, retries=2)
-    except Exception as e:  # noqa: BLE001
-        print(f"gbif {taxon_key} failed: {e!r}", flush=True)
-        return []
-    out = []
-    for occ in data.get("results") or []:
-        if str(occ.get("datasetKey") or "") == INAT_DATASET:
-            continue
-        if is_inaturalist(occ.get("references"), occ.get("occurrenceID"), occ.get("institutionCode"), occ.get("publisher")):
-            continue
-        stage = stage_from_gbif(occ)
-        for media in (occ.get("media") or [])[:2]:
-            ident = media.get("identifier") or ""
-            refs = media.get("references") or ""
-            if is_inaturalist(ident, refs, media.get("source"), media.get("creator")):
+GBIF_COMMERCIAL = ("CC0_1_0", "CC_BY_4_0")  # occurrence-level licences GBIF can filter on
+
+
+def from_gbif(taxon_key: int, want: int = 8, pages: int = 3) -> list[dict]:
+    """Commercial-ok photos from GBIF (museums, herbaria, Pl@ntNet, Observation.org...), never iNaturalist.
+    GBIF filters licences server-side, so each page of 100 is mostly usable instead of mostly iNaturalist."""
+    out: list[dict] = []
+    for page in range(pages):
+        try:
+            data = get_json(f"{config.GBIF_API}/occurrence/search", {
+                "taxonKey": str(taxon_key), "mediaType": "StillImage", "limit": "100", "offset": str(page * 100),
+                "license": list(GBIF_COMMERCIAL),
+            }, retries=2)
+        except Exception as e:  # noqa: BLE001
+            print(f"gbif {taxon_key} failed: {e!r}", flush=True)
+            break
+        for occ in data.get("results") or []:
+            if str(occ.get("datasetKey") or "") == INAT_DATASET:
                 continue
-            if (media.get("type") or "StillImage") != "StillImage":
+            if is_inaturalist(occ.get("references"), occ.get("occurrenceID"), occ.get("institutionCode"), occ.get("publisher")):
                 continue
-            lic = config.commercial_license(media.get("license")) or config.commercial_license(occ.get("license"))
-            if lic is None or not ident:
-                continue
-            out.append({
-                "stage": stage,
-                "license": lic,
-                "observer": (media.get("rightsHolder") or media.get("creator") or occ.get("recordedBy") or "")[:200],
-                "page": refs or f"https://www.gbif.org/occurrence/{occ.get('key')}",
-                "url": ident,
-                "source": "gbif",
-            })
+            stage = stage_from_gbif(occ)
+            for media in (occ.get("media") or [])[:2]:
+                ident = media.get("identifier") or ""
+                refs = media.get("references") or ""
+                if is_inaturalist(ident, refs, media.get("source"), media.get("creator")):
+                    continue
+                if (media.get("type") or "StillImage") != "StillImage":
+                    continue
+                lic = config.commercial_license(media.get("license")) or config.commercial_license(occ.get("license"))
+                if lic is None or not ident:
+                    continue
+                out.append({
+                    "stage": stage,
+                    "license": lic,
+                    "observer": (media.get("rightsHolder") or media.get("creator") or occ.get("recordedBy") or "")[:200],
+                    "page": refs or f"https://www.gbif.org/occurrence/{occ.get('key')}",
+                    "url": ident,
+                    "source": "gbif",
+                })
+        living = sum(1 for c in out if c["stage"] != "specimen")
+        if living >= want or data.get("endOfRecords", True):
+            break
     return out
+
+
+def from_commons_search(scientific: str, limit: int = 20) -> list[dict]:
+    """Files on Wikimedia Commons whose title names this species (catches files outside any category)."""
+    try:
+        data = _commons_api({
+            "action": "query", "list": "search", "srnamespace": "6", "srlimit": str(limit),
+            "srsearch": f'intitle:"{scientific}"',
+        })
+    except Exception as e:  # noqa: BLE001
+        print(f"commons search failed {scientific}: {e!r}", flush=True)
+        return []
+    low = scientific.lower()
+    titled = []
+    for hit in (data.get("query") or {}).get("search", []):
+        title = hit.get("title") or ""
+        if low not in title.lower().replace("_", " ") or skip_title(title):
+            continue
+        titled.append((title, stage_from_text(title) or "field"))
+    return image_records(titled, scientific)
 
 
 def _download(url: str, dest: Path) -> bool:
@@ -388,6 +426,21 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
             break
         if len(chosen) >= 5:
             break
+    # One per stage gives variety; if that left fewer than 3, top up from any living-plant photo.
+    if len(chosen) < 3:
+        for stage in order:
+            for c in by.get(stage, []):
+                if len(chosen) >= 3:
+                    break
+                digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
+                dest = img_dir / f"{digest}.img"
+                if any(x["url"] == c["url"] for x in chosen) or not _download(c["url"], dest):
+                    continue
+                file_hash = hashlib.sha1(dest.read_bytes()).hexdigest()
+                if file_hash in hashes:
+                    continue
+                hashes.add(file_hash)
+                chosen.append({**c, "path": str(dest), "scientific_name": scientific})
     if not chosen:
         for c in by.get("specimen", []):
             digest = hashlib.sha1(c["url"].encode()).hexdigest()[:20]
@@ -399,23 +452,22 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
 
 
 def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path) -> list[dict]:
+    """Up to 5 photos per species from every commercial-ok source, best (most stage variety) first:
+    Commons category with stage subcategories, the Wikidata lead image, Wikipedia page images,
+    a Commons title search, then GBIF (licence-filtered, never iNaturalist)."""
     name = row["scientific_name"]
     cands: list[dict] = []
-    # The most-recorded species are collected first and walk Commons stage categories
-    # (seedling, leaf, flower, fruit, close-up). The long tail uses the Wikidata lead
-    # image plus one GBIF search, which is enough for a fingerprint and a display thumb
-    # without a category walk per species.
-    deep = float(row.get("gbif_count") or 0) >= 8
     cat = (wiki or {}).get("cat")
-    if deep and cat:
+    if cat:
         cands.extend(from_commons_category(cat, name))
     cands.extend(from_p18((wiki or {}).get("images") or [], name))
-    if not cands:
-        desc = descriptions.get(name.lower()) or {}
-        if desc.get("wiki_url") and deep:
-            cands.extend(from_wikipedia(desc["wiki_url"], name))
+    desc = descriptions.get(name.lower()) or {}
+    if desc.get("wiki_url") and len(cands) < 3:
+        cands.extend(from_wikipedia(desc["wiki_url"], name))
+    if len(cands) < 3:
+        cands.extend(from_commons_search(name))
     key = row.get("gbif_key") or ""
-    if not cands and key.isdigit():
+    if len(cands) < 5 and key.isdigit():
         cands.extend(from_gbif(int(key)))
     return _take(cands, img_dir, name)
 
@@ -454,14 +506,16 @@ def fetch_commercial_photos(region: str, max_species: int | None = None) -> Path
                 w = csv.DictWriter(f, fieldnames=fields)
                 for p in photos:
                     w.writerow({k: p.get(k, "") for k in fields})
-            with open(done_path, "a", encoding="utf-8") as f:
-                f.write(name + "\n")
+            if photos:  # species with nothing yet are retried on the next run
+                with open(done_path, "a", encoding="utf-8") as f:
+                    f.write(name + "\n")
             finished["n"] += 1
             if finished["n"] % 25 == 0:
                 print(f"{finished['n']}/{len(rows)} species", flush=True)
 
     for chunk in _chunks(todo, 40):
-        info = wikidata_lookup([r["scientific_name"] for r in chunk])
+        info = wikidata_lookup([r["scientific_name"] for r in chunk],
+                               {r["scientific_name"]: (r.get("gbif_key") or "") for r in chunk})
 
         def one(r, info=info):
             name = r["scientific_name"]

@@ -75,3 +75,43 @@ def test_pack_stores_only_commercial_webp_and_keeps_each_stage(tmp_path):
     assert {row[0] for row in photos} <= {"cc0", "cc-by", "cc-by-sa"}
     assert ("cc-by-sa", "flower", "Bo") in photos
     assert con.execute("SELECT COUNT(*) FROM prototype").fetchone()[0] == 2
+
+
+def test_gbif_licence_filter_and_no_inaturalist(monkeypatch):
+    from openwild_pipeline import commercial_photos as cp
+
+    seen = {}
+
+    def fake(url, params=None, **_):
+        seen.update(params)
+        return {"endOfRecords": True, "results": [
+            {"key": 1, "datasetKey": cp.INAT_DATASET, "media": [{"identifier": "https://inat/x.jpg", "license": "CC BY 4.0"}]},
+            {"key": 2, "datasetKey": "naturalis", "basisOfRecord": "PRESERVED_SPECIMEN",
+             "media": [{"identifier": "https://n/a.jpg", "license": "http://creativecommons.org/publicdomain/zero/1.0/"}]},
+            {"key": 3, "datasetKey": "plantnet", "basisOfRecord": "HUMAN_OBSERVATION",
+             "media": [{"identifier": "https://p/b.jpg", "license": "CC BY-SA 4.0"}]},
+            {"key": 4, "datasetKey": "other", "media": [{"identifier": "https://o/c.jpg", "license": "CC BY-NC 4.0"}]},
+        ]}
+
+    monkeypatch.setattr(cp, "get_json", fake)
+    out = cp.from_gbif(123)
+    assert seen["license"] == list(cp.GBIF_COMMERCIAL)
+    assert [c["url"] for c in out] == ["https://n/a.jpg", "https://p/b.jpg"]
+    assert {c["license"] for c in out} == {"cc0", "cc-by-sa"}
+
+
+def test_licence_versions_ports_and_public_domain():
+    from openwild_pipeline import config
+
+    assert config.commercial_license("CC BY-SA 2.5 nl") == "cc-by-sa"
+    assert config.commercial_license("CC BY 2.5") == "cc-by"
+    assert config.commercial_license("PD-old") == "cc0"
+    assert config.commercial_license("CC BY-NC-SA 2.0") is None
+    assert config.commercial_license("CC BY-ND 4.0") is None
+
+
+def test_http_encodes_repeated_params():
+    import urllib.parse
+
+    q = urllib.parse.urlencode({"license": ["CC0_1_0", "CC_BY_4_0"], "limit": "100"}, doseq=True)
+    assert q == "license=CC0_1_0&license=CC_BY_4_0&limit=100"

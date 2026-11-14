@@ -66,16 +66,22 @@ MAX_PROTOTYPES = 6
 
 
 def normalize_license(raw: str | None) -> str | None:
-    """'CC-BY-NC' / 'cc_by_nc' / 'CC BY-NC 4.0' -> 'cc-by-nc'. Returns None if unknown/empty."""
+    """'CC-BY-NC' / 'cc_by_nc' / 'CC BY-NC 4.0' / 'CC BY-SA 2.5 nl' -> 'cc-by-nc' / 'cc-by-sa'.
+    Public-domain marks ('Public domain', 'PD-old', 'PD-self', 'PD-USGov', CC0) -> 'cc0'.
+    Returns None if unknown/empty."""
+    import re as _re
+
     if not raw:
         return None
     s = raw.strip().lower().replace("_", "-").replace(" ", "-")
-    for suffix in ("-4.0", "-3.0", "-2.0", "-1.0"):
-        if s.endswith(suffix):
-            s = s[: -len(suffix)]
-    if s in ("cc0", "cc-0", "cc-zero", "public-domain", "pd"):
+    if s in ("cc0", "cc-0", "cc-zero", "public-domain", "pd") or s.startswith("pd-") or s.startswith("cc0-") \
+            or s.startswith("public-domain-"):
         return "cc0"
-    return s if s.startswith("cc-") else None
+    # Drop the version (1.0 .. 4.0) and any jurisdiction port suffix (de, nl, igo, ...).
+    m = _re.fullmatch(r"(cc-by(?:-nc)?(?:-sa)?(?:-nd)?)(?:-\d(?:\.\d)?)?(?:-[a-z]{2,4})?", s)
+    if m:
+        return m.group(1)
+    return s if s.startswith("cc-") and "-" not in s[3:] else None
 
 
 def license_allowed(raw: str | None) -> bool:

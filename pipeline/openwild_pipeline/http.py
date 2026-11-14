@@ -36,7 +36,7 @@ def _pace(url: str) -> None:
 
 def get_json(url: str, params: dict | None = None, cache: bool = True, retries: int = 7) -> dict:
     if params:
-        url = f"{url}?{urllib.parse.urlencode(params)}"
+        url = f"{url}?{urllib.parse.urlencode(params, doseq=True)}"
     key = hashlib.sha1(url.encode()).hexdigest()
     path = config.CACHE / "http" / f"{key}.json"
     if cache and path.exists():
