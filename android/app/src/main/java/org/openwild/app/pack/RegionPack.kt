@@ -243,7 +243,7 @@ class RegionPack(file: File) : Closeable {
     private val stageCounts: Map<Int, Map<String, Int>> by lazy {
         synchronized(dbLock) {
             if (!hasPhotos) return@synchronized emptyMap()
-            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo WHERE stage != 'specimen' GROUP BY species_id, stage"
+            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo WHERE stage NOT IN ('specimen', 'related') GROUP BY species_id, stage"
             else "SELECT species_id, 'unspecified', COUNT(*) FROM photo GROUP BY species_id"
             val out = HashMap<Int, HashMap<String, Int>>()
             db.rawQuery(sql, null).use { c ->

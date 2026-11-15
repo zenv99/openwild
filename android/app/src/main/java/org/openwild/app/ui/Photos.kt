@@ -179,6 +179,7 @@ fun stageLabel(stage: String): String = stringResource(
         "fruit" -> R.string.stage_fruit
         "closeup" -> R.string.stage_closeup
         "bark" -> R.string.stage_bark
+        "related" -> R.string.stage_related
         "field" -> R.string.stage_field
         "specimen" -> R.string.stage_specimen
         else -> R.string.stage_unspecified
@@ -231,35 +232,64 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
  * A candidate's reference photos for comparing with your own: swipe through them, each labelled with its
  * growth stage (leaves, flower, fruit...) and credited. Tap to open full screen.
  */
+/**
+ * Photos of one candidate inside the match browser. No inner swiping (that fought with swiping between
+ * candidates): one large photo, and a row of thumbnails underneath to switch photo by tapping. Tap the
+ * large photo to open it full screen and zoom.
+ */
 @Composable
 fun CandidatePhotos(pack: RegionPack, i: Int, name: String, modifier: Modifier = Modifier) {
     val photos by produceState<List<Pair<RegionPack.Photo, ImageBitmap>>>(emptyList(), pack, i) {
         value = withContext(Dispatchers.IO) { pack.photos(i).mapNotNull { p -> decode(p.bytes)?.let { p to it } } }
     }
+    var current by remember(i) { mutableStateOf(0) }
     var viewerAt by remember(i) { mutableStateOf<Int?>(null) }
-    Box(modifier.clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainer)) {
-        if (photos.isEmpty()) {
-            Column(Modifier.align(Alignment.Center).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Filled.Eco, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(40.dp))
-                Text(stringResource(R.string.photo_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        } else {
-            val pager = rememberPagerState { photos.size }
-            HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(
+            Modifier.fillMaxWidth().weight(1f).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainer),
+        ) {
+            if (photos.isEmpty()) {
+                Column(Modifier.align(Alignment.Center).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Filled.Eco, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(40.dp))
+                    Text(stringResource(R.string.photo_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                val k = current.coerceIn(0, photos.size - 1)
+                val cur = photos[k].first
                 Image(
-                    photos[page].second, contentDescription = stringResource(R.string.photo_of, name),
-                    contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clickable { viewerAt = page },
+                    photos[k].second, contentDescription = stringResource(R.string.photo_of, name),
+                    contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clickable { viewerAt = k },
                 )
+                Text(
+                    stageLabel(cur.stage), color = Color.White, style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.align(Alignment.TopStart).padding(10.dp).clip(RoundedCornerShape(50))
+                        .background(if (cur.stage == "related") PhotoWanted else Color.Black.copy(alpha = 0.55f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+                Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                    PhotoCredit(cur, Color.White.copy(alpha = 0.9f))
+                }
             }
-            val cur = photos[pager.currentPage].first
-            Text(
-                stageLabel(cur.stage), color = Color.White, style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.align(Alignment.TopStart).padding(10.dp).clip(RoundedCornerShape(50))
-                    .background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 10.dp, vertical = 4.dp),
-            )
-            PagerDots(photos.size, pager.currentPage, Modifier.align(Alignment.BottomCenter).padding(bottom = 30.dp))
-            Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Color.Black.copy(alpha = 0.45f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                PhotoCredit(cur, Color.White.copy(alpha = 0.85f))
+        }
+        if (photos.size > 1) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                photos.take(5).forEachIndexed { n, (ph, bmp) ->
+                    Box(
+                        Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(10.dp))
+                            .background(if (n == current) MaterialTheme.colorScheme.primary else Color.Transparent)
+                            .padding(if (n == current) 3.dp else 0.dp).clip(RoundedCornerShape(8.dp))
+                            .clickable { current = n },
+                    ) {
+                        Image(bmp, contentDescription = stageLabel(ph.stage), contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    }
+                }
+                if (photos.size > 5) {
+                    Box(
+                        Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh).clickable { viewerAt = 5 },
+                        contentAlignment = Alignment.Center,
+                    ) { Text("+${photos.size - 5}", style = MaterialTheme.typography.titleMedium) }
+                }
             }
         }
     }

@@ -241,7 +241,7 @@
     <string name="stage_specimen">Herbarium sheet</string>
     <string name="stage_unspecified">Photo</string>
     <string name="photo_stage_missing">No openly licensed %1$s photo</string>
-    <string name="photo_none">No openly licensed photo for this species. A missing photo is left blank — OpenWild does not substitute another picture.</string>
+    <string name="photo_none">No open photo of this plant yet. Add yours and your name goes on it.</string>
     <string name="matches_title">Is it one of these?</string>
     <string name="matches_position">Match %1$d of %2$d, most likely first. Swipe for the next.</string>
     <string name="matches_search_page">Not in the list? Search every species.</string>
@@ -307,8 +307,13 @@
     <string name="part_status_hidden">Food info hidden until the ID is confident</string>
     <string name="parts_other_deadly">Other parts: treat as deadly.</string>
     <string name="parts_other_unknown">Other parts: no information. Don’t eat them.</string>
-    <string name="parts_disclaimer">From PFAF, Kew and our curated safety notes. Not expert reviewed. Never eat a plant on a photo match alone.</string>
+    <string name="parts_disclaimer">From published plant-use references, Kew’s World Checklist of Useful Plant Species and our own safety notes. Not expert reviewed. Never eat a plant on a photo match alone.</string>
     <string name="parts_none">No part-by-part information yet. Don’t eat any part.</string>
     <string name="parts_none_deadly">Treat every part as deadly.</string>
+    <string name="stage_related">Related species, not this plant</string>
+    <string name="matches_prev">Previous</string>
+    <string name="matches_swipe_hint">Swipe left or right, or tap a name above</string>
+    <string name="matches_next_short">Next</string>
+    <string name="matches_pick_search">🔍 Not here? Search</string>
 </resources>
 

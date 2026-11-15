@@ -440,6 +440,65 @@ def from_inaturalist(scientific: str, want: int = 30) -> list[dict]:
     return out
 
 
+WIKI_LANGS = ("en", "id", "de", "fr", "nl", "es")
+
+
+def from_wikipedias(scientific: str) -> list[dict]:
+    """Lead images of the plant's article on several Wikipedias and Wikispecies. Only files hosted on
+    Wikimedia Commons with an open licence are kept (local, non-free images never resolve there)."""
+    titled: list[tuple[str, str]] = []
+    hosts = [f"https://{lang}.wikipedia.org/w/api.php" for lang in WIKI_LANGS] + ["https://species.wikimedia.org/w/api.php"]
+    for api in hosts:
+        try:
+            data = get_json(api, {"action": "query", "titles": scientific, "redirects": "1", "prop": "pageimages",
+                                  "piprop": "name", "format": "json"}, retries=1, timeout=20)
+        except Exception:  # noqa: BLE001
+            continue
+        for page in ((data.get("query") or {}).get("pages") or {}).values():
+            f = page.get("pageimage")
+            if f and not skip_title(f):
+                titled.append((f"File:{f}", stage_from_text(f) or "field"))
+    seen = set()
+    titled = [t for t in titled if not (t[0] in seen or seen.add(t[0]))]
+    return image_records(titled, scientific) if titled else []
+
+
+def synonyms(scientific: str, key: str | None = None, limit: int = 8) -> list[tuple[str, int]]:
+    """Other names for the same plant (accepted name and synonyms from GBIF): photos are often filed
+    under an older or newer name."""
+    out: list[tuple[str, int]] = []
+    try:
+        m = get_json("https://api.gbif.org/v1/species/match", {"name": scientific, "kingdom": "Plantae"}, retries=1)
+        acc = m.get("acceptedUsageKey") or m.get("usageKey")
+        if not acc:
+            return []
+        if m.get("acceptedUsageKey"):
+            a = get_json(f"https://api.gbif.org/v1/species/{acc}", {}, retries=1)
+            if a.get("canonicalName") and a["canonicalName"].lower() != scientific.lower():
+                out.append((a["canonicalName"], int(acc)))
+        syn = get_json(f"https://api.gbif.org/v1/species/{acc}/synonyms", {"limit": "50"}, retries=1)
+        for r in syn.get("results") or []:
+            n = r.get("canonicalName") or ""
+            if n and n.lower() != scientific.lower() and len(n.split()) == 2 and n not in [x[0] for x in out]:
+                out.append((n, int(r["key"])))
+    except Exception:  # noqa: BLE001
+        return out
+    return out[:limit]
+
+
+def from_synonyms(scientific: str, key: str | None = None) -> list[dict]:
+    got: list[dict] = []
+    for alt, alt_key in synonyms(scientific, key):
+        got += from_gbif(alt_key, want=10)
+        if len(got) < 6:
+            got += from_inaturalist(alt, want=20)
+        if len(got) < 3:
+            got += from_commons_search(alt)
+        if len(got) >= 12:
+            break
+    return got
+
+
 def from_commons_search(scientific: str, limit: int = 20) -> list[dict]:
     """Files on Wikimedia Commons whose title names this species (catches files outside any category)."""
     try:
@@ -607,6 +666,11 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, cr
         step("wiki", lambda: from_wikipedia(desc["wiki_url"], name))
     if living() < 1:
         step("search", lambda: from_commons_search(name))
+    # Poisonous or edible and still nothing: every Wikipedia's lead image, then older/newer names.
+    if critical and living() < 1:
+        step("wikis", lambda: from_wikipedias(name))
+    if critical and living() < 3:
+        step("synonyms", lambda: from_synonyms(name, row.get("gbif_key")))
     t0 = _t.monotonic()
     chosen = _take(cands, img_dir, name)
     timing["download"] = (round(_t.monotonic() - t0, 1), len(chosen))
@@ -664,6 +728,8 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
             tdone_path.unlink(missing_ok=True)
         todo = [r for r in rows if r["scientific_name"] not in tdone and
                 have.get(r["scientific_name"], 0) < (KEY_TARGET if r["scientific_name"].lower() in key else 3)]
+        if __import__("os").environ.get("OW_CRITICAL_ONLY"):
+            todo = [r for r in todo if r["scientific_name"].lower() in key]
         print(f"TOPUP {region}: {len(todo)} species short of photos "
               f"({sum(r['scientific_name'].lower() in key for r in todo)} safety-critical, target {KEY_TARGET})", flush=True)
     else:
@@ -762,10 +828,28 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     descs = {}
     if (d / "descriptions.csv").exists():
         descs = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
+    # A poisonous or edible plant with no photo of its own gets display-only photos of its closest relative
+    # (same genus, most photos), clearly labelled "related species". Never used for photo ID.
+    species_rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
+    critical = safety_species(species_rows)
+    by_genus: dict[str, list[str]] = defaultdict(list)
+    for k, v in by.items():
+        by_genus[k.split()[0]].append(k)
+    related = 0
     recs = []
-    for r in csv.DictReader(open(d / "species.csv", encoding="utf-8")):
+    for r in species_rows:
         key = r["scientific_name"].lower()
         pairs = by.get(key, [])
+        borrowed: list[dict] = []
+        if not pairs and key in critical:
+            kin = sorted((k for k in by_genus.get(key.split()[0], []) if k != key), key=lambda k: -len(by[k]))
+            if kin:
+                donor = kin[0]
+                borrowed = [{
+                    "path": p["path"], "license": p["license"], "url": p["page"], "stage": "related",
+                    "observer": f"{p.get('observer') or 'unknown'} — related species: {p['scientific_name']}",
+                } for p, _ in by[donor][:2]]
+                related += 1
         # Prefer living-plant stages over a herbarium sheet when both exist.
         living = [pair for pair in pairs if pair[0].get("stage") != "specimen"]
         pairs = living or pairs
@@ -788,12 +872,13 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             description=dsc.get("description") or None,
             wiki_url=dsc.get("wiki_url") or None,
             embeddings=np.stack([e for _, e in pairs]) if pairs else None,
-            attributions=[{"observer": p.get("observer"), "license": p["license"], "url": p["page"]} for p, _ in pairs],
+            attributions=[{"observer": p.get("observer"), "license": p["license"], "url": p["page"]} for p, _ in pairs] + [{"observer": b["observer"], "license": b["license"], "url": b["url"]} for b in borrowed],
             photos=[{
                 "path": p["path"], "observer": p.get("observer"), "license": p["license"],
                 "url": p["page"], "stage": p.get("stage") or "unspecified",
-            } for p, _ in pairs],
+            } for p, _ in pairs] + borrowed,
         ))
+    print(f"RELATED {related} poisonous/edible plants without their own photo show a related species", flush=True)
     dest = out or (config.ANDROID_ASSETS / "packs" / f"{region.id}.owpack")
     build_pack(
         dest, region.id, region.name, version, recs, load_curated(), guide_only=True,

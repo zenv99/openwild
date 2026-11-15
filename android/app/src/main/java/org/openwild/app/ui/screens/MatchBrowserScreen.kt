@@ -80,14 +80,17 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
     val pages = cands.size + 1 // last page: "Not in the list? Search"
     val pager = rememberPagerState(initialPage = start.coerceIn(0, pages - 1)) { pages }
     var saved by remember { mutableStateOf<ReviewStore.Correction?>(null) }
+    val chips = androidx.compose.foundation.lazy.rememberLazyListState()
+    androidx.compose.runtime.LaunchedEffect(pager.currentPage) { chips.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) }
+    fun go(page: Int) = scope.launch { pager.animateScrollToPage(page.coerceIn(0, pages - 1)) }
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        // Your photo, always visible for comparison.
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+    Column(Modifier.fillMaxSize()) {
+        // Your photo + where you are.
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
             state.photos.firstOrNull()?.let { p ->
                 Image(
                     p.bitmap.asImageBitmap(), contentDescription = stringResource(R.string.your_photo),
-                    contentScale = ContentScale.Crop, modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)),
                 )
                 Spacer(Modifier.width(12.dp))
             }
@@ -101,9 +104,32 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
             }
         }
 
+        // Ranked names: tap to jump straight to any match. Scrolls on its own, outside the swipe area.
+        androidx.compose.foundation.lazy.LazyRow(
+            state = chips, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(cands.size + 1) { k ->
+                val selected = k == pager.currentPage
+                val label = if (k < cands.size) {
+                    val c = cands[k]
+                    "${k + 1}. ${sp.commonNames[c.index] ?: sp.scientificNames[c.index]} · ${(c.prob * 100).roundToInt()}%"
+                } else stringResource(R.string.matches_pick_search)
+                val deadly = k < cands.size && cands[k].isDeadly
+                Text(
+                    label, maxLines = 1, style = MaterialTheme.typography.labelLarge,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary else if (deadly) Danger else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.clip(RoundedCornerShape(50))
+                        .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .clickable { go(k) }.padding(horizontal = 14.dp, vertical = 8.dp),
+                )
+            }
+        }
+
         saved?.let { c ->
             Row(
-                Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.secondaryContainer).padding(12.dp),
+                Modifier.padding(horizontal = 16.dp).fillMaxWidth().clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.secondaryContainer).padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stringResource(R.string.correction_saved_detail, c.chosen), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
@@ -115,42 +141,57 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
             }
         }
 
-        HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), pageSpacing = 12.dp) { page ->
+        HorizontalPager(
+            pager, Modifier.weight(1f).fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
+            pageSpacing = 16.dp, beyondViewportPageCount = 1,
+        ) { page ->
             if (page < cands.size) {
                 val c = cands[page]
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val name = sp.commonNames[c.index] ?: sp.scientificNames[c.index]
+                val name = sp.commonNames[c.index] ?: sp.scientificNames[c.index]
+                Column(Modifier.fillMaxSize().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     CandidatePhotos(pack, c.index, name, Modifier.fillMaxWidth().weight(1f))
                     if (c.isDeadly) WarningBox(stringResource(R.string.matches_deadly_hint))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("#${page + 1}  $name", style = MaterialTheme.typography.titleLarge)
+                            Text(name, style = MaterialTheme.typography.titleLarge)
                             Text(sp.scientificNames[c.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             DangerBadge(pack.safety[c.index], fungus = sp.isFungus[c.index])
                         }
-                        Text(
-                            "${(c.prob * 100).roundToInt()}%", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
-                            color = if (c.isDeadly) Danger else MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = { saved = vm.recordCorrection(c.index, page + 1) }, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Filled.CheckCircle, null, Modifier.size(18.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(R.string.matches_this_is_it))
-                        }
-                        OutlinedButton(onClick = { vm.go(Screen.Species(c.index, Tier.LOW)) }, modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.matches_details))
-                        }
-                    }
-                    if (page + 1 < pages) {
-                        TextButton(onClick = { scope.launch { pager.animateScrollToPage(page + 1) } }, modifier = Modifier.align(Alignment.End)) {
-                            Text(stringResource(R.string.matches_next))
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                "${(c.prob * 100).roundToInt()}%", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
+                                color = if (c.isDeadly) Danger else MaterialTheme.colorScheme.primary,
+                            )
+                            TextButton(onClick = { vm.go(Screen.Species(c.index, Tier.LOW)) }) { Text(stringResource(R.string.matches_details)) }
                         }
                     }
                 }
             } else {
                 SearchAllSpecies(vm) { i -> saved = vm.recordCorrection(i, 0) }
+            }
+        }
+
+        // Fixed controls, always in the same place.
+        Row(
+            Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedButton(onClick = { go(pager.currentPage - 1) }, enabled = pager.currentPage > 0) {
+                Text("‹ " + stringResource(R.string.matches_prev))
+            }
+            Button(
+                onClick = {
+                    val k = pager.currentPage
+                    if (k < cands.size) saved = vm.recordCorrection(cands[k].index, k + 1)
+                },
+                enabled = pager.currentPage < cands.size, modifier = Modifier.weight(1f),
+            ) {
+                Icon(Icons.Filled.CheckCircle, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.matches_this_is_it))
+            }
+            OutlinedButton(onClick = { go(pager.currentPage + 1) }, enabled = pager.currentPage < pages - 1) {
+                Text(stringResource(R.string.matches_next_short) + " ›")
             }
         }
     }

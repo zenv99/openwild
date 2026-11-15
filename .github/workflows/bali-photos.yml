@@ -34,6 +34,9 @@ on:
       fresh:
         description: "Top-up looks again at every species (monthly refresh for new photos)"
         default: "false"
+      critical_only:
+        description: "Top-up only poisonous/edible plants (urgent safety pass)"
+        default: "false"
 
 permissions:
   contents: write
@@ -104,6 +107,7 @@ jobs:
           OW_TIMING: ${{ inputs.max_species != '' && '1' || '' }}
           OW_TOPUP: ${{ inputs.topup == 'true' && '1' || '' }}
           OW_TOPUP_FRESH: ${{ inputs.fresh == 'true' && '1' || '' }}
+          OW_CRITICAL_ONLY: ${{ inputs.critical_only == 'true' && '1' || '' }}
           # Several regions run at once: keep iNaturalist at about one request per second in total, and in
           # full passes use it only for poisonous/edible plants and plants with nothing yet.
           OW_INAT_INTERVAL: ${{ inputs.photo_cap != '' && '18' || '6' }}
