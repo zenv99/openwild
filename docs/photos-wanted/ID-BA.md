@@ -4,303 +4,303 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 
 | Plant | Photos now |
 |---|---|
+| African Coromandel (*Asystasia intrusa*) | 0 |
+| Consumption Weed (*Sieruela rutidosperma*) | 0 |
+| Lollipop Plant (*Pachystachys lutea*) | 0 |
+| Dumortier's Liverwort (*Dumortiera hirsuta*) | 0 |
+| Golden Pseuderanthemum (*Pseuderanthemum maculatum*) | 0 |
+| False Heather (*Cuphea hyssopifolia*) | 0 |
+| *Hibiscus archeri* | 0 |
+| Coleus (*Coleus scutellarioides*) | 0 |
+| *Vanda suavis* | 0 |
+| Saw-blade Algae (*Caulerpa serrulata*) | 0 |
+| Firecracker plant (*Russelia equisetiformis*) | 0 |
+| *Dipterocarpus hasseltii* | 0 |
+| *Hypnea charoides* | 0 |
+| Java dacryberry (*Dacrycarpus imbricatus*) | 0 |
+| *Sporisorium amaurae* | 0 |
+| Creeping Dune Fern (*Microsorum scolopendria*) | 0 |
+| *Gomphandra javanica* | 0 |
+| Green Grape Algae (*Caulerpa racemosa*) | 0 |
+| *Cintractia axicola* | 0 |
+| Christmas palm (*Adonidia merrillii*) | 0 |
+| French plantain (*Musa paradisiaca*) | 0 |
+| cemetery-tree (*Polyalthia longifolia*) | 0 |
+| *Palisada perforata* | 0 |
+| Green Feather Alga (*Caulerpa sertularioides*) | 0 |
+| Baby's Tears (*Hypoestes phyllostachya*) | 0 |
+| *Hydropuntia edulis* | 0 |
+| *Gelidiella acerosa* | 0 |
+| Golden Hair-Lichen (*Teloschistes flavicans*) | 0 |
+| *Sporisorium pseudechinolaenae* | 0 |
+| *Anthracocystis themedae-arguentis* | 0 |
+| Common Glochidion (*Glochidion rubrum*) | 0 |
+| *Begonia baliensis* | 0 |
+| *Boodlea montagnei* | 0 |
+| Watercress Algae (*Halimeda opuntia*) | 0 |
+| Chinese parmotrema lichen (*Parmotrema tinctorum*) | 0 |
+| *Zehneria mucronata* | 0 |
+| *Dendrobium linearifolium* | 0 |
 | *Zehneria backeri* | 0 |
+| Shallow-teeth spleenwort (*Asplenium tenerum*) | 0 |
+| Red algae (*Acanthophora spicifera*) | 0 |
+| *Tilletia opaca* | 0 |
+| Trimezia (*Trimezia steyermarkii*) | 0 |
+| Heliconia (*Heliconia caribaea*) | 0 |
+| Florida Keys sage (*Salvia misella*) | 0 |
+| *Homalanthus giganteus* | 0 |
+| Bolivian Sunset (*Seemannia sylvatica*) | 0 |
+| Asian Spiderflower (*Arivela viscosa*) | 0 |
+| *Tectaria melanocaulos* | 0 |
+| Stalked Lettuce Leaf Algae (*Halimeda tuna*) | 0 |
+| Bubble Alga (*Valonia ventricosa*) | 0 |
+| Gorilla ogo (*Gracilaria salicornia*) | 0 |
+| *Sporisorium moniliferum* | 0 |
+| *Chaetomorpha spiralis* | 0 |
+| *Meteorium polytrichum* | 0 |
+| Red Button Ginger (*Costus woodsonii*) | 0 |
+| *Coelogyne flexuosa* | 0 |
+| mountain ru (*Casuarina junghuhniana*) | 0 |
+| *Lindsaea regularis* | 0 |
+| *Agalmyla stellifera* | 0 |
+| *Sphaerostephanos heterocarpus* | 0 |
+| *Pittosporum moluccanum* | 0 |
+| Black Flamingo (*Chrysothemis pulchella*) | 0 |
+| *Lindera polyantha* | 0 |
+| *Hydrogonium orientale* | 0 |
+| *Valoniopsis pachynema* | 0 |
+| *Ulva reticulata* | 0 |
+| *Codium geppiorum* | 0 |
+| Species code: Si (*Syringodium isoetifolium*) | 0 |
+| Gandasoli Hutan (*Hedychium roxburghii*) | 0 |
+| Cuban Cigar Plant (*Calathea lutea*) | 0 |
+| miagos bush (*Osmoxylon lineare*) | 0 |
+| Straggler daisy (*Calyptocarpus vialis*) | 0 |
+| *Anaphalis longifolia* | 0 |
+| *Adinandra javanica* | 0 |
+| Cardinal's guard (*Pachystachys coccinea*) | 0 |
+| *Vaccinium lucidum* | 0 |
+| *Chingia ferox* | 0 |
+| *Acronychia trifoliolata* | 0 |
+| Mustard limu (*Laurencia nidifica*) | 0 |
+| *Portieria hornemannii* | 0 |
+| *Gracilaria debilis* | 0 |
+| Black Sheet Lichen (*Parmotrema reticulatum*) | 0 |
+| *Sporisorium ophiuri* | 0 |
+| Common Liverwort (*Marchantia polymorpha*) | 0 |
+| Areca palm (*Dypsis lutescens*) | 0 |
 | *Pinanga arinasae* | 0 |
+| Ki saat (*Neonauclea excelsa*) | 0 |
+| Bauhinia (*Bauhinia blakeana*) | 0 |
+| *Drypetes ovalis* | 0 |
+| *Syzygium formosum* | 0 |
+| *Morella javanica* | 0 |
+| *Cheilanthes nudiuscula* | 0 |
+| *Medinilla alpestris* | 0 |
+| *Goniophlebium persicifolium* | 0 |
+| *Cypholophus lutescens* | 0 |
+| shingle plant (*Rhaphidophora hayi*) | 0 |
+| Donglu (*Engelhardia spicata*) | 0 |
+| *Oleandra cumingii* | 0 |
+| Mysore trumpetvine (*Thunbergia mysorensis*) | 0 |
+| *Selaginella ornata* | 0 |
+| *Amblovenatum immersum* | 0 |
+| *Diospyros cauliflora* | 0 |
+| Algae (*Eucheuma denticulatum*) | 0 |
+| *Valonia aegagropila* | 0 |
+| erect sea cactus (*Halimeda macroloba*) | 0 |
+| *Amphiroa anceps* | 0 |
+| *Halicoryne spicata* | 0 |
+| *Tricleocarpa fragilis* | 0 |
+| Species code: Tc (*Thalassodendron ciliatum*) | 0 |
+| *Gracilaria longissima* | 0 |
+| *Udotea orientalis* | 0 |
+| Sea Tube (*Valonia utricularis*) | 0 |
+| *Pinalia bogoriensis* | 0 |
+| *Canthiumera glabra* | 0 |
+| hard bubble seaweed (*Dictyosphaeria versluysii*) | 0 |
+| Five-finger Maidenhair (*Adiantum hispidulum*) | 0 |
+| Fimbry (*Fimbristylis littoralis*) | 0 |
+| *Carex rafflesiana* | 0 |
+| *Bulbophyllum gibbosum* | 0 |
+| *Bulbophyllum angustifolium* | 0 |
+| *Doryxylon spinosum* | 0 |
+| Bellorita (*Erigeron bellioides*) | 0 |
+| Bluewings (*Torenia fournieri*) | 0 |
+| Hammerleaf Frangipani (*Plumeria pudica*) | 0 |
+| *Alangium rotundifolium* | 0 |
+| Sanchezia (*Sanchezia parvibracteata*) | 0 |
+| *Radermachera gigantea* | 0 |
+| *Elatostema strigosum* | 0 |
+| Dwarf Hare's-foot Fern (*Davallia repens*) | 0 |
+| *Pterophylla fraxinea* | 0 |
+| Beringin karét (*Ficus subulata*) | 0 |
+| *Tetrastigma papillosum* | 0 |
+| *Procris ruhlandii* | 0 |
+| Fairy Christmas Tree (*Palhinhaea cernua*) | 0 |
+| *Elaeocarpus submonoceras* | 0 |
+| *Ardisia javanica* | 0 |
+| *Ilex odorata* | 0 |
+| *Liebigia horsfieldii* | 0 |
+| *Isoglossa dichotoma* | 0 |
+| *Drepanolejeunea moluccensis* | 0 |
+| *Didymodon vinealis* | 0 |
+| *Lipoblepharis asperrima* | 0 |
+| *Heliotropium velutinum* | 0 |
+| *Carpopeltis maillardii* | 0 |
+| Climbing Umbrella Tree (*Heptapleurum ellipticum*) | 0 |
+| *Anadyomene stellata* | 0 |
+| *Boodlea composita* | 0 |
+| Caulerpa, Killer alga, Sea weed (*Caulerpa taxifolia*) | 0 |
+| *Beilschmiedia lucidula* | 0 |
+| Cactus Tree Algae (*Caulerpa cupressoides*) | 0 |
+| Red Weed (*Zellera tawallina*) | 0 |
+| *Parmotrema austrocetratum* | 0 |
+| frangipani rust (*Coleosporium plumeriae*) | 0 |
+| *Cintractia limitata* | 0 |
+| *Sphacelotheca hydropiperis* | 0 |
+| *Uromyces ophiorrhizae* | 0 |
+| *Uredo chonemorphae* | 0 |
+| *Strophocaulon unitum* | 0 |
+| Black lady fern (*Deparia japonica*) | 0 |
+| *Botryocladia leptopoda* | 0 |
+| *Lopidium struthiopteris* | 0 |
+| *Dicranoloma braunii* | 0 |
+| *Calyptothecium urvilleanum* | 0 |
+| *Himantocladium giulianettii* | 0 |
+| Hemisphaeric Liverwort (*Reboulia hemisphaerica*) | 0 |
+| Hurricanegrass (*Fimbristylis cymosa*) | 0 |
+| lipstick palm (*Cyrtostachys renda*) | 0 |
+| Orchid (*Vanda tricolor*) | 0 |
+| *Coelogyne miniata* | 0 |
+| *Goodyera reticulata* | 0 |
 | *Ixora balinensis* | 0 |
+| *Crotalaria lejoloba* | 0 |
+| *Rubus alpestris* | 0 |
+| *Polyscias javanica* | 0 |
+| *Claoxylon affine* | 0 |
+| Umbrella Cheese Tree (*Glochidion zeylanicum*) | 0 |
+| Balloon Cottonbush (*Gomphocarpus physocarpus*) | 0 |
+| *Saurauia distasosa* | 0 |
+| *Myrsine hasseltii* | 0 |
+| *Pogostemon menthoides* | 0 |
 | *Amyema longipes* | 0 |
+| *Selliguea enervis* | 0 |
+| *Ctenitis subglandulosa* | 0 |
+| East Indian Hollyfern (*Arachniodes aristata*) | 0 |
+| Batiki Bluegrass (*Polytrias indica*) | 0 |
+| *Plantago incisa* | 0 |
+| *Begonia lempuyangensis* | 0 |
+| *Litsea robusta* | 0 |
+| *Piper abbreviatum* | 0 |
+| Curtain Creeper (*Tarlmounia elliptica*) | 0 |
+| *Daltonia marginata* | 0 |
+| *Planchonella duclitan* | 0 |
+| *Breynia microphylla* | 0 |
+| *Cyrtandra coccinea* | 0 |
+| *Cyrtandra rostrata* | 0 |
+| *Cyrtandra cuneata* | 0 |
+| *Pyrrosia albicans* | 0 |
+| *Maoutia diversifolia* | 0 |
+| *Lindera lucida* | 0 |
+| Walikukun (*Schoutenia ovata*) | 0 |
+| *Nephrolepis davallioides* | 0 |
+| *Ficus sundaica* | 0 |
+| *Diplazium latifolium* | 0 |
+| *Wikstroemia androsaemifolia* | 0 |
+| *Schefflera polybotrya* | 0 |
+| *Solanum graciliflorum* | 0 |
+| *Magnolia sumatrana* | 0 |
+| *Viburnum lutescens* | 0 |
+| *Myrsine porteriana* | 0 |
+| *Montanoa hibiscifolia* | 0 |
+| *Alsophila orientalis* | 0 |
+| *Acrolejeunea fertilis* | 0 |
+| *Chondrophycus cartilagineus* | 0 |
+| Ahalang bahok (*Baccaurea javanica*) | 0 |
+| *Syzygium lineatum* | 0 |
+| *Mallotus rufidulus* | 0 |
+| *Marsypopetalum littorale* | 0 |
+| Clump Seagrass (*Oceana serrulata*) | 0 |
+| *Amphiroa crassa* | 0 |
+| Nodular Coralline (*Amphiroa bowerbankii*) | 0 |
+| *Betaphycus gelatinus* | 0 |
+| *Taxotrophis spinosa* | 0 |
+| *Halimeda distorta* | 0 |
+| Green Bubble Weed (*Dictyosphaeria cavernosa*) | 0 |
+| *Laurencia mariannensis* | 0 |
+| egg magnolia (*Magnolia liliifera*) | 0 |
 | *Gracilaria corniculata* | 0 |
+| *Collybiopsis menehune* | 0 |
+| Fan-shaped Jelly Fungus (*Dacrymyces spathularius*) | 0 |
+| Big salted-ruffle (*Parmotrema crinitum*) | 0 |
+| cartilage lichen (*Ramalina celastri*) | 0 |
 | *Gymnopus vitellinipes* | 0 |
+| Oxalis Rust (*Puccinia oxalidis*) | 0 |
 | *Trachyspora wurthii* | 0 |
 | *Farysia javanica* | 0 |
+| *Sporisorium sacchari* | 0 |
 | *Elsinoe canavaliae* | 0 |
+| *Aldona stella-nigra* | 0 |
 | *Montagnellina pithecellobii* | 0 |
+| *Graphiola arengae* | 0 |
 | *Phakopsora elettariae* | 0 |
+| *Anthracocystis formosana* | 0 |
+| *Neckeromnion lepineanum* | 0 |
+| Asian Ticktrefoil (*Grona heterocarpos*) | 0 |
+| *Torenia anagallis* | 0 |
+| creeping burhead (*Aquarius cordifolius*) | 0 |
+| *Coelogyne bracteosa* | 0 |
+| Leatherleaf goldback fern (*Pityrogramma austroamericana*) | 0 |
+| *Halymenia durvillei* | 0 |
+| *Sarcodia montagneana* | 0 |
+| *Eucheuma serra* | 0 |
+| *Calyptrochaeta remotifolia* | 0 |
+| Hyophila Moss (*Hyophila involuta*) | 0 |
+| *Ganguleea angulosa* | 0 |
+| *Microcampylopus khasianus* | 0 |
+| *Leucobryum chlorophyllosum* | 0 |
+| *Floribundaria pseudofloribunda* | 0 |
+| *Homaliodendron flabellatum* | 0 |
+| *Diaphanodon blandus* | 0 |
+| *Meiothecium microcarpum* | 0 |
+| *Erythrodontium julaceum* | 0 |
+| Cuming's Lovegrass (*Eragrostis cumingii*) | 0 |
+| Long Lovegrass (*Eragrostis elongata*) | 0 |
+| *Heliconia collinsiana* | 0 |
+| *Heliconia nickeriensis* | 0 |
+| Expanded Lobsterclaw (*Heliconia latispatha*) | 0 |
+| *Schoenorchis juncifolia* | 0 |
+| *Bryobium hyacinthoides* | 0 |
+| *Cryptostylis arachnites* | 0 |
+| *Goodyera bifida* | 0 |
+| Lady Fingers (*Caladenia catenata*) | 0 |
 | *Mussaenda teysmanniana* | 0 |
+| *Amaracarpus pubescens* | 0 |
 | *Pavetta balinensis* | 0 |
+| *Croton glabrescens* | 0 |
+| *Macaranga recurvata* | 0 |
+| *Adenostemma hirsutum* | 0 |
+| *Anaphalis javanica* | 0 |
+| *Gynura batorensis* | 0 |
 | *Gynura elberti* | 0 |
-| *Tetrastigma mutabilis* | 0 |
-| *Ixora brachycotyla* | 0 |
-| *Gymnopus bicolor* | 0 |
-| *Melampsora geniculatae* | 0 |
-| *Puccinia kraussiana* | 0 |
-| *Phakopsora oplismeni* | 0 |
-| *Ustilaginoidea bogoriensis* | 0 |
-| *Gloeosporidium calochroum* | 0 |
-| *Coelogyne sulawesiensis* | 0 |
-| *Tolypiocladia condensata* | 0 |
-| *Robiquetia dentifera* | 0 |
-| *Habenaria baliensis* | 0 |
-| *Ceratostylis baliensis* | 0 |
-| *Ceratostylis braccata* | 0 |
-| *Claoxylon erythrophyllum* | 0 |
-| *Uvaria schizocalyx* | 0 |
-| *Melastoma decipiens* | 0 |
-| *Mitrasacme neglecta* | 0 |
-| *Begonia pseudomuricata* | 0 |
-| *Oberonia tjisokanensis* | 0 |
-| *Zeuxine baliensis* | 0 |
-| *Eucheuma horizontale* | 0 |
-| *Polyspora integerrima* | 0 |
-| *Trichosanthes orientalis* | 0 |
-| *Jacquemontia zollingeri* | 0 |
-| *Begonia lugrae* | 0 |
-| *Diospyros javanica* | 0 |
-| *Achaetomiella gracilis* | 0 |
-| *Penicillium javanicum* | 0 |
-| *Rhodocollybia spissa* | 0 |
-| *Aspergillus fischeri* | 0 |
-| *Gymnopus sepiiconicus* | 0 |
-| *Phyllactinia poinsettiae* | 0 |
-| *Inosperma fuscospinulosum* | 0 |
-| *Kweilingia divina* | 0 |
-| *Physopella clemensiae* | 0 |
-| *Puccinia operta* | 0 |
-| *Sphaerophragmium mucunae* | 0 |
-| *Sphaerophragmium irregulare* | 0 |
-| *Nyssopsora trevesiae* | 0 |
-| *Maravalia crotalariae* | 0 |
-| *Hemileia dioscoreae-aculeatae* | 0 |
-| *Aeruginospora singularis* | 0 |
-| *Lasmeniella dendritica* | 0 |
-| *Inocybe subgeophylla* | 0 |
-| *Hygrophorus lactarioides* | 0 |
-| *Entoloma megacystis* | 0 |
-| *Entyloma nephrolepidis* | 0 |
-| *Aecidium gaeumannii* | 0 |
-| *Aecidium thunbergiae-fragrantis* | 0 |
-| *Puccinia geophilae* | 0 |
-| *Puccinia zanthoxyli* | 0 |
-| *Puccinia pogonatheri* | 0 |
-| *Uromyces phlogacanthi* | 0 |
-| *Uromyces euphorbiae-javanicae* | 0 |
-| *Uredo raciborskiana* | 0 |
-| *Uredo dioscoreae-filiformis* | 0 |
-| *Phakopsora aurea* | 0 |
-| *Sphacelotheca arthaxonis* | 0 |
-| *Triposporina uredinicola* | 0 |
-| *Halbania cyathearum* | 0 |
-| *Dimerina minutissima* | 0 |
-| *Dermatodothis javanica* | 0 |
-| *Pileolaria discoidea* | 0 |
-| *Aschersonia scutelliformis* | 0 |
-| *Anthracocystis berndtii* | 0 |
-| *Uredo gaeumannii* | 0 |
-| *Hemileia phaii* | 0 |
-| *Anthracocystis polytriadis* | 0 |
-| *Cleisostoma suaveolens* | 0 |
-| *Cleisostoma sumbavense* | 0 |
-| *Cleisostoma termissum* | 0 |
-| *Chionanthus kostermansii* | 0 |
-| *Begonia jaranpusangensis* | 0 |
-| *Cleistanthus floricola* | 0 |
-| *Clethra sumbawaensis* | 0 |
-| *Clethra javanica* | 0 |
-| *Begonia semongkatensis* | 0 |
-| *Chloothamnus schmutzii* | 0 |
-| *Chloothamnus reholttumianus* | 0 |
-| *Polytoca hubbardiana* | 0 |
-| *Ridsdalea sundaensis* | 0 |
-| *Coelogyne camelostalix* | 0 |
-| *Marsdenia laurifolia* | 0 |
-| *Schizostachyum purpureum* | 0 |
-| *Aglaia leptantha* | 0 |
-| *Afrohybanthus enneaspermus* | 0 |
-| *Pinalia sumbawensis* | 0 |
-| *Corybas insulifloris* | 0 |
-| *Afrohybanthus verbi-divini* | 0 |
-| *Polyscias paucidens* | 0 |
-| *Achilleanthus schmutzii* | 0 |
-| *Alatiliparis hirundo* | 0 |
-| *Coelogyne cornuta* | 0 |
-| *Fimbribambusa rifaiana* | 0 |
-| *Coelogyne similis* | 0 |
-| *Coelogyne galeata* | 0 |
-| *Guettardella affinis* | 0 |
-| *Tetrapilus javanicus* | 0 |
-| *Knema steenisii* | 0 |
-| *Korthalsella geminata* | 0 |
-| *Korthalsella dacrydii* | 0 |
-| *Lonicera javanica* | 0 |
-| *Lepidagathis armata* | 0 |
-| *Lepidagathis humifusa* | 0 |
-| *Dendrobium inflatum* | 0 |
-| *Dendrobium koordersii* | 0 |
-| *Dunbaria circinalis* | 0 |
-| *Dunbaria floresiana* | 0 |
-| *Litsea discolor* | 0 |
-| *Litsea confusa* | 0 |
-| *Litsea subumbelliflora* | 0 |
-| *Litsea tomentosa* | 0 |
-| *Mangifera timorensis* | 0 |
-| *Monoon lateriflorum* | 0 |
-| *Mappia montana* | 0 |
-| *Mezoneuron furfuraceum* | 0 |
-| *Mezoneuron enneaphyllum* | 0 |
-| *Liparis clavigera* | 0 |
-| *Melodinus forbesii* | 0 |
-| *Mammea timorensis* | 0 |
-| *Glochidion zollingeri* | 0 |
-| *Mucuna acuminata* | 0 |
-| *Glochidion kostermansii* | 0 |
-| *Mucuna kawakabuti* | 0 |
-| *Mucuna kostermansii* | 0 |
-| *Mucuna sumbawaensis* | 0 |
-| *Mitrasacme erophila* | 0 |
-| *Neoalsomitra hederifolia* | 0 |
-| *Neoalsomitra schefferiana* | 0 |
-| *Neolitsea javanica* | 0 |
-| *Nothaphoebe macrocarpa* | 0 |
-| *Hypobathrum frutescens* | 0 |
-| *Mycaranthes sonkaris* | 0 |
-| *Morinda piperiformis* | 0 |
-| *Oxalis novae-guineensis* | 0 |
-| *Ochrosia syncarpa* | 0 |
-| *Pimpinella javana* | 0 |
-| *Pseuderanthemum diversifolium* | 0 |
-| *Pararuellia napifera* | 0 |
-| *Phaeanthus sumatrana* | 0 |
-| *Pseuduvaria rugosa* | 0 |
-| *Polycarpaea zollingeri* | 0 |
-| *Polycarpaea timorensis* | 0 |
-| *Polycarpaea sumbana* | 0 |
-| *Premna oblongata* | 0 |
-| *Palaquium amboinense* | 0 |
-| *Reissantia cassinoides* | 0 |
-| *Gyrinops versteegii* | 0 |
-| *Podochilus gracilis* | 0 |
-| *Podochilus rhombeus* | 0 |
-| *Rostellularia ovata* | 0 |
-| *Rostellularia lanceolata* | 0 |
-| *Rungia blumeana* | 0 |
-| *Uvaria micrantha* | 0 |
-| *Rhododendron citrinum* | 0 |
-| *Reinwardtiodendron kostermansii* | 0 |
-| *Pomatocalpa floresanum* | 0 |
-| *Peristylus elbertii* | 0 |
-| *Peristylus rindjaniensis* | 0 |
-| *Trichosanthes valida* | 0 |
-| *Terminalia soembawana* | 0 |
-| *Terminalia zollingeri* | 0 |
-| *Thunbergia kangeanensis* | 0 |
-| *Timonius rigidus* | 0 |
-| *Guioa asquamosa* | 0 |
-| *Thunbergia pleistodonta* | 0 |
-| *Trachymene acerifolia* | 0 |
-| *Spermacoce angustifolia* | 0 |
-| *Urtica bullata* | 0 |
-| *Spermacoce pumila* | 0 |
-| *Spermacoce sociata* | 0 |
-| *Teyleria tetragona* | 0 |
-| *Schismatoglottis picta* | 0 |
-| *Tephrosia zollingeri* | 0 |
-| *Tephrosia timoriensis* | 0 |
-| *Tephrosia rigida* | 0 |
-| *Tephrosia spinosa* | 0 |
-| *Tephrosia elliptica* | 0 |
-| *Vigna hirtella* | 0 |
-| *Uvaria glabra* | 0 |
-| *Ventilago oblongifolia* | 0 |
-| *Tropidia multiflora* | 0 |
-| *Tropidia pedunculata* | 0 |
-| *Tropidia reichenbachiana* | 0 |
-| *Cyperus elatus* | 0 |
-| *Xylopia papuana* | 0 |
-| *Zehneria elbertii* | 0 |
-| *Zanthoxylum timoriense* | 0 |
-| *Strobilanthes paniculata* | 0 |
-| *Curcuma viridiflora* | 0 |
-| *Strobilanthes teraoi* | 0 |
-| *Strobilanthes renschiae* | 0 |
-| *Staurogyne incana* | 0 |
-| *Strobilanthes apoensis* | 0 |
-| *Strobilanthes arborea* | 0 |
-| *Strobilanthes filiformis* | 0 |
-| *Saurauia verheijenii* | 0 |
-| *Semecarpus cassuvium* | 0 |
-| *Saurauia schmutzii* | 0 |
-| *Strobilanthes bremekampiana* | 0 |
-| *Spondias malayana* | 0 |
-| *Stellaria australis* | 0 |
-| *Stellaria pauciflora* | 0 |
-| *Santaloides minor* | 0 |
-| *Rhopalephora micrantha* | 0 |
-| *Lansium breviracemosum* | 0 |
-| *Lycianthes bimensis* | 0 |
-| *Myrica javanica* | 0 |
-| *Maesa pulchella* | 0 |
-| *Meliosma lanceolata* | 0 |
-| *Maesa naumanniana* | 0 |
-| *Microcos hirsuta* | 0 |
-| *Melhania javanica* | 0 |
-| *Melicope timorensis* | 0 |
-| *Melicope calycina* | 0 |
-| *Tetradium sambucinum* | 0 |
-| *Tetrastigma coriaceum* | 0 |
-| *Tetrastigma laevigatum* | 0 |
-| *Rhizophora × annamalayana* | 0 |
-| *Rinorea macrophylla* | 0 |
-| *Phanera fulva* | 0 |
-| *Phanera lingua* | 0 |
-| *Goodyera sumbawana* | 0 |
-| *Paratrophis philippinensis* | 0 |
-| *Pycnarrhena longifolia* | 0 |
-| *Pterospermum blumeanum* | 0 |
-| *Piper aberrans* | 0 |
-| *Pentace polyantha* | 0 |
-| *Peperomia mollicaulis* | 0 |
-| *Peperomia kalimatina* | 0 |
-| *Peperomia gruendleri* | 0 |
-| *Peperomia pubicaulis* | 0 |
-| *Peperomia rigidicaulis* | 0 |
-| *Peperomia parcicilia* | 0 |
-| *Piper curtilimbum* | 0 |
-| *Piper elbertii* | 0 |
-| *Piper rindjanense* | 0 |
-| *Pittosporum fissicalyx* | 0 |
-| *Piper sapitense* | 0 |
-| *Pittosporum ramiflorum* | 0 |
-| *Pittosporum monticola* | 0 |
-| *Pittosporum timorense* | 0 |
-| *Prunus wallaceana* | 0 |
-| *Portulaca macrorhiza* | 0 |
-| *Symplocos brandisii* | 0 |
-| *Stylidium javanicum* | 0 |
-| *Diospyros sundaica* | 0 |
-| *Sapindus balicus* | 0 |
-| *Sticherus vestitus* | 0 |
-| *Swertia oxyphylla* | 0 |
-| *Sindora galedupa* | 0 |
-| *Canthium oliganthum* | 0 |
-| *Sarcostigma paniculatum* | 0 |
-| *Sarcodum bicolor* | 0 |
-| *Saraca monadelpha* | 0 |
-| *Saurauia umbellata* | 0 |
-| *Styphelia wetarensis* | 0 |
-| *Styphelia forbesii* | 0 |
-| *Scurrula aphodastrica* | 0 |
-| *Strychnos villosa* | 0 |
-| *Sympetalandra schmutzii* | 0 |
-| *Sida teysmannii* | 0 |
-| *Leucosyke puya* | 0 |
-| *Rubus fraxinifoliolus* | 0 |
-| *Iseilema maculatum* | 0 |
-| *Aeschynomene atropurpurea* | 0 |
-| *Urochloa tanimbarensis* | 0 |
-| *Rubus malvaceus* | 0 |
-| *Rottboellia rottboellioides* | 0 |
-| *Sarga plumosa* | 0 |
-| *Schizostachyum castaneum* | 0 |
-| *Schizostachyum caudatum* | 0 |
-| *Schizostachyum cuspidatum* | 0 |
-| *Schizostachyum silicatum* | 0 |
-| *Melastoma aculeolatum* | 0 |
-| *Melastoma curvisepalum* | 0 |
-| *Melastoma elbertii* | 0 |
-| *Sporobolus amaliae* | 0 |
-| *Ipomoea aculeata* | 0 |
-| *Solanum schefferi* | 0 |
-| *Solanum torvoideum* | 0 |
-| *Argyreia sumbawana* | 0 |
-| *Dendrobium enigmaticum* | 0 |
-| *Phyllanthus androgynus* | 0 |
-| *Vernonia albifolia* | 0 |
+| Weeping Bottlebrush (*Callistemon viminalis*) | 0 |
+| *Syzygium laxiflorum* | 0 |
+| *Josephinia celebica* | 0 |
+| *Tapeinidium gracile* | 0 |
+| *Dennstaedtia resinifera* | 0 |
+| Dummela (*Trichosanthes scabra*) | 0 |
+| *Zehneria repanda* | 0 |
+| *Hydrocotyle batrachium* | 0 |
+| *Saurauia squamulosa* | 0 |
+| *Rhynchotechum eximium* | 0 |
+| *Melicope glabra* | 0 |
+| *Didymocheton nutans* | 0 |
+| *Berchemia philippinensis* | 0 |
+| *Polyosma ilicifolia* | 0 |
+| *Dendrophthoe lanosa* | 0 |
+| pimple fern (*Microsorum membranifolium*) | 0 |
+| *Pneumatopteris callosa* | 0 |
+| *Digitaria heterantha* | 0 |
+| *Vaccinium laurifolium* | 0 |
+| *Beilschmiedia madang* | 0 |
