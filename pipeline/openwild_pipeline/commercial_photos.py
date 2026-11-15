@@ -68,15 +68,58 @@ SHEET_SUBSTR = ("herbarium", "herbier", "specimen", "exsiccat", "isotype", "holo
 SHEET_WORDS = {"drawing", "plate", "tafel", "planche", "lamina", "blanco", "hortus", "kohler", "köhler", "curtis"}
 
 
+_SHEET_MEMO: dict[str, float] = {}
+
+
 def sheet_fraction(path) -> float:
-    """Share of the picture that is near-white, unsaturated paper (0..1)."""
+    """Share of the picture that is near-white, unsaturated paper (0..1). Decodes JPEGs at 1/8 size
+    (draft mode) and remembers results, so checking tens of thousands of photos takes minutes, not hours."""
     import numpy as np
     from PIL import Image
 
-    im = Image.open(path).convert("RGB").resize((96, 96))
-    a = np.asarray(im).astype(np.float32)
+    key = str(path)
+    if key in _SHEET_MEMO:
+        return _SHEET_MEMO[key]
+    disk = _sheet_disk(Path(path).parent.parent)
+    if key in disk:
+        _SHEET_MEMO[key] = disk[key]
+        return disk[key]
+    with Image.open(path) as im:
+        im.draft("RGB", (128, 128))
+        a = np.asarray(im.convert("RGB").resize((96, 96))).astype(np.float32)
     mx, mn = a.max(2), a.min(2)
-    return float(((mx > 190) & ((mx - mn) / (mx + 1e-6) < 0.12)).mean())
+    v = float(((mx > 190) & ((mx - mn) / (mx + 1e-6) < 0.12)).mean())
+    _SHEET_MEMO[key] = v
+    disk[key] = v
+    return v
+
+
+_SHEET_DISK: dict[str, dict[str, float]] = {}
+
+
+def _sheet_disk(folder: Path) -> dict[str, float]:
+    """Whiteness results kept next to the photos (sheet_cache.json), shared by every pack build."""
+    import json
+
+    k = str(folder)
+    if k not in _SHEET_DISK:
+        f = folder / "sheet_cache.json"
+        try:
+            _SHEET_DISK[k] = json.loads(f.read_text()) if f.exists() else {}
+        except Exception:  # noqa: BLE001
+            _SHEET_DISK[k] = {}
+    return _SHEET_DISK[k]
+
+
+def save_sheet_cache() -> None:
+    import json
+
+    for k, d in _SHEET_DISK.items():
+        if d:
+            try:
+                (Path(k) / "sheet_cache.json").write_text(json.dumps(d))
+            except Exception:  # noqa: BLE001
+                pass
 
 
 def looks_like_sheet(path=None, *texts: str | None, threshold: float = 0.40) -> bool:
@@ -815,6 +858,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             print(f"skip unreadable photo {p.get('scientific_name')}: {e!r}", flush=True)
             continue
         usable.append({**p, "license": lic})
+    save_sheet_cache()
     print(f"SHEETS removed {sheets} herbarium sheets / drawings on white paper", flush=True)
     model = config.ANDROID_ASSETS / "embedder.tflite"
     embs = _cached_embeddings([Path(p["path"]) for p in usable], model, photos_path.parent / "emb_cache.npz")
