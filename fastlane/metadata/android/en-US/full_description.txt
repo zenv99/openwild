@@ -1,0 +1,20 @@
+OpenWild identifies wild plants and mushrooms from a photo, fully offline, and tells you what can hurt you.
+
+<b>Built for safety</b>
+<ul>
+<li>Part by part: seeds, fruit, flowers, leaves, stem, bark, roots and sap, each marked deadly, poisonous, harmful, food (cooked only / ripe only) or no information.</li>
+<li>Deadly lookalikes are always shown. A photo match never unlocks eating information unless the match is confident.</li>
+<li>Browse every likely match, most likely first, when the first answer is wrong.</li>
+</ul>
+
+<b>Private by design</b>
+<ul>
+<li>Runs entirely on your phone. No account, no ads, no tracking, no analytics.</li>
+<li>The only network use is downloading region packs you choose, from GitHub, over HTTPS with checksums.</li>
+<li>Location is never requested unless you tap "Find my region".</li>
+</ul>
+
+<b>Open photos, open data</b>
+Tens of thousands of open-licence photos from GBIF, iNaturalist and Wikimedia Commons, each credited. Plants still missing photos are marked "Photos wanted": add yours and your name goes on every photo we use.
+
+Never eat a wild plant or mushroom on a photo match alone.

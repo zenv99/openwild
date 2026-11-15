@@ -1,0 +1,20 @@
+OpenWild mengenali tumbuhan dan jamur liar dari foto, sepenuhnya tanpa internet, dan memberi tahu apa yang bisa membahayakan Anda.
+
+<b>Dibuat untuk keselamatan</b>
+<ul>
+<li>Per bagian: biji, buah, bunga, daun, batang, kulit kayu, akar dan getah, masing-masing ditandai mematikan, beracun, berbahaya, bisa dimakan (hanya dimasak / hanya yang matang) atau belum ada informasi.</li>
+<li>Tumbuhan mirip yang mematikan selalu ditampilkan. Informasi makanan hanya muncul bila hasil pengenalan cukup yakin.</li>
+<li>Telusuri semua kemungkinan, dari yang paling mirip, bila jawaban pertama salah.</li>
+</ul>
+
+<b>Privasi terjaga</b>
+<ul>
+<li>Berjalan sepenuhnya di ponsel Anda. Tanpa akun, tanpa iklan, tanpa pelacakan.</li>
+<li>Internet hanya dipakai untuk mengunduh paket wilayah yang Anda pilih.</li>
+<li>Lokasi tidak pernah diminta kecuali Anda menekan "Cari wilayah saya".</li>
+</ul>
+
+<b>Foto terbuka, data terbuka</b>
+Puluhan ribu foto berlisensi terbuka dari GBIF, iNaturalist dan Wikimedia Commons, semuanya dengan nama fotografernya. Tumbuhan yang belum punya foto ditandai "Butuh foto": kirim foto Anda dan nama Anda tercantum di setiap foto yang kami pakai.
+
+Jangan pernah memakan tumbuhan atau jamur liar hanya berdasarkan hasil foto.
