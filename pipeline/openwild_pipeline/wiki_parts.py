@@ -107,35 +107,76 @@ def article_text(title: str, lang: str) -> tuple[str, str]:
     return "", ""
 
 
+def _strip_wikitext(t: str) -> str:
+    t = re.sub(r"<ref[^>]*/>|<ref[^>]*>.*?</ref>", " ", t, flags=re.S)
+    for _ in range(3):
+        t = re.sub(r"\{\{[^{}]*\}\}", " ", t)
+    t = re.sub(r"\[\[(?:File|Image|Berkas|Gambar|Category|Kategori):[^\]]*\]\]", " ", t, flags=re.I)
+    t = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]*)\]\]", r"\1", t)
+    t = re.sub(r"<[^>]+>|'{2,}|={2,}", " ", t)
+    return t
+
+
+def article_texts(titles: list[str], lang: str) -> dict[str, tuple[str, str]]:
+    """Plain-ish text for up to 50 articles in one request (latest revision wikitext, markup stripped).
+    Returns {requested title: (text, url)} for articles that exist."""
+    out: dict[str, tuple[str, str]] = {}
+    try:
+        data = get_json(f"https://{lang}.wikipedia.org/w/api.php", {
+            "action": "query", "titles": "|".join(titles), "redirects": "1", "prop": "revisions",
+            "rvprop": "content", "rvslots": "main", "format": "json", "formatversion": "2",
+        }, retries=3, timeout=60)
+    except Exception:  # noqa: BLE001
+        return out
+    q = data.get("query") or {}
+    back = {}
+    for m in (q.get("normalized") or []) + (q.get("redirects") or []):
+        back[m["to"]] = back.get(m["from"], m["from"])
+    for page in q.get("pages") or []:
+        if page.get("missing"):
+            continue
+        t = page.get("title") or ""
+        revs = page.get("revisions") or []
+        if not revs:
+            continue
+        txt = ((revs[0].get("slots") or {}).get("main") or {}).get("content") or ""
+        if txt.lower().startswith("#redirect"):
+            continue
+        src = back.get(t, t)
+        out[src] = (_strip_wikitext(txt), f"https://{lang}.wikipedia.org/wiki/{t.replace(' ', '_')}")
+    return out
+
+
 def collect(names: list[str], out_csv: Path, workers: int = 4) -> int:
     """Fetch articles for every species name, extract part facts, write the ledger CSV. Returns rows written."""
     from concurrent.futures import ThreadPoolExecutor
 
-    def one(name: str):
+    def one(batch: list[str]):
         rows = []
         for lang in LANGS:
-            text, url = article_text(name, lang)
-            if not text:
-                continue
-            # Only trust an article that is about this species (its name appears in the text).
-            if name.split()[0].lower() not in text.lower():
-                continue
-            for part, kind, qual in sorted(set(facts_from_text(text, lang))):
-                rows.append({"scientific_name": name, "part": part, "kind": kind, "qualifier": qual,
-                             "lang": lang, "source_url": url})
+            texts = article_texts(batch, lang)
+            for name in batch:
+                text, url = texts.get(name, ("", ""))
+                # Only trust an article that is about this plant (its genus appears in the text).
+                if not text or name.split()[0].lower() not in text.lower():
+                    continue
+                for part, kind, qual in sorted(set(facts_from_text(text, lang))):
+                    rows.append({"scientific_name": name, "part": part, "kind": kind, "qualifier": qual,
+                                 "lang": lang, "source_url": url})
         return rows
 
+    batches = [names[i:i + 50] for i in range(0, len(names), 50)]
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     n = 0
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["scientific_name", "part", "kind", "qualifier", "lang", "source_url"])
         w.writeheader()
         with ThreadPoolExecutor(workers) as ex:
-            for k, rows in enumerate(ex.map(one, names)):
+            for k, rows in enumerate(ex.map(one, batches)):
                 w.writerows(rows)
                 n += len(rows)
-                if k % 250 == 0:
-                    print(f"wiki-parts {k}/{len(names)} species, {n} facts", flush=True)
+                if k % 10 == 0:
+                    print(f"wiki-parts {min((k + 1) * 50, len(names))}/{len(names)} species, {n} facts", flush=True)
     return n
 
 
