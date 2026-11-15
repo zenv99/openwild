@@ -154,7 +154,9 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(name, style = MaterialTheme.typography.titleLarge)
-                            Text(sp.scientificNames[c.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (sp.commonNames[c.index] != null) {
+                                Text(sp.scientificNames[c.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                             DangerBadge(pack.safety[c.index], fungus = sp.isFungus[c.index])
                         }
                         Column(horizontalAlignment = Alignment.End) {
@@ -228,7 +230,7 @@ private fun SearchAllSpecies(vm: AppViewModel, onPick: (Int) -> Unit) {
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(sp.commonNames[i] ?: sp.scientificNames[i], style = MaterialTheme.typography.titleSmall)
-                        Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
+                        if (sp.commonNames[i] != null) Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
                     }
                     Text(stringResource(R.string.matches_pick), color = MaterialTheme.colorScheme.primary)
                 }

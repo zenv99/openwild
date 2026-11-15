@@ -88,7 +88,7 @@ private fun SpeciesRow(vm: AppViewModel, pack: RegionPack, i: Int) {
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(sp.commonNames[i] ?: sp.scientificNames[i], style = MaterialTheme.typography.titleSmall)
-            Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
+            if (sp.commonNames[i] != null) Text(sp.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
         }
         DangerBadge(pack.safety[i], fungus = sp.isFungus[i])
     }

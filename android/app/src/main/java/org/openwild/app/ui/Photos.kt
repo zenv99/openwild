@@ -146,7 +146,8 @@ fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick
                     pack.species.commonNames[i] ?: pack.species.scientificNames[i],
                     color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
-                Text(
+                // Latin name as a second line only when there is a common name above it (never the same name twice).
+                if (pack.species.commonNames[i] != null) Text(
                     pack.species.scientificNames[i], color = Color.White.copy(alpha = 0.75f), fontStyle = FontStyle.Italic,
                     style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )

@@ -98,7 +98,7 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
                 Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(sp.commonNames[top.index] ?: sp.scientificNames[top.index], style = MaterialTheme.typography.headlineSmall)
-                        Text(sp.scientificNames[top.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (sp.commonNames[top.index] != null) Text(sp.scientificNames[top.index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         DangerBadge(pack.safety[top.index], fungus = sp.isFungus[top.index])
                         Text(
                             stringResource(R.string.based_on_photos, res.photoCount),
@@ -181,7 +181,7 @@ private fun CandidateRow(vm: AppViewModel, c: Candidate, onClick: () -> Unit) {
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(sp.commonNames[c.index] ?: sp.scientificNames[c.index], style = MaterialTheme.typography.titleSmall, color = ink)
-            Text(sp.scientificNames[c.index], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall, color = ink)
+            if (sp.commonNames[c.index] != null) Text(sp.scientificNames[c.index], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall, color = ink)
             LinearProgressIndicator(
                 progress = { c.prob.toFloat() },
                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp),

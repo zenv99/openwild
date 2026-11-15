@@ -175,7 +175,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(pack.species.commonNames[i] ?: pack.species.scientificNames[i], style = MaterialTheme.typography.titleSmall)
-                        Text(pack.species.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall,
+                        if (pack.species.commonNames[i] != null) Text(pack.species.scientificNames[i], fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {

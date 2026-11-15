@@ -110,7 +110,7 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
     ScrollColumn {
         Text(stringResource(R.string.contrib_title), style = MaterialTheme.typography.headlineSmall)
         Text(sp.commonNames[index] ?: sp.scientificNames[index], style = MaterialTheme.typography.titleMedium)
-        Text(sp.scientificNames[index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (sp.commonNames[index] != null) Text(sp.scientificNames[index], fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         // Why and how: get close, every stage, many angles.
         Column(

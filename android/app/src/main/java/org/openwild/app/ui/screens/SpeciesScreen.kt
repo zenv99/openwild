@@ -114,7 +114,7 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
         Box(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(headerBrush(content)).padding(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(sp.commonNames[index] ?: sp.scientificNames[index], style = MaterialTheme.typography.headlineMedium, color = Color.White)
-                Text(sp.scientificNames[index], fontStyle = FontStyle.Italic, color = Color.White.copy(alpha = 0.85f))
+                if (sp.commonNames[index] != null) Text(sp.scientificNames[index], fontStyle = FontStyle.Italic, color = Color.White.copy(alpha = 0.85f))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     val glass = Color.White.copy(alpha = 0.18f)
                     Pill(stringResource(if (sp.isFungus[index]) R.string.kind_fungus else R.string.kind_plant), Color.White, glass)

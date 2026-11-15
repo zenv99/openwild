@@ -842,6 +842,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
 
     usable = []
     sheets = 0
+    sheet_paths: list[Path] = []
     for p in photos:
         lic = config.photo_license(p.get("license"))
         path = Path(p.get("path") or "")
@@ -851,6 +852,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             continue
         if p.get("stage") == "specimen" or looks_like_sheet(path, p.get("page"), p.get("url")):
             sheets += 1
+            sheet_paths.append(path)
             continue
         try:
             preprocess(path)
@@ -862,6 +864,17 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     print(f"SHEETS removed {sheets} herbarium sheets / drawings on white paper", flush=True)
     model = config.ANDROID_ASSETS / "embedder.tflite"
     embs = _cached_embeddings([Path(p["path"]) for p in usable], model, photos_path.parent / "emb_cache.npz")
+    # Second pass: sheets on beige/aged paper, label pages and drawings that the white-paper check misses.
+    # Learned from the fingerprints of the sheets already caught above.
+    if len(sheet_paths) >= 50 and len(usable):
+        ref = _cached_embeddings(sheet_paths[:4000], model, photos_path.parent / "emb_cache.npz")
+        flag = sheet_like(embs, ref)
+        if flag.any():
+            print(f"SHEETS2 removed {int(flag.sum())} more sheet-like photos (beige paper, labels, drawings)", flush=True)
+            for p in [p for p, f in zip(usable, flag) if f][:40]:
+                print(f"SHEETS2 {p['scientific_name']} | {p.get('page') or p.get('url')}", flush=True)
+            usable = [p for p, f in zip(usable, flag) if not f]
+            embs = embs[~flag]
     by: dict[str, list[tuple[dict, np.ndarray]]] = defaultdict(list)
     for p, e in zip(usable, embs):
         by[p["scientific_name"].lower()].append((p, e))
@@ -1001,6 +1014,47 @@ def _write_stats(pack: Path, region_id: str) -> None:
     print(json.dumps(stats, indent=2), flush=True)
 
 
+def sheet_like(embs: np.ndarray, sheets: np.ndarray, threshold: float = 0.5, rounds: int = 2) -> np.ndarray:
+    """True for photos whose fingerprint looks like a herbarium sheet / label page / drawing.
+
+    A linear classifier (logistic regression, plain numpy) separating known sheets from everything else,
+    retrained once with its own confident finds added, so aged-paper sheets that sit among the "good"
+    photos get pulled over too. Conservative: needs probability > threshold AND to be closer to the sheet
+    centroid than to the photo centroid."""
+    def norm(a):
+        return a / (np.linalg.norm(a, axis=1, keepdims=True) + 1e-8)
+
+    x_all, s = norm(embs.astype(np.float32)), norm(sheets.astype(np.float32))
+    pos = s
+    flag = np.zeros(len(x_all), bool)
+    for _ in range(rounds):
+        neg = x_all[~flag]
+        x = np.concatenate([pos, neg])
+        y = np.concatenate([np.ones(len(pos)), np.zeros(len(neg))]).astype(np.float32)
+        wpos = len(neg) / max(len(pos), 1)   # balance the classes
+        sw = np.where(y == 1, wpos, 1.0).astype(np.float32)
+        mu = x.mean(0)
+        xc = x - mu
+        w = np.zeros(x.shape[1], np.float32)
+        b = 0.0
+        lr = 0.5
+        for _it in range(300):
+            z = xc @ w + b
+            p = 1 / (1 + np.exp(-np.clip(z, -30, 30)))
+            g = (p - y) * sw
+            w -= lr * ((xc.T @ g) / sw.sum() + 1e-3 * w)
+            b -= lr * float(g.sum() / sw.sum())
+        prob = 1 / (1 + np.exp(-np.clip((x_all - mu) @ w + b, -30, 30)))
+        cs, cp = norm(pos.mean(0, keepdims=True))[0], norm(x_all[~flag].mean(0, keepdims=True))[0]
+        closer = x_all @ cs > x_all @ cp
+        new = (prob > threshold) & closer
+        if (new == flag).all():
+            break
+        flag = new
+        pos = np.concatenate([s, x_all[flag & (prob > 0.9)]])
+    return flag
+
+
 def _cached_embeddings(paths: list[Path], model: Path, cache: Path) -> np.ndarray:
     """Phone-model fingerprints, reusing earlier ones (keyed by file path, size and model file size), so the
     full pack, the light pack and later top-up runs fingerprint each photo only once."""
@@ -1027,3 +1081,53 @@ def _cached_embeddings(paths: list[Path], model: Path, cache: Path) -> np.ndarra
         ks = list(known)
         np.savez(cache, tag=np.array(tag), keys=np.array(ks), vecs=np.stack([known[k] for k in ks]).astype(np.float32))
     return np.stack([known[k] for k in keys]).astype(np.float32)
+
+
+def light_pack(full: Path, out: Path, max_bytes: int = 90_000_000) -> dict:
+    """The copy bundled inside the app, cut from the full pack so it fits in git (GitHub refuses files over
+    100 MB). Every photo of every deadly plant, as many as fit for poisonous plants, then for plants with
+    food use, and at least one photo for everything else. Same photo-ID fingerprints as the full pack.
+
+    Its version is one below the full pack, so the app always offers the full photo set as an update."""
+    import shutil
+    import sqlite3
+
+    src = sqlite3.connect(full)
+    tier = {}
+    for sid, js in src.execute("SELECT species_id, json FROM content"):
+        try:
+            d = json.loads(js)
+        except json.JSONDecodeError:
+            continue
+        tox, edi = d.get("toxicity") or "", d.get("edibility") or ""
+        tier[sid] = ("deadly" if tox == "deadly" or edi == "deadly"
+                     else "poison" if tox in ("poisonous", "toxic") else "food" if edi.startswith("edible") else "")
+    by = _group(src.execute("SELECT species_id, id FROM photo ORDER BY species_id, rank, id"))
+    src.close()
+    result = {}
+    for poison, food, other in ((12, 6, 3), (12, 4, 2), (12, 3, 2), (12, 3, 1), (8, 3, 1), (6, 2, 1), (4, 2, 1), (3, 1, 1), (1, 1, 1)):
+        cap = {"deadly": 99, "poison": poison, "food": food, "": other}
+        keep = [i for sid, ids in by.items() for i in ids[:cap[tier.get(sid, "")]]]
+        shutil.copyfile(full, out)
+        con = sqlite3.connect(out)
+        con.execute("CREATE TEMP TABLE keep(id INTEGER PRIMARY KEY)")
+        con.executemany("INSERT INTO keep VALUES (?)", [(i,) for i in keep])
+        con.execute("DELETE FROM photo WHERE id NOT IN (SELECT id FROM keep)")
+        v = int(dict(con.execute("SELECT key, value FROM meta"))["pack_version"]) - 1
+        con.execute("UPDATE meta SET value = ? WHERE key = 'pack_version'", (str(v),))
+        con.execute("INSERT OR REPLACE INTO meta(key, value) VALUES ('light', '1')")
+        con.commit()
+        con.execute("VACUUM")
+        con.close()
+        result = {"version": v, "caps": cap, "photos": len(keep), "bytes": out.stat().st_size}
+        print("LIGHT", result, flush=True)
+        if result["bytes"] < max_bytes:
+            break
+    return result
+
+
+def _group(rows):
+    g: dict = {}
+    for k, v in rows:
+        g.setdefault(k, []).append(v)
+    return g

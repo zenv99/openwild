@@ -1,5 +1,8 @@
 package org.openwild.app.ui.screens
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.foundation.layout.aspectRatio
@@ -120,6 +123,29 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(stringResource(R.string.pack_update_banner), style = MaterialTheme.typography.bodyMedium)
                     TextButton(onClick = { vm.installRegion(bundledUpdate.regionId) }) { Text(stringResource(R.string.pack_update_action)) }
+                }
+            }
+            // The copy inside the app is cut down to fit; the full photo set (every stage of every plant) is one
+            // download away from GitHub. Offered here, not only in the Packs tab.
+            LaunchedEffect(Unit) { if (org.openwild.app.BuildConfig.ALLOW_NETWORK && state.remote.isEmpty()) vm.refreshRemote() }
+            val fullSet = state.remote.firstOrNull { it.regionId == state.activeRegionId && it.version > state.activePackVersion }
+            if (fullSet != null && bundledUpdate == null) {
+                val pct = state.downloading[fullSet.regionId]
+                Card(
+                    Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                ) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.full_photos_title, fullSet.name), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.full_photos_body), style = MaterialTheme.typography.bodyMedium)
+                        if (pct != null) {
+                            LinearProgressIndicator(progress = { pct }, modifier = Modifier.fillMaxWidth())
+                        } else {
+                            Button(onClick = { vm.download(fullSet) }) {
+                                Text(stringResource(R.string.full_photos_action, (fullSet.size / 1_000_000).toInt()))
+                            }
+                        }
+                    }
                 }
             }
             state.suggestedRegion?.let {

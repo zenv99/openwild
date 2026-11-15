@@ -253,15 +253,12 @@ jobs:
           fi
           python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos "${{ inputs.photos || '12' }}" \
             --out "../work/out/${{ inputs.region }}.owpack" --evaluate "../data/regions/${{ inputs.region }}/eval"
-          # Light copy shipped inside the app: first 3 photos (one per stage); fewer if it would not fit in git
-          # (GitHub refuses files over 100 MB). The full pack is always one tap away in the Packs tab.
-          for N in $([ "${{ inputs.region }}" = "ID-BA" ] && echo "3 2 1"); do
-            python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos $N \
-              --out "../work/light/${{ inputs.region }}.owpack"
-            SZ=$(stat -c %s "../work/light/${{ inputs.region }}.owpack")
-            echo "LIGHT photos=$N size=$((SZ/1000000)) MB"
-            [ "$SZ" -lt 90000000 ] && break
-          done
+          # Light copy shipped inside the app, cut from the full pack: every photo of every deadly plant, up to 12
+          # per poisonous plant, then food plants, at least one for the rest; under 90 MB (git's limit is 100 MB).
+          # Version one below the full pack, so the app offers the full photo set as an update.
+          if [ "${{ inputs.region }}" = "ID-BA" ]; then
+            python -c "from pathlib import Path; from openwild_pipeline.commercial_photos import light_pack; light_pack(Path('../work/out/${{ inputs.region }}.owpack'), Path('../work/light/${{ inputs.region }}.owpack'))"
+          fi
           python - <<'PY'
           import sqlite3
           import os
