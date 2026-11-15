@@ -1,0 +1,138 @@
+name: Photo inbox -> library
+
+# Photos people send from the app (after agreeing on the permission screen) land in the private repo
+# zenv99/openwild-inbox. This bot checks each submission with the phone's own photo model:
+#   accept  -> added to content/community/<region>/ with the sender's name, packs rebuilt
+#   review  -> moved to review/ in the inbox and a "inbox-review" issue opened; add the label "approved" to accept
+#   reject  -> deleted from the inbox
+# Needs the secret INBOX_TOKEN: a fine-grained token with Contents read/write on zenv99/openwild-inbox only.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: photo-inbox
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: github.event_name != 'issues' || (github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'inbox-review'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      INBOX_TOKEN: ${{ secrets.INBOX_TOKEN }}
+    steps:
+      - name: Inbox configured?
+        id: cfg
+        run: |
+          if [ -z "$INBOX_TOKEN" ]; then echo "No INBOX_TOKEN secret yet: nothing to do."; echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@v4
+        if: steps.cfg.outputs.ok == 'true'
+      - name: Fetch the inbox
+        if: steps.cfg.outputs.ok == 'true'
+        id: inbox
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          git clone -q --depth 1 "https://x-access-token:${INBOX_TOKEN}@github.com/zenv99/openwild-inbox.git" ../inbox
+          ONLY=""
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            ONLY=$(printf '%s' "$ISSUE_BODY" | grep -o 'review/[A-Za-z0-9_-]*/[a-z0-9_]*/[A-Za-z0-9-]*' | head -1)
+            [ -n "$ONLY" ] || { echo "No inbox folder in the issue"; exit 1; }
+          fi
+          echo "only=$ONLY" >> "$GITHUB_OUTPUT"
+          N=$(find ../inbox/inbox -name submission.json 2>/dev/null | wc -l)
+          echo "pending=$N" >> "$GITHUB_OUTPUT"
+          echo "Pending submissions: $N  Approval: ${ONLY:-none}"
+      - uses: actions/setup-python@v5
+        if: steps.cfg.outputs.ok == 'true' && (steps.inbox.outputs.pending != '0' || steps.inbox.outputs.only != '')
+        with:
+          python-version: "3.12"
+      - name: Region packs to compare with
+        if: steps.cfg.outputs.ok == 'true' && (steps.inbox.outputs.pending != '0' || steps.inbox.outputs.only != '')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install -q numpy pyyaml pillow ai-edge-litert
+          mkdir -p /tmp/packs
+          REGIONS=$( (cd ../inbox && ls inbox 2>/dev/null; [ -n "${{ steps.inbox.outputs.only }}" ] && echo "${{ steps.inbox.outputs.only }}" | cut -d/ -f2) | sort -u)
+          for R in $REGIONS; do
+            if [ -f "android/app/src/main/assets/packs/$R.owpack" ]; then
+              ln -sf "$PWD/android/app/src/main/assets/packs/$R.owpack" "/tmp/packs/$R.owpack"
+            else
+              gh release download packs -p "$R.owpack" -D /tmp/packs || echo "no pack for $R yet"
+            fi
+          done
+          ls -la /tmp/packs
+      - name: Check photos
+        if: steps.cfg.outputs.ok == 'true' && (steps.inbox.outputs.pending != '0' || steps.inbox.outputs.only != '')
+        working-directory: pipeline
+        run: |
+          if [ -n "${{ steps.inbox.outputs.only }}" ]; then
+            python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json \
+              --only "${{ steps.inbox.outputs.only }}" --approve
+          else
+            python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json
+          fi
+          cat /tmp/result.json
+      - name: Library, inbox, review issues, pack rebuilds
+        if: steps.cfg.outputs.ok == 'true' && (steps.inbox.outputs.pending != '0' || steps.inbox.outputs.only != '')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          git config --global user.name "openwild-data-bot"
+          git config --global user.email "openwild-data-bot@users.noreply.github.com"
+          # 1. Library: accepted photos.
+          git add content/community
+          ADDED=$(jq '[.accept[] | .added // 0] | add // 0' /tmp/result.json)
+          if git commit -qm "Community photos from the app: $ADDED added by the inbox bot"; then
+            git pull -q --rebase --autostash origin main && git push -q origin HEAD:main
+          fi
+          # 2. Inbox: remove accepted and rejected submissions, move review ones to review/.
+          cd ../inbox
+          for f in $(jq -r '.accept[].folder, .reject[].folder' /tmp/result.json); do git rm -rq "$f" || true; done
+          for f in $(jq -r '.review[].folder' /tmp/result.json); do
+            case "$f" in review/*) ;; *) mkdir -p "review/$(dirname "${f#inbox/}")"; git mv "$f" "review/${f#inbox/}";; esac
+          done
+          git commit -qm "Inbox bot: processed $(jq '.accept+.review+.reject|length' /tmp/result.json) submissions" && git push -q || echo "inbox unchanged"
+          cd "$GITHUB_WORKSPACE"
+          # 3. Review issues (photos stay private in the inbox; only the maintainer can open the link).
+          gh label create inbox-review --color FBCA04 --description "Photos sent from the app, waiting for a person" --force >/dev/null
+          gh label create approved --color 0E8A16 --force >/dev/null
+          jq -c '.review[] | select(.folder | startswith("inbox/"))' /tmp/result.json | while read -r e; do
+            F=$(echo "$e" | jq -r .folder); RF="review/${F#inbox/}"
+            gh issue create --label inbox-review \
+              --title "Photo review: $(echo "$e" | jq -r .species) ($(echo "$e" | jq -r .region))" \
+              --body "Photos sent from the app need a person to look.
+
+          **Plant:** $(echo "$e" | jq -r .species)
+          **Credit:** $(echo "$e" | jq -r .credit)
+          **Why:** $(echo "$e" | jq -r .reason)
+          **Photos:** $(echo "$e" | jq -r .photos)
+          **Bot detail:** \`$(echo "$e" | jq -c .detail)\`
+
+          Inbox folder: $RF
+          Open (private): https://github.com/zenv99/openwild-inbox/tree/main/$RF
+
+          Add the label **approved** to put them in the library with the sender's name. Close the issue to leave them out."
+          done
+          if [ "${{ github.event_name }}" = "issues" ] && [ "$ADDED" != "0" ]; then
+            gh issue comment "${{ github.event.issue.number }}" --body "Added $ADDED photos to the library. They'll appear with the next pack update."
+            gh issue close "${{ github.event.issue.number }}" --reason completed
+            (cd ../inbox && git rm -rq "${{ steps.inbox.outputs.only }}" && git commit -qm "Inbox: approved ${{ steps.inbox.outputs.only }}" && git push -q) || true
+          fi
+          # 4. Rebuild packs for regions that gained photos (the build restores collected photos from photo-store).
+          if [ "$ADDED" != "0" ]; then
+            for R in $(jq -r '.accept[] | select((.added // 0) > 0) | .region' /tmp/result.json | sort -u); do
+              gh workflow run bali-photos.yml --ref main -f region="$R" -f publish=true -f topup=true -f skip_collect=true
+            done
+          fi

@@ -60,6 +60,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.openwild.app.R
+import org.openwild.app.ui.PhotoInbox
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.Contribute
 import org.openwild.app.ui.Contribute.StagedPhoto
@@ -91,6 +95,10 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
     var busy by remember { mutableStateOf(false) }
     var savedCount by rememberSaveable { mutableStateOf(-1) }
     var pendingCamera by remember { mutableStateOf<Uri?>(null) }
+    var askSend by remember { mutableStateOf(false) }
+    var progress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var sentCount by rememberSaveable { mutableStateOf(-1) }
+    var sendError by remember { mutableStateOf<String?>(null) }
 
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
         uris.take(MAX_PHOTOS - staged.size).forEach { staged += StagedPhoto(it, stage) }
@@ -188,21 +196,85 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
         }
         Text(stringResource(R.string.contrib_privacy), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-        Button(
-            enabled = !busy && staged.isNotEmpty() && credit.isNotBlank() && consent,
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                busy = true
-                prefs.edit().putString("credit", credit.trim()).apply()
-                val list = staged.toList()
-                scope.launch {
-                    val n = withContext(Dispatchers.IO) { Contribute.savePhotosForContribution(context, sp.scientificNames[index], list) }
-                    savedCount = n
-                    busy = false
-                    if (n > 0) Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], credit.trim(), list)
+        val ready = !busy && staged.isNotEmpty() && credit.isNotBlank() && consent
+        if (PhotoInbox.enabled) {
+            // Direct send, after asking permission. The GitHub form stays available as an alternative.
+            Button(enabled = ready && sentCount < 0, modifier = Modifier.fillMaxWidth(), onClick = { askSend = true }) {
+                Text(stringResource(R.string.inbox_send, staged.size))
+            }
+            progress?.let { (done, total) ->
+                Text(stringResource(R.string.inbox_sending, done, total), style = MaterialTheme.typography.bodySmall)
+                LinearProgressIndicator(progress = { done / total.toFloat().coerceAtLeast(1f) }, modifier = Modifier.fillMaxWidth())
+            }
+            sendError?.let { Text(stringResource(R.string.inbox_failed, it), color = MaterialTheme.colorScheme.error) }
+            if (sentCount > 0) {
+                Column(
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.secondaryContainer).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(stringResource(R.string.inbox_done_title, sentCount), fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.inbox_done_body), style = MaterialTheme.typography.bodySmall)
                 }
-            },
-        ) { Text(stringResource(R.string.contrib_submit, staged.size)) }
+            }
+        }
+        val formButton: @Composable () -> Unit = {
+            Text(stringResource(if (PhotoInbox.enabled) R.string.contrib_submit_form else R.string.contrib_submit, staged.size))
+        }
+        val formClick = {
+            busy = true
+            prefs.edit().putString("credit", credit.trim()).apply()
+            val list = staged.toList()
+            scope.launch {
+                val n = withContext(Dispatchers.IO) { Contribute.savePhotosForContribution(context, sp.scientificNames[index], list) }
+                savedCount = n
+                busy = false
+                if (n > 0) Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], credit.trim(), list)
+            }
+            Unit
+        }
+        if (PhotoInbox.enabled) {
+            TextButton(enabled = ready, onClick = formClick, modifier = Modifier.fillMaxWidth()) { formButton() }
+        } else {
+            Button(enabled = ready, onClick = formClick, modifier = Modifier.fillMaxWidth()) { formButton() }
+        }
+
+        if (askSend) {
+            AlertDialog(
+                onDismissRequest = { askSend = false },
+                title = { Text(stringResource(R.string.inbox_ask_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(stringResource(R.string.inbox_ask_sent, staged.size, sp.scientificNames[index], credit.trim()))
+                        Text(stringResource(R.string.inbox_ask_not_sent), style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.inbox_ask_what_happens), style = MaterialTheme.typography.bodySmall)
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        askSend = false
+                        busy = true
+                        sendError = null
+                        prefs.edit().putString("credit", credit.trim()).apply()
+                        val list = staged.toList()
+                        progress = 0 to list.size
+                        scope.launch {
+                            val r = withContext(Dispatchers.IO) {
+                                runCatching {
+                                    PhotoInbox.send(context, pack.regionId, sp.scientificNames[index], credit.trim(), list) { d, t ->
+                                        progress = d to t
+                                    }
+                                }
+                            }
+                            busy = false
+                            progress = null
+                            r.onSuccess { sentCount = it; if (it > 0) staged.clear() }
+                            r.onFailure { sendError = it.message ?: "no connection" }
+                        }
+                    }) { Text(stringResource(R.string.inbox_ask_yes)) }
+                },
+                dismissButton = { TextButton(onClick = { askSend = false }) { Text(stringResource(R.string.inbox_ask_no)) } },
+            )
+        }
 
         if (savedCount >= 0) {
             Column(

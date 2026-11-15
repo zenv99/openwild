@@ -115,7 +115,7 @@
     <string name="nav_packs">Regions</string>
     <string name="nav_about">About</string>
     <string name="explore">Explore</string>
-    <string name="works_offline">No internet access. No account. Nothing leaves your phone.</string>
+    <string name="works_offline">Works offline. No account. Nothing leaves your phone unless you choose to send us photos.</string>
     <string name="region_pill">%1$s · %2$d species</string>
     <string name="no_region_pill">No region downloaded</string>
     <string name="tile_deadly">Deadly here</string>
@@ -141,7 +141,7 @@
     <!-- regions (packs) -->
     <string name="on_device">On this device</string>
     <string name="on_device_summary">%1$d regions · %2$s</string>
-    <string name="private_note">This app has no internet access at all. Regions are built in or imported from a file you choose.</string>
+    <string name="private_note">Region downloads come from GitHub only. Nothing about you is ever sent.</string>
     <string name="import_region">Import file</string>
     <string name="status_import">Not installed · import its region file</string>
     <string name="update_all">Update all (%1$d)</string>
@@ -281,13 +281,25 @@
     <string name="contrib_credit">Your name for the credit</string>
     <string name="contrib_credit_help">Shown on every photo we use. Any name or nickname.</string>
     <string name="contrib_consent">I took these photos myself and release them under CC BY 4.0, so anyone can use them, credited to my name.</string>
-    <string name="contrib_privacy">Location and camera details are removed. Photos you submit are posted publicly on GitHub, where a volunteer checks them before they go in the app.</string>
+    <string name="contrib_privacy">Location and camera details are removed. Nothing is sent until you agree on the next screen.</string>
     <string name="contrib_submit">Save %1$d photos and open the upload form</string>
     <string name="contrib_save_photos">Save or send your photos</string>
     <string name="contrib_save_failed">Couldn’t save the photos. Please try again.</string>
     <string name="contrib_next_title">%1$d photos saved to Pictures/OpenWild</string>
     <string name="contrib_next_steps">On the form: tap Photos, attach the photos from Pictures/OpenWild, then Submit. A GitHub account is needed (free). Thank you!</string>
     <string name="contrib_open_form">Open the form again</string>
+    <string name="contrib_submit_form">Or use the GitHub form instead (needs a free account)</string>
+    <string name="inbox_send">Send %1$d photos to OpenWild</string>
+    <string name="inbox_sending">Sending %1$d of %2$d…</string>
+    <string name="inbox_failed">Couldn’t send: %1$s. Check your connection and try again.</string>
+    <string name="inbox_done_title">Thank you! %1$d photos sent</string>
+    <string name="inbox_done_body">Our bot checks them. If this plant has no photo yet and yours look right, they go straight into the library with your name on them. Otherwise a person reviews them first. They appear in the app with the next pack update.</string>
+    <string name="inbox_ask_title">Send your photos to OpenWild?</string>
+    <string name="inbox_ask_sent">We’ll send only this: your %1$d photos, the plant name (%2$s), the stage of each photo, and the name you want credited (%3$s).</string>
+    <string name="inbox_ask_not_sent">Not sent: your location, the time or camera details (we remove them from the photos first), your contacts, any account or phone ID. Photos go only to OpenWild on GitHub.</string>
+    <string name="inbox_ask_what_happens">If accepted, your photos are shown in the app and shared under CC BY 4.0 with your name. Photos that aren’t used are deleted. Nothing is sent unless you tap Send.</string>
+    <string name="inbox_ask_yes">Send</string>
+    <string name="inbox_ask_no">Not now</string>
     <string name="use_my_location">Find my region (optional, uses approximate location)</string>
     <string name="status_online">Download · %1$d species · %2$d MB</string>
     <string name="parts_title">Part by part</string>

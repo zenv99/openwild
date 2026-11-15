@@ -1,0 +1,197 @@
+"""Photo inbox: photos people send from the app (after agreeing on a permission screen), checked by a bot.
+
+The app writes each submission to the private repo ``openwild-inbox``:
+
+    inbox/<REGION>/<species_slug>/<id>/1_flower.jpg, 2_leaves.jpg, ..., submission.json
+
+``submission.json`` is written last: {species, region, credit, license, own_photos, photos:[{file, stage}]}.
+
+For every complete submission the bot:
+  1. checks the basics: known region and species, CC BY 4.0, a name to credit, readable photos of a useful size;
+  2. re-encodes each photo (drops any metadata that survived) and throws out sheets/drawings on paper;
+  3. fingerprints each photo with the phone's own model and compares it with the region's library;
+  4. decides:
+       - ACCEPT straight away when the plant has no photo of its own yet and the photos look like a plant
+         (that is the gap we most want filled), or when the plant has photos and ours agree it is that plant;
+       - REVIEW (a person decides) when the photos don't match the named plant well, or look odd;
+       - REJECT when nothing usable is left (not a photo, too small, a sheet, not a plant at all).
+Accepted photos go to content/community/<REGION>/ credited "Name (OpenWild community)" and lead that plant's
+gallery after the next pack build. Rejected submissions are deleted from the inbox.
+"""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+import json
+import re
+import sqlite3
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
+
+from . import config
+from .community import COMMUNITY, FIELDS, STAGES, clean_credit, licence_ok, reencode, slug
+
+MIN_SIDE = 320          # shorter side in pixels, after re-encoding
+PLANT_MIN = 0.40        # best similarity to any plant photo in the library (real plant photos: 99% score >= 0.45)
+TOPK_AGREE = 10         # the named plant should be among this many best matches
+DUPLICATE = 0.97        # near-identical to a photo already in the library: a copy, not the sender's own photo
+
+
+@dataclass
+class Decision:
+    verdict: str                      # accept | review | reject
+    reason: str
+    photos: list[dict] = field(default_factory=list)   # usable photos: {bytes, stage, file}
+    detail: dict = field(default_factory=dict)
+
+
+def load_library(pack: Path) -> tuple[np.ndarray, np.ndarray, dict[str, int], set[int], dict[int, str]]:
+    """Prototype vectors (L2-normalised), their species ids, name->id, ids with their own photos, id->genus."""
+    from .prototypes import dequantize
+
+    con = sqlite3.connect(pack)
+    rows = con.execute("SELECT species_id, vec, scale FROM prototype WHERE kind = 'image'").fetchall()
+    ids = np.array([r[0] for r in rows], dtype=np.int64)
+    vecs = np.stack([dequantize(r[1], r[2]) for r in rows]) if rows else np.zeros((0, config.EMBED_DIM), np.float32)
+    vecs /= np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-8
+    names = {n.lower(): i for i, n in con.execute("SELECT id, scientific_name FROM species")}
+    genus = {i: (n.split()[0].lower() if n else "") for i, n in con.execute("SELECT id, scientific_name FROM species")}
+    have = {r[0] for r in con.execute("SELECT DISTINCT species_id FROM photo WHERE stage NOT IN ('related', 'specimen')")}
+    con.close()
+    return vecs, ids, names, have, genus
+
+
+def decide(meta: dict, images: list[tuple[str, str, bytes]], library, embed, is_sheet) -> Decision:
+    """``images``: (file, stage, raw bytes). ``embed(list[bytes]) -> np.ndarray`` (L2-normalised rows).
+    ``is_sheet(bytes) -> bool``. Pure apart from those two callbacks, so it is unit-tested without the model."""
+    vecs, ids, names, have, genus = library
+    name = (meta.get("species") or "").strip()
+    sid = names.get(name.lower())
+    if sid is None:
+        return Decision("reject", f"'{name}' is not a plant in this region's library")
+    if not licence_ok(meta.get("license", "")):
+        return Decision("reject", "photos must be shared under CC BY 4.0")
+    credit = clean_credit(meta.get("credit", ""))
+    if not credit:
+        return Decision("reject", "no name to credit")
+    if meta.get("own_photos") is not True:
+        return Decision("reject", "the sender did not confirm these are their own photos")
+
+    usable = []
+    dropped = {"unreadable": 0, "too_small": 0, "sheet": 0}
+    for file, stage, raw in images:
+        jpg = reencode(raw)
+        if jpg is None:
+            dropped["unreadable"] += 1
+            continue
+        from PIL import Image
+        import io
+        w, h = Image.open(io.BytesIO(jpg)).size
+        if min(w, h) < MIN_SIDE:
+            dropped["too_small"] += 1
+            continue
+        if is_sheet(jpg):
+            dropped["sheet"] += 1
+            continue
+        usable.append({"file": file, "stage": stage if stage in STAGES else "field", "bytes": jpg})
+    if not usable:
+        return Decision("reject", "no usable photos (" + ", ".join(f"{v} {k}" for k, v in dropped.items() if v) + ")")
+
+    q = embed([u["bytes"] for u in usable])
+    sims = q @ vecs.T if len(vecs) else np.zeros((len(q), 0))
+    best = sims.max(axis=1) if sims.size else np.zeros(len(q))
+    detail = {"best_similarity": [round(float(b), 3) for b in best], "dropped": dropped, "had_photos": sid in have}
+
+    plant_like = [i for i, b in enumerate(best) if b >= PLANT_MIN]
+    if not plant_like:
+        return Decision("reject", "these don't look like plant photos", detail=detail)
+    if len(plant_like) < len(usable):
+        detail["not_plant_like"] = len(usable) - len(plant_like)
+        usable = [usable[i] for i in plant_like]
+        sims, best = sims[plant_like], best[plant_like]
+
+    # Per photo: rank of the named plant among species (by each species' best prototype).
+    agree, dup_other = 0, 0
+    same_genus = 0
+    for row in sims:
+        order = np.argsort(-row)
+        seen: list[int] = []
+        for j in order:
+            s = int(ids[j])
+            if s not in seen:
+                seen.append(s)
+            if len(seen) >= TOPK_AGREE:
+                break
+        if sid in seen:
+            agree += 1
+        if any(genus.get(s) == genus.get(sid) for s in seen):
+            same_genus += 1
+        if row[order[0]] >= DUPLICATE:
+            dup_other += 1
+    detail.update({"agree": agree, "same_genus": same_genus, "copies_of_library_photos": dup_other, "photos": len(usable)})
+
+    if dup_other:
+        return Decision("review", "a photo looks like a copy of one already in the library", usable, detail)
+    if sid not in have:
+        # The gap we most want filled: no photo of this plant yet. Accept plant photos.
+        return Decision("accept", "first photos of this plant", usable, detail)
+    if agree * 2 >= len(usable):
+        return Decision("accept", "photos match this plant", usable, detail)
+    return Decision("review", "the photos don't clearly match this plant; a person will check", usable, detail)
+
+
+def add_to_library(region: str, meta: dict, sub_id: str, photos: list[dict], page: str = "") -> list[dict]:
+    """Write accepted photos under content/community/<region>/ and append them to community.csv."""
+    name = meta["species"].strip()
+    folder = COMMUNITY / region / slug(name)
+    folder.mkdir(parents=True, exist_ok=True)
+    csv_path = COMMUNITY / region / "community.csv"
+    known = set()
+    if csv_path.exists():
+        known = {r.get("url", "") for r in csv.DictReader(open(csv_path, encoding="utf-8"))}
+    rows = []
+    for k, p in enumerate(photos):
+        digest = hashlib.sha256(p["bytes"]).hexdigest()[:16]
+        key = f"inbox:{digest}"
+        if key in known:
+            continue
+        dest = folder / f"inbox_{sub_id}_{k + 1}_{p['stage']}.jpg"
+        dest.write_bytes(p["bytes"])
+        rows.append({
+            "scientific_name": name, "stage": p["stage"],
+            "observer": f"{clean_credit(meta['credit'])} (OpenWild community)", "license": "cc-by",
+            "page": page, "url": key, "path": str(dest.relative_to(config.REPO_ROOT)),
+            "source": "openwild-community", "issue": "",
+        })
+    if rows:
+        new = not csv_path.exists()
+        with open(csv_path, "a", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=FIELDS)
+            if new:
+                w.writeheader()
+            w.writerows(rows)
+    return rows
+
+
+def submissions(inbox: Path) -> list[Path]:
+    """Complete submissions (folders with submission.json), oldest first."""
+    return sorted((p.parent for p in inbox.glob("inbox/*/*/*/submission.json")), key=lambda p: p.stat().st_mtime)
+
+
+_SAFE = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def read_submission(folder: Path) -> tuple[dict, list[tuple[str, str, bytes]]]:
+    meta = json.loads((folder / "submission.json").read_text(encoding="utf-8"))
+    images = []
+    for ph in meta.get("photos", [])[:20]:
+        f = str(ph.get("file", ""))
+        if not _SAFE.match(f) or not (folder / f).is_file():
+            continue
+        if (folder / f).stat().st_size > 15_000_000:
+            continue
+        images.append((f, str(ph.get("stage", "field")), (folder / f).read_bytes()))
+    return meta, images

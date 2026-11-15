@@ -578,6 +578,77 @@ def main(argv=None):
                  "rejected": res["rejected"]}, open(a.out, "w"), indent=1)
         print(f"COMMUNITY added {len(res['added'])} photos; rejected {res['rejected']}")
 
+    def cmd_inbox_process(a):
+        """Check every complete submission in the photo inbox; accept, send to review or reject."""
+        import json as _j
+        import shutil
+        import tempfile
+
+        import numpy as np
+
+        from . import inbox as ib
+        from .commercial_photos import looks_like_sheet
+        from .freemodel import embed_tflite
+
+        model = config.ANDROID_ASSETS / "embedder.tflite"
+        tmp = Path(tempfile.mkdtemp())
+
+        def embed(blobs):
+            paths = []
+            for k, b in enumerate(blobs):
+                p = tmp / f"q{k}.jpg"
+                p.write_bytes(b)
+                paths.append(p)
+            v = embed_tflite(paths, model).astype(np.float32)
+            return v / (np.linalg.norm(v, axis=1, keepdims=True) + 1e-8)
+
+        def is_sheet(b):
+            p = tmp / "s.jpg"
+            p.write_bytes(b)
+            return looks_like_sheet(p)
+
+        libs = {}
+        result = {"accept": [], "review": [], "reject": []}
+        root = Path(a.inbox)
+        folders = [root / a.only] if a.only else ib.submissions(root)
+        for folder in folders:
+            region = folder.parts[-3]
+            rel = str(folder.relative_to(root))
+            try:
+                meta, images = ib.read_submission(folder)
+            except Exception as e:  # noqa: BLE001
+                result["reject"].append({"folder": rel, "reason": f"unreadable submission ({e.__class__.__name__})"})
+                continue
+            if meta.get("region") != region or not (config.DATA_REGIONS / region / "species.csv").exists():
+                result["reject"].append({"folder": rel, "reason": "unknown region"})
+                continue
+            pack = Path(a.packs) / f"{region}.owpack"
+            if not pack.exists():
+                print(f"INBOX no pack for {region}; leaving {rel} for later", flush=True)
+                continue
+            if region not in libs:
+                libs[region] = ib.load_library(pack)
+            d = ib.decide(meta, images, libs[region], embed, is_sheet)
+            if a.approve and d.photos:
+                d.verdict, d.reason = "accept", "approved by a maintainer"
+            entry = {"folder": rel, "species": meta.get("species"), "region": region, "credit": ib.clean_credit(meta.get("credit", "")),
+                     "reason": d.reason, "detail": d.detail, "photos": len(d.photos)}
+            if d.verdict == "accept":
+                rows = ib.add_to_library(region, meta, folder.name, d.photos)
+                entry["added"] = len(rows)
+            result[d.verdict].append(entry)
+            print(f"INBOX {d.verdict.upper():6} {region} {meta.get('species')}: {d.reason} {d.detail}", flush=True)
+        shutil.rmtree(tmp, ignore_errors=True)
+        _j.dump(result, open(a.out, "w"), indent=1)
+        print(f"INBOX accepted {len(result['accept'])}, review {len(result['review'])}, rejected {len(result['reject'])}")
+
+    sp = add("inbox-process", cmd_inbox_process, "check photos sent from the app; add good ones to the library")
+    sp.add_argument("--inbox", required=True, help="checkout of the openwild-inbox repo")
+    sp.add_argument("--packs", required=True, help="folder with <REGION>.owpack files")
+    sp.add_argument("--out", required=True)
+    sp.add_argument("--only", default=None, help="one submission folder, relative to --inbox")
+    sp.add_argument("--approve", action="store_true", help="a maintainer approved it: accept if anything usable")
+
     def cmd_photos_wanted(a):
         from .community import wanted
         photos_csv = config.WORK / "photos_commercial" / a.region / "photos.csv"

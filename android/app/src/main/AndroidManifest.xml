@@ -6,9 +6,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Coarse location is enough to pick a region; it never leaves the phone. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- INTERNET is used for one thing only: downloading region packs from GitHub when the user taps
-         Download (Packs tab). PackManager refuses any other host, and plain http is blocked by
-         network_security_config. No analytics, no telemetry, nothing uploaded. CI checks this on every build. -->
+    <!-- INTERNET is used for two things only, both on the user's tap and only with GitHub:
+         downloading region packs, and (after the user agrees on a permission screen) sending their own
+         plant photos to the OpenWild photo inbox. Nothing else is ever sent. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

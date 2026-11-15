@@ -33,6 +33,13 @@ android {
         buildConfigField("boolean", "SHOW_DONATIONS", "$showDonations")
         // The app has no INTERNET permission; keep network code paths switched off too.
         buildConfigField("boolean", "ALLOW_NETWORK", "true")
+        // Photo inbox: users can send their plant photos (after a permission screen) to a private repo,
+        // where a bot checks them. The key only allows writing files to that one repo. Empty = feature off,
+        // and the app falls back to the GitHub upload form.
+        val inboxRepo = (findProperty("inboxRepo") as String?) ?: "zenv99/openwild-inbox"
+        val inboxToken = System.getenv("OW_INBOX_TOKEN") ?: ""
+        buildConfigField("String", "INBOX_REPO", "\"$inboxRepo\"")
+        buildConfigField("String", "INBOX_TOKEN", "\"$inboxToken\"")
     }
 
     signingConfigs {
