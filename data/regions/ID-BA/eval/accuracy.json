@@ -1,19 +1,19 @@
 {
- "photos_tested": 33105,
- "species_tested": 3321,
- "species_total": 3489,
+ "photos_tested": 31680,
+ "species_tested": 3204,
+ "species_total": 3269,
  "top_k": {
-  "top1": 0.6936,
-  "top3": 0.7681,
-  "top5": 0.7961,
-  "top10": 0.8319
+  "top1": 0.6911,
+  "top3": 0.7672,
+  "top5": 0.7958,
+  "top10": 0.8324
  },
  "median_rank": 1.0,
  "most_confused": [
   {
    "true": "Hibiscus \u00d7 rosa-sinensis",
    "shown_first": "Hibiscus rosa-sinensis",
-   "times": 10
+   "times": 9
   },
   {
    "true": "Hibiscus rosa-sinensis",
@@ -81,11 +81,6 @@
    "times": 4
   },
   {
-   "true": "Hibiscus archeri",
-   "shown_first": "Hibiscus \u00d7 rosa-sinensis",
-   "times": 4
-  },
-  {
    "true": "Arachis pintoi",
    "shown_first": "Arachis hypogaea",
    "times": 4
@@ -93,11 +88,6 @@
   {
    "true": "Neolamarckia cadamba",
    "shown_first": "Nauclea orientalis",
-   "times": 4
-  },
-  {
-   "true": "Vanda perplexa",
-   "shown_first": "Vanda limbata",
    "times": 4
   },
   {
@@ -118,6 +108,11 @@
   {
    "true": "Passiflora foetida",
    "shown_first": "Passiflora vesicaria",
+   "times": 4
+  },
+  {
+   "true": "Mangifera quadrifida",
+   "shown_first": "Mangifera laurina",
    "times": 4
   },
   {
@@ -171,11 +166,6 @@
    "times": 3
   },
   {
-   "true": "Rorippa palustris",
-   "shown_first": "Onychium japonicum",
-   "times": 3
-  },
-  {
    "true": "Abelmoschus ficulneus",
    "shown_first": "Abelmoschus moschatus",
    "times": 3
@@ -201,25 +191,35 @@
    "times": 3
   },
   {
-   "true": "Halodule uninervis",
-   "shown_first": "Cymodocea rotundata",
+   "true": "Hymenocallis littoralis",
+   "shown_first": "Hymenocallis caribaea",
    "times": 3
   },
   {
-   "true": "Hymenocallis littoralis",
-   "shown_first": "Hymenocallis caribaea",
+   "true": "Mangifera laurina",
+   "shown_first": "Mangifera quadrifida",
+   "times": 3
+  },
+  {
+   "true": "Cuscuta australis",
+   "shown_first": "Cuscuta campestris",
+   "times": 3
+  },
+  {
+   "true": "Bruguiera cylindrica",
+   "shown_first": "Bruguiera sexangula",
    "times": 3
   }
  ],
  "hardest_species": [
   {
    "species": "Hibiscus \u00d7 rosa-sinensis",
-   "photos": 15,
+   "photos": 14,
    "top1": 0.0
   },
   {
    "species": "Litsea glutinosa",
-   "photos": 13,
+   "photos": 12,
    "top1": 0.0
   },
   {
@@ -229,7 +229,7 @@
   },
   {
    "species": "Gnetum gnemon",
-   "photos": 11,
+   "photos": 10,
    "top1": 0.0
   },
   {
@@ -253,8 +253,8 @@
    "top1": 0.0
   },
   {
-   "species": "Vitex glabrata",
-   "photos": 9,
+   "species": "Pangium edule",
+   "photos": 8,
    "top1": 0.0
   },
   {
@@ -273,7 +273,12 @@
    "top1": 0.0
   },
   {
-   "species": "Aglaia rubiginosa",
+   "species": "Vitex glabrata",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Benincasa hispida",
    "photos": 7,
    "top1": 0.0
   },
@@ -293,22 +298,12 @@
    "top1": 0.0
   },
   {
-   "species": "Plagiogyria glauca",
-   "photos": 7,
-   "top1": 0.0
-  },
-  {
    "species": "Palaquium obovatum",
    "photos": 7,
    "top1": 0.0
   },
   {
    "species": "Pandanus odorifer",
-   "photos": 7,
-   "top1": 0.0
-  },
-  {
-   "species": "Diplazium latifolium",
    "photos": 7,
    "top1": 0.0
   },
@@ -323,16 +318,6 @@
    "top1": 0.0
   },
   {
-   "species": "Pteris longipinnula",
-   "photos": 7,
-   "top1": 0.0
-  },
-  {
-   "species": "Dalrympelea sphaerocarpa",
-   "photos": 7,
-   "top1": 0.0
-  },
-  {
    "species": "Fimbristylis cymosa",
    "photos": 6,
    "top1": 0.0
@@ -343,7 +328,22 @@
    "top1": 0.0
   },
   {
+   "species": "Canthium horridum",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
    "species": "Bougainvillea buttiana",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Voacanga grandifolia",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Aglaia rubiginosa",
    "photos": 6,
    "top1": 0.0
   },
@@ -359,11 +359,6 @@
   },
   {
    "species": "Diospyros hasseltii",
-   "photos": 6,
-   "top1": 0.0
-  },
-  {
-   "species": "Syzygium polycephalum",
    "photos": 6,
    "top1": 0.0
   },
@@ -398,17 +393,22 @@
    "top1": 0.0
   },
   {
-   "species": "Camphora parthenoxylon",
-   "photos": 6,
-   "top1": 0.0
-  },
-  {
    "species": "Dendrobium sagittatum",
    "photos": 6,
    "top1": 0.0
   },
   {
    "species": "Asplenium vulcanicum",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Dryopteris adnata",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Selliguea heterocarpa",
    "photos": 6,
    "top1": 0.0
   }
