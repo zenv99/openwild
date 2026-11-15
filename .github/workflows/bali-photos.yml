@@ -362,3 +362,9 @@ jobs:
           if [ "${{ inputs.topup }}" != "true" ] && [ "${{ inputs.chain }}" != "false" ]; then
             gh workflow run bali-photos.yml --ref main -f region="$R" -f max_species="" -f publish=true -f topup=true
           fi
+      - name: Hand over to the scheduler (next regions)
+        if: always() && inputs.max_species == ''
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run photos-scheduler.yml --ref main || true
