@@ -64,7 +64,7 @@ RAW_ONLY = {"raw", "when raw", "uncooked"}
 UNRIPE_ONLY = {"unripe", "green"}
 
 
-def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool) -> list[dict]:
+def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool, wiki: list[dict] | None = None) -> list[dict]:
     """Rows for the parts we know something about: {part, status, note}.
     status: deadly | toxic | harmful | experts_only | edible_cooked | edible | caution."""
     if is_fungus:
@@ -85,6 +85,15 @@ def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool) -> lis
     for t in (harms.get("symptoms"), harms.get("severity")):
         for p, q in parts_in(t).items():
             harmful.setdefault(p, q)
+    wiki_food: dict[str, str] = {}
+    for r in wiki or []:
+        q = r.get("qualifier") or ""
+        if r.get("kind") == "harm":
+            # an unqualified harm report beats a qualified one ("raw" etc.)
+            if r["part"] not in harmful or (harmful[r["part"]] and not q):
+                harmful[r["part"]] = q if q in ("raw", "unripe") else ""
+        elif r.get("kind") == "food":
+            wiki_food.setdefault(r["part"], q)
     pf_haz = set((pfaf or {}).get("hazards", "").split(";")) - {""}
 
     edible: dict[str, str] = {}
@@ -108,6 +117,19 @@ def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool) -> lis
     rows = []
     for p in PARTS:
         reported = p in edible or p in pf_parts
+        if not reported and p in wiki_food and p not in harmful:
+            # Mentioned as eaten in Wikipedia only: never plain "edible".
+            if deadly:
+                rows.append({"part": p, "status": "deadly", "note": "Treat as deadly. Some sources mention eating it; don't."})
+            elif poisonous:
+                rows.append({"part": p, "status": "experts_only",
+                             "note": "Mentioned as eaten, but the plant is poisonous. Don't eat."})
+            else:
+                note = "Mentioned as eaten in one source; not verified."
+                if wiki_food[p] == "cooked":
+                    note = "Mentioned as eaten cooked in one source; not verified."
+                rows.append({"part": p, "status": "caution", "note": note})
+            continue
         if p in harmful:
             q = harmful[p]
             if (food_plant or not poisonous) and not deadly and reported and q in RAW_ONLY:
@@ -179,7 +201,7 @@ def load_pfaf(path) -> dict[str, dict]:
     return {r["scientific_name"].lower(): r for r in csv.DictReader(lines)}
 
 
-def add_parts_to_pack(pack_path, pfaf: dict[str, dict], version: int) -> int:
+def add_parts_to_pack(pack_path, pfaf: dict[str, dict], version: int, wiki: dict[str, list[dict]] | None = None) -> int:
     """Add the part-by-part table to every species' content in an existing pack, and bump its version.
     Returns the number of species that got at least one part row."""
     import json
@@ -197,7 +219,8 @@ def add_parts_to_pack(pack_path, pfaf: dict[str, dict], version: int) -> int:
             continue
         if not isinstance(content, dict):
             continue
-        content["parts"] = build_parts(content, pfaf.get((name or "").lower()), kingdom == "Fungi")
+        content["parts"] = build_parts(content, pfaf.get((name or "").lower()), kingdom == "Fungi",
+                                       (wiki or {}).get((name or "").lower()))
         n += bool(content["parts"])
         con.execute("UPDATE content SET json = ? WHERE species_id = ?", (json.dumps(content), sid))
     con.execute("INSERT OR REPLACE INTO meta (key, value) VALUES ('pack_version', ?)", (str(version),))

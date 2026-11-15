@@ -50,3 +50,21 @@ def test_raw_qualifier_does_not_leak_to_other_clauses():
     pf = {"edibility": "3", "edible_parts": "leaves;seed", "prep": "cooked", "hazards": "poison"}
     rows = by_part(build_parts(c, pf, False))
     assert rows["leaves"] == "edible_cooked" and rows["seeds"] == "toxic"
+
+
+def test_wikipedia_facts_and_safety():
+    from openwild_pipeline.wiki_parts import facts_from_text
+
+    en = ("The seeds are highly poisonous and can be fatal. Young leaves are eaten as a vegetable. "
+          "The leaves are food for caterpillars of several moths. The raw tubers are toxic but are eaten after boiling.")
+    f = set(facts_from_text(en, "en"))
+    assert ("seeds", "harm", "") in f and ("leaves", "food", "") in f and ("roots", "harm", "raw") in f
+    idn = "Bijinya beracun. Daun muda dimakan sebagai lalapan. Daunnya juga dimakan ternak."
+    g = set(facts_from_text(idn, "id"))
+    assert ("seeds", "harm", "") in g and any(p == "leaves" and k == "food" for p, k, _ in g)
+    # Wikipedia food alone is never plain "edible", and harm always wins.
+    c = {"toxicity": "unknown", "edibility": "unknown"}
+    rows = by_part(build_parts(c, None, False, [{"part": "leaves", "kind": "food", "qualifier": ""},
+                                               {"part": "seeds", "kind": "harm", "qualifier": ""},
+                                               {"part": "seeds", "kind": "food", "qualifier": ""}]))
+    assert rows == {"seeds": "harmful", "leaves": "caution"}

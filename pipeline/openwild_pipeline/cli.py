@@ -604,12 +604,28 @@ def main(argv=None):
     def cmd_add_parts(a):
         from .parts import add_parts_to_pack, load_pfaf
         pfaf = load_pfaf(config.REPO_ROOT / "content" / "evidence" / "pfaf_facts.csv")
-        n = add_parts_to_pack(Path(a.pack), pfaf, a.version)
+        from .wiki_parts import load as load_wiki
+        wiki = load_wiki(config.REPO_ROOT / "content" / "evidence" / "wiki_parts" / f"{a.region}.csv") if a.region else {}
+        n = add_parts_to_pack(Path(a.pack), pfaf, a.version, wiki)
         print(f"PARTS {Path(a.pack).name}: {n} species with part-by-part info, version {a.version}")
 
     sp = add("add-parts", cmd_add_parts, "add part-by-part food/poison info to an existing pack (bumps its version)")
     sp.add_argument("pack")
     sp.add_argument("--version", type=int, required=True)
+    sp.add_argument("--region", default="", help="also use Wikipedia part facts for this region")
+
+    def cmd_wiki_parts(a):
+        from .wiki_parts import collect
+        rows = list(csv.DictReader(open(config.DATA_REGIONS / a.region / "species.csv", encoding="utf-8")))
+        rows.sort(key=lambda r: -float(r.get("gbif_count") or 0))
+        names = [r["scientific_name"] for r in rows if (r.get("kingdom") or "Plantae") == "Plantae"][: a.max or None]
+        out = config.REPO_ROOT / "content" / "evidence" / "wiki_parts" / f"{a.region}.csv"
+        n = collect(names, out)
+        print(f"WIKIPARTS {a.region}: {n} part facts for {len(names)} plants -> {out}")
+
+    sp = add("wiki-parts", cmd_wiki_parts, "part-by-part facts (harm/food per part) from Wikipedia articles")
+    sp.add_argument("region")
+    sp.add_argument("--max", type=int, default=0)
     sp = add("community-ingest", cmd_community_ingest, "add approved community photo contributions (issues JSON)")
     sp.add_argument("issues")
     sp.add_argument("--out", default="community-result.json")

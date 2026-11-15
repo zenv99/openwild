@@ -1,0 +1,82 @@
+name: Part-by-part facts from Wikipedia -> packs
+
+# Reads the English and Indonesian Wikipedia article of every plant in a region, extracts which parts are
+# reported harmful or eaten (facts only, with a source ledger), commits the ledger, and updates the
+# region's published pack (and, for Bali, the copy built into the app) without rebuilding photos.
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region id"
+        default: "ID-BA"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: region-photos-${{ inputs.region }}
+  cancel-in-progress: false
+
+jobs:
+  parts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pyyaml
+      - name: Species list and Wikipedia facts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          if [ ! -f "data/regions/$R/species.csv" ]; then
+            gh release download packs -p "$R.owpack" -D /tmp/pk --clobber
+            (cd pipeline && python -m openwild_pipeline.cli region-from-pack "$R" "/tmp/pk/$R.owpack")
+          fi
+          (cd pipeline && python -m openwild_pipeline.cli wiki-parts "$R")
+      - name: Update the published pack
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          R="${{ inputs.region }}"
+          V="$(date -u +%Y%m%d%H)"
+          mkdir -p work/p && cd work/p
+          gh release download packs -p "$R.owpack" -p index.json --clobber
+          (cd ../../pipeline && python -m openwild_pipeline.cli add-parts "../work/p/$R.owpack" --version "$V" --region "$R")
+          (cd ../../pipeline && python -m openwild_pipeline.cli pack-index --pack "../work/p/$R.owpack" --index ../work/p/index.json \
+            --url "https://github.com/${{ github.repository }}/releases/download/packs/$R.owpack")
+          gh release upload packs "$R.owpack" --clobber
+          cp index.json mine.json && gh release download packs -p index.json --clobber
+          python3 - <<'PY'
+          import json
+          mine = {p["region_id"]: p for p in json.load(open("mine.json"))["packs"]}
+          cur = json.load(open("index.json"))
+          packs = {p["region_id"]: p for p in cur["packs"]}
+          packs["${{ inputs.region }}"] = mine["${{ inputs.region }}"]
+          json.dump({"format": 1, "packs": sorted(packs.values(), key=lambda p: p["region_id"])}, open("index.json", "w"), indent=1)
+          PY
+          gh release upload packs index.json --clobber
+      - name: Commit the ledger (and the built-in Bali copy)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          cp "content/evidence/wiki_parts/$R.csv" /tmp/wp.csv
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git fetch -q origin main && git reset -q --hard origin/main
+          mkdir -p content/evidence/wiki_parts && cp /tmp/wp.csv "content/evidence/wiki_parts/$R.csv"
+          if [ "$R" = "ID-BA" ]; then
+            (cd pipeline && python -m openwild_pipeline.cli add-parts "../android/app/src/main/assets/packs/$R.owpack" \
+              --version "$(date -u +%Y%m%d%H)" --region "$R")
+            git add android/app/src/main/assets/packs/
+          fi
+          git add content/evidence/wiki_parts
+          git commit -m "Part-by-part facts from Wikipedia: $R" || { echo "No changes"; exit 0; }
+          git push origin HEAD:main
+          if [ "$R" = "ID-BA" ]; then gh workflow run android.yml --ref main; fi
