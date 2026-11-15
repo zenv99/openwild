@@ -86,12 +86,12 @@ def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool, wiki: 
         for p, q in parts_in(t).items():
             harmful.setdefault(p, q)
     wiki_food: dict[str, str] = {}
+    wiki_harm: dict[str, str] = {}
     for r in wiki or []:
         q = r.get("qualifier") or ""
         if r.get("kind") == "harm":
-            # an unqualified harm report beats a qualified one ("raw" etc.)
-            if r["part"] not in harmful or (harmful[r["part"]] and not q):
-                harmful[r["part"]] = q if q in ("raw", "unripe") else ""
+            if r["part"] not in wiki_harm or (wiki_harm[r["part"]] and not q):
+                wiki_harm[r["part"]] = q if q in ("raw", "unripe") else ""
         elif r.get("kind") == "food":
             wiki_food.setdefault(r["part"], q)
     pf_haz = set((pfaf or {}).get("hazards", "").split(";")) - {""}
@@ -112,6 +112,18 @@ def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool, wiki: 
     cooked_only = bool(prep) and "raw" not in prep or edib == "edible_with_preparation"
     plant_hazard = bool(pf_haz & {"poison", "lethal", "cyanide", "strong", "alkaloid", "saponin", "thiaminase", "oxalate"})
 
+    # Wikipedia harm reports fill in parts the curated notes don't cover. Where our notes are more precise
+    # ("poisonous raw", "unripe"), they win; on a part the notes list as food, a general Wikipedia warning
+    # becomes "with care" rather than overruling the food report.
+    wiki_caution: set[str] = set()
+    for p, q in wiki_harm.items():
+        if p in harmful:
+            continue
+        if (p in edible or p in pf_parts) and not deadly and not (tox == "serious" or edib == "toxic"):
+            wiki_caution.add(p)
+        else:
+            harmful[p] = q
+
     # Staples like cassava and taro are poisonous raw but eaten everywhere once properly cooked.
     food_plant = edib.startswith("edible") and not deadly
     rows = []
@@ -129,6 +141,10 @@ def build_parts(content: dict | None, pfaf: dict | None, is_fungus: bool, wiki: 
                 if wiki_food[p] == "cooked":
                     note = "Mentioned as eaten cooked in one source; not verified."
                 rows.append({"part": p, "status": "caution", "note": note})
+            continue
+        if p in wiki_caution:
+            rows.append({"part": p, "status": "caution",
+                         "note": "Eaten, but one source also reports harm. Prepare properly; avoid if unsure."})
             continue
         if p in harmful:
             q = harmful[p]

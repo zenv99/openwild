@@ -68,3 +68,16 @@ def test_wikipedia_facts_and_safety():
                                                {"part": "seeds", "kind": "harm", "qualifier": ""},
                                                {"part": "seeds", "kind": "food", "qualifier": ""}]))
     assert rows == {"seeds": "harmful", "leaves": "caution"}
+
+
+def test_curated_qualifier_beats_general_wikipedia_warning():
+    # Papaya-like: curated says unripe fruit is harmful; Wikipedia just says "the fruit ... toxic".
+    c = {"toxicity": "mild", "edibility": "edible",
+         "if_eaten": {"harms": {"symptoms": "Unripe fruit latex irritates."}, "benefits": {"nutrition": "Ripe fruit eaten."}}}
+    pf = {"edibility": "4", "edible_parts": "fruit;leaves", "prep": "raw;cooked", "hazards": ""}
+    wiki = [{"part": "fruit", "kind": "harm", "qualifier": ""}, {"part": "leaves", "kind": "harm", "qualifier": ""},
+            {"part": "seeds", "kind": "harm", "qualifier": ""}]
+    rows = by_part(build_parts(c, pf, False, wiki))
+    assert rows["fruit"] == "caution"          # ripe only (curated) – not overruled
+    assert rows["leaves"] == "caution"         # eaten per structured source, Wikipedia warns -> with care
+    assert rows["seeds"] == "harmful"          # nothing else known -> Wikipedia harm stands
