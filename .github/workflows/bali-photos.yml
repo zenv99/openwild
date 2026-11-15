@@ -37,6 +37,15 @@ on:
       critical_only:
         description: "Top-up only poisonous/edible plants (urgent safety pass)"
         default: "false"
+      merge_runs:
+        description: "Also merge the collected photos of these earlier run ids (comma separated)"
+        default: ""
+      skip_collect:
+        description: "Skip collection and rebuild from merge_runs only"
+        default: "false"
+      force:
+        description: "Publish even if the new pack has fewer plants with photos than the published one"
+        default: "false"
 
 permissions:
   contents: write
@@ -74,6 +83,7 @@ jobs:
 
   collect:
     needs: prepare
+    if: inputs.skip_collect != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -94,6 +104,7 @@ jobs:
           name: region-${{ inputs.region }}
           path: data/regions/${{ inputs.region }}
       - name: Reuse photos from earlier runs
+        id: cache
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -101,6 +112,17 @@ jobs:
             work/cache/http
           key: photos-v2-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-${{ github.run_id }}
           restore-keys: photos-v2-${{ inputs.region }}-s${{ matrix.shard }}-${{ inputs.max_species != '' && 'test' || 'full' }}-
+      - name: Restore from the permanent photo store if the cache was cleared (Bali)
+        if: steps.cache.outputs.cache-matched-key == '' && inputs.region == 'ID-BA'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/ps "work/photos_commercial/${{ inputs.region }}"
+          if gh release download photo-store -p "${{ inputs.region }}.tar.part*" -D /tmp/ps; then
+            cat /tmp/ps/${{ inputs.region }}.tar.part* | tar -x -C "work/photos_commercial/${{ inputs.region }}"
+            rm -rf /tmp/ps
+            wc -l "work/photos_commercial/${{ inputs.region }}/photos.csv"
+          fi
       - name: Collect photos (shard ${{ matrix.shard }}/6)
         timeout-minutes: 280
         env:
@@ -164,10 +186,30 @@ jobs:
           name: region-${{ inputs.region }}
           path: data/regions/${{ inputs.region }}
       - uses: actions/download-artifact@v4
+        if: inputs.skip_collect != 'true'
         with:
           pattern: photos-${{ inputs.region }}-*
           path: work/photos_commercial/${{ inputs.region }}
           merge-multiple: true
+      - name: Merge photos collected by earlier runs
+        if: inputs.merge_runs != ''
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          D="work/photos_commercial/$R"
+          mkdir -p "$D/img"
+          for RID in $(echo "${{ inputs.merge_runs }}" | tr ',' ' '); do
+            gh run download "$RID" -p "photos-$R-*" -D "/tmp/m/$RID"
+            for S in /tmp/m/$RID/photos-$R-*; do
+              n="${S##*-}"
+              cp "$S/photos-shard$n.csv" "$D/photos-shard$n-run$RID.csv"
+              cp -rn "$S/img/." "$D/img/" 2>/dev/null || true
+            done
+            rm -rf "/tmp/m/$RID"
+          done
+          ls "$D" | head
       - name: Merge shards and report coverage
         run: |
           python - <<'PY'
@@ -180,6 +222,14 @@ jobs:
                   rd = csv.DictReader(fh)
                   fields = fields or rd.fieldnames
                   rows += list(rd)
+          # The same photo can come from several shards or runs: keep it once per species.
+          seen, uniq = set(), []
+          for x in rows:
+              k = (x["scientific_name"].lower(), x.get("url") or x.get("path"))
+              if k not in seen:
+                  seen.add(k)
+                  uniq.append(x)
+          rows = uniq
           with open(f"{d}/photos.csv", "w", newline="", encoding="utf-8") as fh:
               w = csv.DictWriter(fh, fieldnames=fields)
               w.writeheader()
@@ -234,6 +284,18 @@ jobs:
           R="${{ inputs.region }}"
           mkdir -p work/idx
           gh release download packs -p index.json -D work/idx --clobber || echo '{"packs": []}' > work/idx/index.json
+          # Never replace a pack with one that has noticeably fewer plants with photos (e.g. a cleared cache).
+          python3 - <<'PY'
+          import json, sqlite3, sys
+          r = "${{ inputs.region }}"
+          new = sqlite3.connect(f"work/out/{r}.owpack").execute(
+              "SELECT COUNT(DISTINCT species_id) FROM photo WHERE stage NOT IN ('specimen', 'related')").fetchone()[0]
+          old = next((p.get("photo_species") or 0 for p in json.load(open("work/idx/index.json"))["packs"] if p["region_id"] == r), 0)
+          print(f"GUARD {r}: new pack {new} plants with photos, published {old}")
+          if new < 0.95 * old and "${{ inputs.force }}" != "true":
+              print(f"::error::refusing to publish: {new} < {old} plants with photos (set force=true to override)")
+              sys.exit(1)
+          PY
           (cd pipeline && python -m openwild_pipeline.cli pack-index --pack ../work/out/$R.owpack --index ../work/idx/index.json \
             --url "https://github.com/${{ github.repository }}/releases/download/packs/$R.owpack")
           gh release upload packs "work/out/$R.owpack" work/idx/index.json --clobber
@@ -257,6 +319,13 @@ jobs:
           print("PROGRESS", r, e)
           PY
           gh release upload packs work/idx/photo-progress.json --clobber
+          # Bali: keep every collected photo in a permanent store (caches can be cleared by GitHub).
+          if [ "$R" = "ID-BA" ]; then
+            gh release view photo-store >/dev/null 2>&1 || gh release create photo-store --prerelease --title "Collected photos (pipeline store)" --notes "Pipeline working store. Not for users."
+            (cd "work/photos_commercial/$R" && tar -c photos.csv img) | split -b 1900m -d - "/tmp/$R.tar.part"
+            for old in $(gh release view photo-store --json assets --jq '.assets[].name' | grep "^$R.tar.part" || true); do gh release delete-asset photo-store "$old" -y; done
+            gh release upload photo-store /tmp/$R.tar.part* --clobber
+          fi
       - name: Update the copy shipped in the app, commit, rebuild the app
         if: inputs.publish == 'true' && inputs.region == 'ID-BA'
         working-directory: .

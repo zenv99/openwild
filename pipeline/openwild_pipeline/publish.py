@@ -18,7 +18,12 @@ def pack_entry(pack: Path, url: str) -> dict:
     meta = dict(con.execute("SELECT key, value FROM meta"))
     species = con.execute("SELECT COUNT(*) FROM species").fetchone()[0]
     tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-    photo_species = con.execute("SELECT COUNT(DISTINCT species_id) FROM photo").fetchone()[0] if "photo" in tables else 0
+    photo_species = 0
+    if "photo" in tables:
+        cols = {r[1] for r in con.execute("PRAGMA table_info(photo)")}
+        where = " WHERE stage NOT IN ('specimen', 'related')" if "stage" in cols else ""
+        # Plants with their own photos (not herbarium sheets, not a related species' photo).
+        photo_species = con.execute(f"SELECT COUNT(DISTINCT species_id) FROM photo{where}").fetchone()[0]
     protos = con.execute("SELECT COUNT(*) FROM prototype").fetchone()[0] if "prototype" in tables else 0
     con.close()
     h = hashlib.sha256()
