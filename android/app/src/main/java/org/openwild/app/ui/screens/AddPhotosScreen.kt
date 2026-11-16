@@ -239,7 +239,9 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
             Unit
         }
         if (PhotoInbox.enabled) {
-            TextButton(enabled = ready, onClick = formClick, modifier = Modifier.fillMaxWidth()) { formButton() }
+            // Direct send is the way: the GitHub form can't receive photos from the app. Kept only as a fallback
+            // after a failed send.
+            if (sendError != null) TextButton(enabled = ready, onClick = formClick, modifier = Modifier.fillMaxWidth()) { formButton() }
         } else {
             Button(enabled = ready, onClick = formClick, modifier = Modifier.fillMaxWidth()) { formButton() }
         }
