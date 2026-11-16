@@ -288,7 +288,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { s ->
             s.copy(upgrade = s.upgrade.copy(
                 modelMb = (u.modelSize / 1_000_000).toInt(), regionMb = ((b?.size ?: 0) / 1_000_000).toInt(),
-                regionAvailable = b != null && b.packVersion == s.activePackVersion,
+                regionAvailable = b != null && (pack?.boostFits(b.packVersion) ?: false),
             ))
         }
     }

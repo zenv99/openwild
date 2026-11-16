@@ -91,7 +91,7 @@ class RegionPack(file: File) : Closeable {
         android.database.sqlite.SQLiteDatabase.openDatabase(file.path, null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY).use { b ->
             val bm = HashMap<String, String>()
             b.rawQuery("SELECT key, value FROM meta", null).use { c -> while (c.moveToNext()) bm[c.getString(0)] = c.getString(1) }
-            if (bm["region_id"] != regionId || bm["pack_version"]?.toIntOrNull() != version) return@use null
+            if (bm["region_id"] != regionId || !boostFits(bm["pack_version"]?.toIntOrNull() ?: -1)) return@use null
             val bdim = bm["embedding_dim"]?.toIntOrNull() ?: return@use null
             val vecs = ByteArrayOutputStream()
             val scales = ArrayList<Float>()
@@ -110,6 +110,10 @@ class RegionPack(file: File) : Closeable {
             else PrototypeIndex(bdim, vecs.toByteArray(), scales.toFloatArray(), owner.toIntArray(), BooleanArray(scales.size), species.ids.size)
         }
     }.getOrNull()
+
+    /** The built-in copy is cut from the full pack (same species, version one lower), so its boost fits too. */
+    val isLight: Boolean = meta["light"] == "1"
+    fun boostFits(boostVersion: Int): Boolean = boostVersion == version || (isLight && boostVersion == version + 1)
 
     private val contentCache = HashMap<Int, SpeciesContent?>()
 
