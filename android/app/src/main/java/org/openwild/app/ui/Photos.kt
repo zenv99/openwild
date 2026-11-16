@@ -35,6 +35,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material3.Icon
@@ -155,6 +158,16 @@ fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick
         }
         Box(Modifier.align(Alignment.TopStart).padding(8.dp)) { DangerBadge(flags, fungus = pack.species.isFungus[i]) }
         if (pack.photosWanted(i)) PhotosWantedBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
+        // Cover borrowed from a related species: say so on the card itself.
+        val borrowed = remember(key) { pack.photoCount(i) == 0 }
+        if (b != null && borrowed) {
+            Text(
+                stringResource(R.string.related_tile), color = Color.White, style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 8.dp, top = 40.dp)
+                    .clip(RoundedCornerShape(50)).background(PhotoWanted).padding(horizontal = 8.dp, vertical = 3.dp),
+            )
+        }
     }
 }
 
@@ -187,46 +200,104 @@ fun stageLabel(stage: String): String = stringResource(
     },
 )
 
-/** Large photo on the species page. Tap opens a full-screen, zoomable viewer with photo credits. */
+/**
+ * Large photo on the species page. Tap opens a full-screen, zoomable viewer with photo credits.
+ * A photo of a related species carries a banner saying so. Missing growth stages show a "Need photo" tile
+ * with a plus; tapping it opens "Add your photos" for that stage ([onAdd]).
+ */
 @Composable
-fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String) {
+fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?) -> Unit)? = null) {
     if (!pack.hasPhotos) return
     val photos by produceState<List<Pair<RegionPack.Photo, ImageBitmap>>>(emptyList(), pack, i) {
         value = withContext(Dispatchers.IO) { pack.photos(i).mapNotNull { p -> decode(p.bytes)?.let { p to it } } }
     }
     var viewerAt by remember(i) { mutableStateOf<Int?>(null) }
     if (photos.isEmpty()) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.photo_none), style = MaterialTheme.typography.bodyMedium)
-            LifeStageStrip(emptyList())
-        }
+        NeedPhotoBox(Modifier.fillMaxWidth().height(220.dp), big = true, onClick = onAdd?.let { { it(null) } })
         return
     }
     val pager = rememberPagerState { photos.size }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Box(Modifier.fillMaxWidth().height(300.dp).clip(MaterialTheme.shapes.large)) {
             HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
-                Image(
-                    photos[page].second,
-                    contentDescription = stringResource(R.string.photo_of, name),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize().clickable { viewerAt = page },
-                )
+                Box(Modifier.fillMaxSize()) {
+                    Image(
+                        photos[page].second,
+                        contentDescription = stringResource(R.string.photo_of, name),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().clickable { viewerAt = page },
+                    )
+                    if (photos[page].first.stage == "related") RelatedBanner(photos[page].first, Modifier.align(Alignment.TopStart))
+                }
             }
             PagerDots(photos.size, pager.currentPage, Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp))
-            Text(
-                stringResource(R.string.photo_tap_hint),
-                color = Color.White,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp)
-                    .clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.45f))
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-            )
+            if (onAdd != null) {
+                AddPhotoPill(Modifier.align(Alignment.BottomEnd).padding(10.dp)) { onAdd(null) }
+            }
         }
         PhotoCredit(photos[pager.currentPage].first, Color.Unspecified)
-        LifeStageStrip(photos)
+        LifeStageStrip(photos.filter { it.first.stage != "related" }, onAdd = onAdd?.let { f -> { st: String -> f(st) } }) { st ->
+            viewerAt = photos.indexOfFirst { it.first.stage == st }.coerceAtLeast(0)
+        }
     }
     viewerAt?.let { start -> PhotoViewer(photos, start, name) { viewerAt = null } }
+}
+
+/** "Related plant, not this one: <name>" across the top of a borrowed photo. Never ambiguous. */
+@Composable
+fun RelatedBanner(p: RegionPack.Photo, modifier: Modifier = Modifier) {
+    val other = p.observer?.substringAfter("related species: ", "")?.trim()?.takeIf { it.isNotBlank() }
+    Row(
+        modifier.fillMaxWidth().background(PhotoWanted.copy(alpha = 0.95f)).padding(horizontal = 12.dp, vertical = 7.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Filled.Info, null, tint = Color.White, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(
+            if (other != null) stringResource(R.string.related_banner, other) else stringResource(R.string.stage_related),
+            color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
+            maxLines = 2, overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** Placeholder where a photo is missing: a plus in a circle and "Need photo". Tappable when [onClick] is set. */
+@Composable
+fun NeedPhotoBox(modifier: Modifier = Modifier, big: Boolean = false, onClick: (() -> Unit)? = null) {
+    Box(
+        modifier.clip(RoundedCornerShape(if (big) 20.dp else 12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.5.dp, PhotoWanted.copy(alpha = 0.55f), RoundedCornerShape(if (big) 20.dp else 12.dp))
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(if (big) 8.dp else 2.dp)) {
+            Box(
+                Modifier.size(if (big) 52.dp else 30.dp).clip(RoundedCornerShape(50)).background(PhotoWanted),
+                contentAlignment = Alignment.Center,
+            ) { Icon(Icons.Filled.Add, stringResource(R.string.need_photo_add), tint = Color.White, modifier = Modifier.size(if (big) 30.dp else 18.dp)) }
+            Text(
+                stringResource(R.string.need_photo), style = if (big) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold, color = PhotoWanted,
+            )
+            if (big && onClick != null) {
+                Text(stringResource(R.string.need_photo_sub), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddPhotoPill(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Row(
+        modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.55f)).clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Filled.Add, null, tint = Color.White, modifier = Modifier.size(14.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(stringResource(R.string.need_photo_add), color = Color.White, style = MaterialTheme.typography.labelSmall)
+    }
 }
 
 /**
@@ -250,10 +321,7 @@ fun CandidatePhotos(pack: RegionPack, i: Int, name: String, modifier: Modifier =
             Modifier.fillMaxWidth().weight(1f).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainer),
         ) {
             if (photos.isEmpty()) {
-                Column(Modifier.align(Alignment.Center).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Filled.Eco, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(40.dp))
-                    Text(stringResource(R.string.photo_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                NeedPhotoBox(Modifier.fillMaxSize())
             } else {
                 val k = current.coerceIn(0, photos.size - 1)
                 val cur = photos[k].first
@@ -261,12 +329,15 @@ fun CandidatePhotos(pack: RegionPack, i: Int, name: String, modifier: Modifier =
                     photos[k].second, contentDescription = stringResource(R.string.photo_of, name),
                     contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clickable { viewerAt = k },
                 )
-                Text(
-                    stageLabel(cur.stage), color = Color.White, style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.align(Alignment.TopStart).padding(10.dp).clip(RoundedCornerShape(50))
-                        .background(if (cur.stage == "related") PhotoWanted else Color.Black.copy(alpha = 0.55f))
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                )
+                if (cur.stage == "related") {
+                    RelatedBanner(cur, Modifier.align(Alignment.TopStart))
+                } else {
+                    Text(
+                        stageLabel(cur.stage), color = Color.White, style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.align(Alignment.TopStart).padding(10.dp).clip(RoundedCornerShape(50))
+                            .background(Color.Black.copy(alpha = 0.55f)).padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                }
                 Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
                     PhotoCredit(cur, Color.White.copy(alpha = 0.9f))
                 }
@@ -298,31 +369,25 @@ fun CandidatePhotos(pack: RegionPack, i: Int, name: String, modifier: Modifier =
 }
 
 @Composable
-private fun LifeStageStrip(photos: List<Pair<RegionPack.Photo, ImageBitmap>>) {
+private fun LifeStageStrip(
+    photos: List<Pair<RegionPack.Photo, ImageBitmap>>,
+    onAdd: ((String) -> Unit)? = null,
+    onOpen: (String) -> Unit = {},
+) {
     val byStage = photos.groupBy { it.first.stage }
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(LifeStages) { stage ->
             val hit = byStage[stage]?.firstOrNull()
-            Column(Modifier.width(112.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Box(
-                    Modifier.fillMaxWidth().height(84.dp).clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (hit != null) {
-                        Image(hit.second, contentDescription = stageLabel(stage), contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                    } else {
-                        Icon(Icons.Filled.Eco, null, tint = MaterialTheme.colorScheme.outline)
-                    }
+            Column(Modifier.width(96.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (hit != null) {
+                    Image(
+                        hit.second, contentDescription = stageLabel(stage), contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxWidth().height(84.dp).clip(RoundedCornerShape(12.dp)).clickable { onOpen(stage) },
+                    )
+                } else {
+                    NeedPhotoBox(Modifier.fillMaxWidth().height(84.dp), onClick = onAdd?.let { { it(stage) } })
                 }
                 Text(stageLabel(stage), style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (hit != null) PhotoCredit(hit.first, Color.Unspecified) else {
-                    Text(
-                        stringResource(R.string.photo_stage_missing, stageLabel(stage)),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
             }
         }
     }
@@ -376,6 +441,9 @@ private fun PhotoViewer(photos: List<Pair<RegionPack.Photo, ImageBitmap>>, start
         val pager = rememberPagerState(initialPage = start) { photos.size }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             HorizontalPager(pager, Modifier.fillMaxSize()) { page -> ZoomableImage(photos[page].second, name) }
+            if (photos[pager.currentPage].first.stage == "related") {
+                RelatedBanner(photos[pager.currentPage].first, Modifier.align(Alignment.TopStart).padding(top = 56.dp))
+            }
             IconButton(onClick = onClose, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
                 Icon(Icons.Filled.Close, stringResource(R.string.photo_close), tint = Color.White)
             }

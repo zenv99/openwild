@@ -81,17 +81,18 @@ private const val MAX_PHOTOS = 20
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AddPhotosScreen(index: Int, vm: AppViewModel) {
+fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) {
     val pack = vm.pack ?: return
     val sp = pack.species
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val prefs = remember { context.getSharedPreferences("contribute", Context.MODE_PRIVATE) }
     val gaps = remember(index) { pack.photoGaps(index) }
-    var stage by rememberSaveable { mutableStateOf(gaps.firstOrNull() ?: "closeup") }
+    var stage by rememberSaveable { mutableStateOf(initialStage ?: gaps.firstOrNull() ?: "closeup") }
     val staged = remember { mutableStateListOf<StagedPhoto>() }
     var credit by rememberSaveable { mutableStateOf(prefs.getString("credit", "") ?: "") }
     var consent by rememberSaveable { mutableStateOf(false) }
+    var anonymous by rememberSaveable { mutableStateOf(prefs.getBoolean("anonymous", false)) }
     var busy by remember { mutableStateOf(false) }
     var savedCount by rememberSaveable { mutableStateOf(-1) }
     var pendingCamera by remember { mutableStateOf<Uri?>(null) }
@@ -185,7 +186,11 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
             }
         }
 
-        OutlinedTextField(
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = anonymous, onCheckedChange = { anonymous = it; prefs.edit().putBoolean("anonymous", it).apply() })
+            Text(stringResource(R.string.contrib_anonymous), style = MaterialTheme.typography.bodyMedium)
+        }
+        if (!anonymous) OutlinedTextField(
             value = credit, onValueChange = { credit = it.take(60) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(R.string.contrib_credit)) },
             supportingText = { Text(stringResource(R.string.contrib_credit_help)) },
@@ -196,7 +201,8 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
         }
         Text(stringResource(R.string.contrib_privacy), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-        val ready = !busy && staged.isNotEmpty() && credit.isNotBlank() && consent
+        val creditName = if (anonymous) "Anonymous" else credit.trim()
+        val ready = !busy && staged.isNotEmpty() && creditName.isNotBlank() && consent
         if (PhotoInbox.enabled) {
             // Direct send, after asking permission. The GitHub form stays available as an alternative.
             Button(enabled = ready && sentCount < 0, modifier = Modifier.fillMaxWidth(), onClick = { askSend = true }) {
@@ -222,13 +228,13 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
         }
         val formClick = {
             busy = true
-            prefs.edit().putString("credit", credit.trim()).apply()
+            if (!anonymous) prefs.edit().putString("credit", credit.trim()).apply()
             val list = staged.toList()
             scope.launch {
                 val n = withContext(Dispatchers.IO) { Contribute.savePhotosForContribution(context, sp.scientificNames[index], list) }
                 savedCount = n
                 busy = false
-                if (n > 0) Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], credit.trim(), list)
+                if (n > 0) Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], creditName, list)
             }
             Unit
         }
@@ -244,7 +250,7 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
                 title = { Text(stringResource(R.string.inbox_ask_title)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.inbox_ask_sent, staged.size, sp.scientificNames[index], credit.trim()))
+                        Text(stringResource(R.string.inbox_ask_sent, staged.size, sp.scientificNames[index], creditName))
                         Text(stringResource(R.string.inbox_ask_not_sent), style = MaterialTheme.typography.bodySmall)
                         Text(stringResource(R.string.inbox_ask_what_happens), style = MaterialTheme.typography.bodySmall)
                     }
@@ -254,13 +260,13 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
                         askSend = false
                         busy = true
                         sendError = null
-                        prefs.edit().putString("credit", credit.trim()).apply()
+                        if (!anonymous) prefs.edit().putString("credit", credit.trim()).apply()
                         val list = staged.toList()
                         progress = 0 to list.size
                         scope.launch {
                             val r = withContext(Dispatchers.IO) {
                                 runCatching {
-                                    PhotoInbox.send(context, pack.regionId, sp.scientificNames[index], credit.trim(), list) { d, t ->
+                                    PhotoInbox.send(context, pack.regionId, sp.scientificNames[index], creditName, list) { d, t ->
                                         progress = d to t
                                     }
                                 }
@@ -287,7 +293,7 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel) {
                     Text(stringResource(R.string.contrib_next_title, savedCount), fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.contrib_next_steps), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(onClick = {
-                        Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], credit.trim(), staged.toList())
+                        Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], creditName, staged.toList())
                     }) { Text(stringResource(R.string.contrib_open_form)) }
                 }
             }

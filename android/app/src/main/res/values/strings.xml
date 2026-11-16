@@ -243,7 +243,6 @@
     <string name="stage_field">Field view</string>
     <string name="stage_specimen">Herbarium sheet</string>
     <string name="stage_unspecified">Photo</string>
-    <string name="photo_stage_missing">No openly licensed %1$s photo</string>
     <string name="photo_none">No open photo of this plant yet. Add yours and your name goes on it.</string>
     <string name="matches_title">Is it one of these?</string>
     <string name="matches_position">Match %1$d of %2$d, most likely first. Swipe for the next.</string>
@@ -280,7 +279,8 @@
     <string name="contrib_remove">Remove</string>
     <string name="contrib_credit">Your name for the credit</string>
     <string name="contrib_credit_help">Shown on every photo we use. Any name or nickname.</string>
-    <string name="contrib_consent">I took these photos myself and release them under CC BY 4.0, so anyone can use them, credited to my name.</string>
+    <string name="contrib_consent">I took these photos myself, and I give OpenWild (and everyone) the right to use them under CC BY 4.0, credited to my name or as anonymous.</string>
+    <string name="contrib_anonymous">Send anonymously (no name shown)</string>
     <string name="contrib_privacy">Location and camera details are removed. Nothing is sent until you agree on the next screen.</string>
     <string name="contrib_submit">Save %1$d photos and open the upload form</string>
     <string name="contrib_save_photos">Save or send your photos</string>
@@ -326,6 +326,11 @@
     <string name="parts_none">No part-by-part information yet. Don’t eat any part.</string>
     <string name="parts_none_deadly">Treat every part as deadly.</string>
     <string name="stage_related">Related species, not this plant</string>
+    <string name="related_banner">Related plant, NOT this one: %1$s</string>
+    <string name="related_tile">Related plant photo</string>
+    <string name="need_photo">Need photo</string>
+    <string name="need_photo_sub">Tap to add yours. Your name goes on it.</string>
+    <string name="need_photo_add">Add photo</string>
     <string name="matches_prev">Previous</string>
     <string name="matches_swipe_hint">Swipe left or right, or tap a name above</string>
     <string name="matches_next_short">Next</string>

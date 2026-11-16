@@ -178,7 +178,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                     Screen.Capture -> CaptureScreen(state, vm)
                     Screen.Results -> ResultsScreen(state, vm)
                     is Screen.Matches -> MatchBrowserScreen(s.start, state, vm)
-                    is Screen.AddPhotos -> AddPhotosScreen(s.index, vm)
+                    is Screen.AddPhotos -> AddPhotosScreen(s.index, vm, s.stage)
                     is Screen.Species -> SpeciesScreen(s.index, s.tier, state, vm)
                     Screen.Packs -> PacksScreen(state, vm)
                     Screen.Survival -> SurvivalScreen(vm)

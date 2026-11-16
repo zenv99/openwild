@@ -58,6 +58,7 @@ object PhotoInbox {
             .put("species", scientificName)
             .put("region", regionId)
             .put("credit", credit.take(60))
+            .put("anonymous", credit == "Anonymous")
             .put("license", "CC BY 4.0")
             .put("own_photos", true)
             .put("photos", sent)
