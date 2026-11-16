@@ -17,4 +17,4 @@ jobs:
         env:
           OW_INAT_INTERVAL: "1.2"
         run: |
-          python -m openwild_pipeline.specimen_probe "Strychnos villosa" "Cycas montana" "Pimpinella javana" "Psammogeton involucratus" "Strophanthus puberulus"
+          python -m openwild_pipeline.scan_probe
