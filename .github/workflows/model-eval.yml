@@ -1,0 +1,55 @@
+name: Photo-ID model test (head to head)
+
+# Compares recognition models on the same Bali photos: the app's current DINOv2-small, DINOv2-base and
+# BioCLIP 2 (built for species ID). Reports how often the right plant comes first from 1, 2 and 3 photos.
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        default: "ID-BA"
+      species:
+        description: "how many plants to test (each with 5-8 photos)"
+        default: "700"
+      models:
+        description: "comma list to limit (blank = all)"
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install -q numpy pyyaml pillow ai-edge-litert timm open_clip_torch \
+            torch torchvision --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+      - name: Photos from the store
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/ps "work/photos_commercial/${{ inputs.region }}"
+          gh release download photo-store -p "${{ inputs.region }}.tar.part*" -D /tmp/ps
+          cat /tmp/ps/${{ inputs.region }}.tar.part* | tar -x -C "work/photos_commercial/${{ inputs.region }}"
+          rm -rf /tmp/ps
+          wc -l "work/photos_commercial/${{ inputs.region }}/photos.csv"
+      - name: Test
+        working-directory: pipeline
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from openwild_pipeline.model_eval import run
+          m = [x.strip() for x in "${{ inputs.models }}".split(",") if x.strip()] or None
+          run("${{ inputs.region }}", int("${{ inputs.species }}"), Path("/tmp/model_eval.json"), m)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: model-eval
+          path: /tmp/model_eval.json
