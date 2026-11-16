@@ -193,6 +193,76 @@ class PackManager(private val context: Context) {
         }
     }
 
+    // ---------------- Optional "Better recognition" upgrade (BioCLIP 2) ----------------
+
+    data class Upgrade(val modelUrl: String, val modelSha256: String, val modelSize: Long, val boosts: Map<String, RemoteBoost>)
+    data class RemoteBoost(val regionId: String, val url: String, val sha256: String, val size: Long, val packVersion: Int)
+
+    val upgradeDir: File get() = File(context.filesDir, "upgrade").apply { mkdirs() }
+    val upgradeModel: File get() = File(upgradeDir, "bioclip2.tflite")
+    fun boostFile(regionId: String) = File(upgradeDir, "$regionId.bioclip2.owboost")
+
+    private val prefs get() = context.getSharedPreferences("upgrade", Context.MODE_PRIVATE)
+    var betterRecognition: Boolean
+        get() = prefs.getBoolean("on", false)
+        set(v) = prefs.edit().putBoolean("on", v).apply()
+
+    /** Model and per-region boost files available on GitHub (release "models" and "packs"). */
+    fun fetchUpgrade(): Upgrade {
+        if (!BuildConfig.ALLOW_NETWORK) throw IOException("Network disabled in this build")
+        val base = BuildConfig.REPO_URL + "/releases/download"
+        val m = JSONObject(httpGet("$base/models/bioclip2.json"))
+        val arr = org.json.JSONArray(runCatching { httpGet("$base/packs/boosts.json") }.getOrDefault("[]"))
+        val boosts = (0 until arr.length()).map { arr.getJSONObject(it) }.associate { b ->
+            b.getString("region_id") to RemoteBoost(
+                b.getString("region_id"), b.getString("url"), b.getString("sha256"), b.optLong("size"),
+                b.optString("pack_version").toIntOrNull() ?: 0,
+            )
+        }
+        return Upgrade("$base/models/bioclip2.tflite", m.getString("sha256"), m.optLong("bytes"), boosts)
+    }
+
+    /** Download a file from GitHub, verify its SHA-256, then move it into place. */
+    fun downloadVerified(url: String, sha256: String, size: Long, dest: File, onProgress: (Float) -> Unit) {
+        if (!BuildConfig.ALLOW_NETWORK) throw IOException("Network disabled in this build")
+        val tmp = File(dest.parentFile, dest.name + ".download")
+        val digest = MessageDigest.getInstance("SHA-256")
+        val conn = open(url)
+        try {
+            val total = if (conn.contentLengthLong > 0) conn.contentLengthLong else size
+            conn.inputStream.use { input ->
+                tmp.outputStream().use { out ->
+                    val buf = ByteArray(1 shl 16)
+                    var done = 0L
+                    while (true) {
+                        val n = input.read(buf)
+                        if (n < 0) break
+                        out.write(buf, 0, n)
+                        digest.update(buf, 0, n)
+                        done += n
+                        if (total > 0) onProgress((done.toDouble() / total).toFloat().coerceIn(0f, 1f))
+                    }
+                }
+            }
+        } finally {
+            conn.disconnect()
+        }
+        val hex = digest.digest().joinToString("") { "%02x".format(it) }
+        if (!hex.equals(sha256, ignoreCase = true)) {
+            tmp.delete()
+            throw IOException("Checksum mismatch for ${dest.name}")
+        }
+        if (!tmp.renameTo(dest)) {
+            tmp.copyTo(dest, overwrite = true)
+            tmp.delete()
+        }
+    }
+
+    fun removeUpgrade() {
+        upgradeDir.listFiles()?.forEach { it.delete() }
+        betterRecognition = false
+    }
+
     fun delete(regionId: String) {
         fileFor(regionId).delete()
         if (activeRegionId == regionId) activeRegionId = null

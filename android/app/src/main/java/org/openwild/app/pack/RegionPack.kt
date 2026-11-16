@@ -83,6 +83,34 @@ class RegionPack(file: File) : Closeable {
         index = PrototypeIndex(dim, vecs.toByteArray(), scales.toFloatArray(), owner.toIntArray(), isText.toBooleanArray(), n)
     }
 
+    /**
+     * Prototypes from a "Better recognition" boost file (BioCLIP 2 fingerprints of this pack's reference photos),
+     * or null if the file doesn't belong to this exact pack version.
+     */
+    fun boostIndex(file: java.io.File): PrototypeIndex? = runCatching {
+        android.database.sqlite.SQLiteDatabase.openDatabase(file.path, null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY).use { b ->
+            val bm = HashMap<String, String>()
+            b.rawQuery("SELECT key, value FROM meta", null).use { c -> while (c.moveToNext()) bm[c.getString(0)] = c.getString(1) }
+            if (bm["region_id"] != regionId || bm["pack_version"]?.toIntOrNull() != version) return@use null
+            val bdim = bm["embedding_dim"]?.toIntOrNull() ?: return@use null
+            val vecs = ByteArrayOutputStream()
+            val scales = ArrayList<Float>()
+            val owner = ArrayList<Int>()
+            b.rawQuery("SELECT species_id, vec, scale FROM prototype ORDER BY id", null).use { c ->
+                while (c.moveToNext()) {
+                    val sp = idToIndex[c.getLong(0)] ?: continue
+                    val blob = c.getBlob(1)
+                    if (blob.size != bdim) continue
+                    vecs.write(blob)
+                    scales += c.getFloat(2)
+                    owner += sp
+                }
+            }
+            if (scales.isEmpty()) null
+            else PrototypeIndex(bdim, vecs.toByteArray(), scales.toFloatArray(), owner.toIntArray(), BooleanArray(scales.size), species.ids.size)
+        }
+    }.getOrNull()
+
     private val contentCache = HashMap<Int, SpeciesContent?>()
 
     fun content(i: Int): SpeciesContent? = synchronized(dbLock) {

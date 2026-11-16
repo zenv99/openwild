@@ -34,6 +34,23 @@ class Embedder private constructor(private val interpreter: Interpreter) : Close
             DEFAULT_MODEL_ID
         }
 
+        /** The optional downloaded model (BioCLIP 2, "Better recognition"). Null if missing or unreadable. */
+        fun loadFileOrNull(file: java.io.File): Embedder? = try {
+            FileInputStream(file).use { stream ->
+                val buffer = stream.channel.map(FileChannel.MapMode.READ_ONLY, 0, file.length())
+                Embedder(
+                    Interpreter(
+                        buffer,
+                        Interpreter.Options()
+                            .setNumThreads(Runtime.getRuntime().availableProcessors().coerceIn(2, 6))
+                            .setUseXNNPACK(true),
+                    ),
+                ).also { it.warmUp() }
+            }
+        } catch (e: Exception) {
+            null
+        }
+
         /** Returns null if the model asset is missing (e.g. a CI build without the pipeline output). */
         fun loadOrNull(context: Context): Embedder? = try {
             context.assets.openFd(ASSET).use { fd ->

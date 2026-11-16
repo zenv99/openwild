@@ -100,9 +100,24 @@ data class UiState(
     val activePackVersion: Int = 0,
     val bundled: List<PackManager.BundledPack> = emptyList(),
     val installingRegion: String? = null,
+    /** Optional "Better recognition" (BioCLIP 2). */
+    val upgrade: UpgradeState = UpgradeState(),
 ) {
     val screen: Screen get() = stack.last()
 }
+
+data class UpgradeState(
+    val on: Boolean = false,
+    val modelInstalled: Boolean = false,
+    /** Matching uses BioCLIP 2 right now (model + this region's boost file present and current). */
+    val active: Boolean = false,
+    val modelMb: Int = 0,
+    val regionMb: Int = 0,
+    /** A boost file exists on GitHub for the active region. */
+    val regionAvailable: Boolean = false,
+    val progress: Float? = null,
+    val error: String? = null,
+)
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -121,6 +136,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var pack: RegionPack? = null
         private set
     private var identifier: Identifier? = null
+    /** BioCLIP 2 embedder when "Better recognition" is active for this pack; otherwise the built-in model. */
+    private var activeEmbedder: org.openwild.app.ml.Embedder? = null
+    private var upgradeEmbedder: org.openwild.app.ml.Embedder? = null
+    private var upgradeInfo: PackManager.Upgrade? = null
 
     init {
         viewModelScope.launch {
@@ -227,6 +246,25 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         pack?.close()
         pack = loaded
         identifier = loaded?.let { Identifier(it.index, it.species, it.params, it.projection) }
+        activeEmbedder = null
+        // Better recognition: BioCLIP 2 model + this pack's boost file -> match with those instead.
+        var usingUpgrade = false
+        if (loaded != null && ow.packs.betterRecognition && ow.packs.upgradeModel.exists()) {
+            val boost = ow.packs.boostFile(loaded.regionId)
+            if (boost.exists()) {
+                val pair = withContext(Dispatchers.IO) {
+                    val e = upgradeEmbedder ?: org.openwild.app.ml.Embedder.loadFileOrNull(ow.packs.upgradeModel)?.also { upgradeEmbedder = it }
+                    val idx = loaded.boostIndex(boost)
+                    if (e != null && idx != null && idx.dim == e.dim) e to idx else null
+                }
+                if (pair != null) {
+                    activeEmbedder = pair.first
+                    identifier = Identifier(pair.second, loaded.species, loaded.params, null)
+                    usingUpgrade = true
+                }
+            }
+        }
+        _state.update { s -> s.copy(upgrade = s.upgrade.copy(on = ow.packs.betterRecognition, modelInstalled = ow.packs.upgradeModel.exists(), active = usingUpgrade)) }
         if (loaded != null) ow.packs.activeRegionId = loaded.regionId
         _state.update {
             it.copy(
@@ -237,6 +275,58 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 photoIdReady = (loaded?.index?.size ?: 0) > 0,
             )
         }
+    }
+
+    // ---------------- Better recognition (BioCLIP 2) ----------------
+
+    /** What's available on GitHub for the upgrade (sizes, whether this region has a boost file). */
+    fun refreshUpgrade() = viewModelScope.launch {
+        if (!org.openwild.app.BuildConfig.ALLOW_NETWORK) return@launch
+        val u = withContext(Dispatchers.IO) { runCatching { ow.packs.fetchUpgrade() }.getOrNull() } ?: return@launch
+        upgradeInfo = u
+        val b = u.boosts[_state.value.activeRegionId]
+        _state.update { s ->
+            s.copy(upgrade = s.upgrade.copy(
+                modelMb = (u.modelSize / 1_000_000).toInt(), regionMb = ((b?.size ?: 0) / 1_000_000).toInt(),
+                regionAvailable = b != null && b.packVersion == s.activePackVersion,
+            ))
+        }
+    }
+
+    /** Download the model (once) and the boost files for every installed region that has one, then switch on. */
+    fun installUpgrade() = viewModelScope.launch {
+        _state.update { it.copy(upgrade = it.upgrade.copy(progress = 0f, error = null)) }
+        val r = withContext(Dispatchers.IO) {
+            runCatching {
+                val u = upgradeInfo ?: ow.packs.fetchUpgrade().also { upgradeInfo = it }
+                if (!ow.packs.upgradeModel.exists()) {
+                    ow.packs.downloadVerified(u.modelUrl, u.modelSha256, u.modelSize, ow.packs.upgradeModel) { f ->
+                        _state.update { s -> s.copy(upgrade = s.upgrade.copy(progress = f * 0.9f)) }
+                    }
+                }
+                val regions = _state.value.installed.map { it.regionId }
+                regions.mapNotNull { u.boosts[it] }.forEach { b ->
+                    ow.packs.downloadVerified(b.url, b.sha256, b.size, ow.packs.boostFile(b.regionId)) { f ->
+                        _state.update { s -> s.copy(upgrade = s.upgrade.copy(progress = 0.9f + f * 0.1f)) }
+                    }
+                }
+                ow.packs.betterRecognition = true
+            }
+        }
+        _state.update { it.copy(upgrade = it.upgrade.copy(progress = null, error = r.exceptionOrNull()?.message)) }
+        loadActivePack()
+    }
+
+    fun setBetterRecognition(on: Boolean) = viewModelScope.launch {
+        ow.packs.betterRecognition = on
+        loadActivePack()
+    }
+
+    fun removeUpgrade() = viewModelScope.launch {
+        upgradeEmbedder?.close()
+        upgradeEmbedder = null
+        withContext(Dispatchers.IO) { ow.packs.removeUpgrade() }
+        loadActivePack()
     }
 
     fun useRegion(regionId: String) = viewModelScope.launch {
@@ -322,7 +412,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun identify() = viewModelScope.launch {
         val s = _state.value
-        val emb = ow.embedder
+        val emb = activeEmbedder ?: ow.embedder
         val id = identifier
         val p = pack
         val app = getApplication<Application>()
