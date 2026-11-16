@@ -592,6 +592,40 @@ def _download(url: str, dest: Path) -> bool:
         return False
 
 
+def _download_scan(url: str, dest: Path, max_side: int = 1600) -> bool:
+    """Museum specimen scans are huge (10-60 MB, 50+ megapixels). Fetch the whole file, decode at reduced
+    size and save a phone-sized JPEG. Naturalis serves a medium size directly."""
+    if dest.exists() and dest.stat().st_size > 2000:
+        return True
+    url = url.replace("/format/large", "/format/medium")
+    try:
+        import io
+
+        from PIL import Image
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            data = resp.read(90_000_000)
+        if len(data) < 2000:
+            return False
+        Image.MAX_IMAGE_PIXELS = None          # trusted museum scan; decoded at reduced size below
+        with Image.open(io.BytesIO(data)) as im:
+            im.draft("RGB", (max_side, max_side))
+            im = im.convert("RGB")
+            im.thumbnail((max_side, max_side))
+            if min(im.size) < 160:
+                return False
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            im.save(dest, "JPEG", quality=86)
+        return True
+    except Exception as e:  # noqa: BLE001
+        print(f"scan download failed {url[:90]}: {e!r}", flush=True)
+        dest.unlink(missing_ok=True)
+        return False
+    finally:
+        from PIL import Image as _I
+        _I.MAX_IMAGE_PIXELS = 8_000_000
+
+
 PER_STAGE = 3        # photos kept per growth stage (seedling, leaves, flower, fruit, close-up)
 MAX_PER_SPECIES = 12
 
@@ -772,7 +806,7 @@ def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
     out = []
     for c in cache[key]:
         dest = folder / "specimens" / slug_name(scientific) / (hashlib.sha1(c["url"].encode()).hexdigest()[:16] + ".jpg")
-        if _download(c["url"], dest):
+        if _download_scan(c["url"], dest):
             out.append({**c, "path": str(dest)})
         if len(out) >= want:
             break
