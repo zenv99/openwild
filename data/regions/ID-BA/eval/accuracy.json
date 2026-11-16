@@ -1,24 +1,24 @@
 {
- "photos_tested": 28740,
- "species_tested": 3184,
- "species_total": 3297,
+ "photos_tested": 28013,
+ "species_tested": 3154,
+ "species_total": 3263,
  "top_k": {
-  "top1": 0.5201,
-  "top3": 0.6404,
-  "top5": 0.685,
-  "top10": 0.7438
+  "top1": 0.5207,
+  "top3": 0.6416,
+  "top5": 0.6866,
+  "top10": 0.746
  },
  "median_rank": 1.0,
  "most_confused": [
   {
    "true": "Hibiscus rosa-sinensis",
    "shown_first": "Hibiscus \u00d7 rosa-sinensis",
-   "times": 11
+   "times": 10
   },
   {
    "true": "Hibiscus \u00d7 rosa-sinensis",
    "shown_first": "Hibiscus rosa-sinensis",
-   "times": 9
+   "times": 8
   },
   {
    "true": "Pandanus tectorius",
@@ -214,16 +214,6 @@
  "hardest_species": [
   {
    "species": "Themeda triandra",
-   "photos": 15,
-   "top1": 0.0
-  },
-  {
-   "species": "Hibiscus \u00d7 rosa-sinensis",
-   "photos": 14,
-   "top1": 0.0
-  },
-  {
-   "species": "Eucalyptus obliqua",
    "photos": 14,
    "top1": 0.0
   },
@@ -233,12 +223,22 @@
    "top1": 0.0
   },
   {
-   "species": "Tribulus terrestris",
-   "photos": 12,
+   "species": "Hibiscus \u00d7 rosa-sinensis",
+   "photos": 13,
+   "top1": 0.0
+  },
+  {
+   "species": "Eucalyptus obliqua",
+   "photos": 13,
    "top1": 0.0
   },
   {
    "species": "Nephrolepis biserrata",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Tribulus terrestris",
    "photos": 11,
    "top1": 0.0
   },
@@ -274,11 +274,6 @@
   },
   {
    "species": "Adonidia merrillii",
-   "photos": 9,
-   "top1": 0.0
-  },
-  {
-   "species": "Pangium edule",
    "photos": 9,
    "top1": 0.0
   },
@@ -368,6 +363,16 @@
    "top1": 0.0
   },
   {
+   "species": "Erythrina variegata",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Pangium edule",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
    "species": "Diplacrum caricinum",
    "photos": 8,
    "top1": 0.0
@@ -404,11 +409,6 @@
   },
   {
    "species": "Microsorum membranifolium",
-   "photos": 7,
-   "top1": 0.0
-  },
-  {
-   "species": "Voacanga grandifolia",
    "photos": 7,
    "top1": 0.0
   }
