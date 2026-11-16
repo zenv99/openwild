@@ -867,7 +867,14 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     # Second pass: sheets on beige/aged paper, label pages and drawings that the white-paper check misses.
     # Learned from the fingerprints of the sheets already caught above.
     if len(sheet_paths) >= 50 and len(usable):
-        ref = _cached_embeddings(sheet_paths[:4000], model, photos_path.parent / "emb_cache.npz")
+        readable = []
+        for sp_ in sheet_paths[:4000]:
+            try:
+                preprocess(sp_)
+                readable.append(sp_)
+            except Exception:  # noqa: BLE001  (truncated or broken file: not useful as an example)
+                pass
+        ref = _cached_embeddings(readable, model, photos_path.parent / "emb_cache.npz")
         flag = sheet_like(embs, ref)
         if flag.any():
             print(f"SHEETS2 removed {int(flag.sum())} more sheet-like photos (beige paper, labels, drawings)", flush=True)
