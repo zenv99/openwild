@@ -1,0 +1,167 @@
+name: BioCLIP 2 upgrade (model + region boost files)
+
+# The optional "Better recognition" model. 1) BioCLIP 2's image encoder converted to run on phones,
+# published to the release "models". 2) Every reference photo of a region fingerprinted with it (sharded).
+# 3) A "boost" file per region (<REGION>.bioclip2.owboost) next to the region pack in the release "packs".
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        default: "ID-BA"
+      export_model:
+        description: "convert and publish the model too (true the first time)"
+        default: "true"
+
+permissions:
+  contents: write
+
+jobs:
+  model:
+    if: inputs.export_model == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -q numpy pyyaml pillow open_clip_torch litert-torch ai-edge-quantizer ai-edge-litert
+      - name: Convert BioCLIP 2 for phones
+        working-directory: pipeline
+        run: python -c "from pathlib import Path; from openwild_pipeline.bioclip import export; export(Path('/tmp/models'))"
+      - name: Publish (release "models")
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view models >/dev/null 2>&1 || gh release create models --prerelease --title "Optional models" \
+            --notes "Optional on-phone models. BioCLIP 2 (imageomics/bioclip-2, MIT licence): 'Better recognition' in the app."
+          sha256sum /tmp/models/bioclip2.tflite | cut -d' ' -f1 > /tmp/models/bioclip2.sha256
+          python - <<'PY'
+          import json; p="/tmp/models/bioclip2.json"; d=json.load(open(p)); d["sha256"]=open("/tmp/models/bioclip2.sha256").read().strip(); json.dump(d,open(p,"w"))
+          PY
+          cat /tmp/models/bioclip2.json
+          gh release upload models /tmp/models/bioclip2.tflite /tmp/models/bioclip2.json --clobber
+
+  embed:
+    needs: model
+    if: always() && (needs.model.result == 'success' || needs.model.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy pyyaml pillow ai-edge-litert
+      - name: Model and photos
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/models /tmp/ps "work/photos_commercial/${{ inputs.region }}"
+          gh release download models -p bioclip2.tflite -D /tmp/models
+          gh release download photo-store -p "${{ inputs.region }}.tar.part*" -D /tmp/ps
+          cat /tmp/ps/${{ inputs.region }}.tar.part* | tar -x -C "work/photos_commercial/${{ inputs.region }}"
+          rm -rf /tmp/ps
+          gh release download packs -p "${{ inputs.region }}.owpack" -D /tmp/pack
+      - name: Fingerprint this shard's photos
+        working-directory: pipeline
+        run: |
+          python - <<'PY'
+          import csv, sqlite3, numpy as np
+          from pathlib import Path
+          from openwild_pipeline import config
+          from openwild_pipeline.freemodel import preprocess
+          from openwild_pipeline.bioclip import embed_paths
+          R = "${{ inputs.region }}"; shard, n = ${{ matrix.shard }}, 8
+          used = {u for (u,) in sqlite3.connect(f"/tmp/pack/{R}.owpack").execute("SELECT url FROM photo")}
+          rows = list(csv.DictReader(open(config.WORK / "photos_commercial" / R / "photos.csv", encoding="utf-8")))
+          paths = sorted({r["path"] for r in rows if (r.get("page") in used or r.get("url") in used)})
+          mine = [Path(p) for i, p in enumerate(paths) if i % n == shard]
+          ok = []
+          for p in mine:
+              try:
+                  preprocess(p); ok.append(p)
+              except Exception:
+                  pass
+          print(f"shard {shard}: {len(ok)} photos", flush=True)
+          v = embed_paths(ok, Path("/tmp/models/bioclip2.tflite"))
+          np.savez(f"/tmp/b2_{shard}.npz", keys=np.array([str(p) for p in ok]), vecs=v.astype(np.float32))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: b2-${{ matrix.shard }}
+          path: /tmp/b2_${{ matrix.shard }}.npz
+          retention-days: 14
+
+  boost:
+    needs: embed
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q numpy pyyaml pillow
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: b2-*
+          path: /tmp/b2
+          merge-multiple: true
+      - name: Region pack and photo list
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/ps "work/photos_commercial/${{ inputs.region }}"
+          gh release download packs -p "${{ inputs.region }}.owpack" -D /tmp/pack
+          gh release download photo-store -p "${{ inputs.region }}.tar.part00" -D /tmp/ps
+          # photos.csv is the first file in the store archive
+          tar -x -C "work/photos_commercial/${{ inputs.region }}" -f /tmp/ps/${{ inputs.region }}.tar.part00 photos.csv 2>/dev/null || \
+            (gh release download photo-store -p "${{ inputs.region }}.tar.part*" -D /tmp/ps --clobber && cat /tmp/ps/*.tar.part* | tar -x -C "work/photos_commercial/${{ inputs.region }}" photos.csv)
+      - name: Build boost file
+        working-directory: pipeline
+        run: |
+          python - <<'PY'
+          import glob, json, numpy as np
+          from pathlib import Path
+          from openwild_pipeline import config
+          from openwild_pipeline.bioclip import boost_pack
+          R = "${{ inputs.region }}"
+          vecs = {}
+          for f in glob.glob("/tmp/b2/*.npz"):
+              z = np.load(f)
+              vecs.update(zip(z["keys"].tolist(), z["vecs"]))
+          info = boost_pack(Path(f"/tmp/pack/{R}.owpack"), config.WORK / "photos_commercial" / R / "photos.csv", vecs,
+                            Path(f"/tmp/{R}.bioclip2.owboost"))
+          print("BOOST", json.dumps(info))
+          json.dump(info, open("/tmp/boost.json", "w"))
+          PY
+      - name: Publish next to the region pack
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          gh release upload packs "/tmp/$R.bioclip2.owboost" --clobber
+          python - <<'PY'
+          import hashlib, json, os
+          R = "${{ inputs.region }}"
+          p = f"/tmp/{R}.bioclip2.owboost"
+          info = json.load(open("/tmp/boost.json"))
+          info.update({"region_id": R, "file": os.path.basename(p), "size": os.path.getsize(p),
+                       "sha256": hashlib.sha256(open(p, "rb").read()).hexdigest(), "model_id": "bioclip2-vitl14-224-v1",
+                       "url": f"https://github.com/${{ github.repository }}/releases/download/packs/{os.path.basename(p)}"})
+          json.dump([info], open("/tmp/boost-index.json", "w"), indent=1)
+          PY
+          # merge into boosts.json (one entry per region)
+          if gh release download packs -p boosts.json -D /tmp/old 2>/dev/null; then
+            jq -s '(.[0] | map(select(.region_id != "'"$R"'"))) + .[1]' /tmp/old/boosts.json /tmp/boost-index.json > /tmp/boosts.json
+          else cp /tmp/boost-index.json /tmp/boosts.json; fi
+          cat /tmp/boosts.json
+          gh release upload packs /tmp/boosts.json --clobber
