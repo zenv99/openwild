@@ -51,6 +51,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import org.openwild.app.R
+import org.openwild.app.ui.rememberFeedbackSender
+import androidx.compose.material3.OutlinedButton
 import org.openwild.app.core.SafetyPolicy
 import org.openwild.app.core.SpeciesContent
 import org.openwild.app.core.Tier
@@ -158,12 +160,6 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
 
         if (state.survivalMode && content != null) SurvivalCard(content)
 
-        // 3. Part by part: which parts are food and which are poison. Poison always shows; food only
-        // when the identification is confident enough to show eating information.
-        if (content != null && !sp.isFungus[index] && (content.parts.isNotEmpty() || content.hasSafetyData)) {
-            PartsCard(content, showFood = vis.showBenefits)
-        }
-
         // 4. If eaten: harms → benefits → feeling
         if (vis.showHarms) {
             SectionCard(stringResource(R.string.harms), Icons.Filled.Warning, Danger) {
@@ -220,6 +216,11 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                 content?.sources?.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
             }
         }
+        // Parts identified: which parts are food and which are poison (below About). Poison always shows;
+        // food only when the identification is confident enough to show eating information.
+        if (content != null && !sp.isFungus[index] && (content.parts.isNotEmpty() || content.hasSafetyData)) {
+            PartsCard(content, showFood = vis.showBenefits)
+        }
         ReviewCard(pack.regionId, sp.scientificNames[index], vm)
         Footer()
     }
@@ -257,8 +258,22 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
             minLines = 3,
             label = { Text(stringResource(R.string.review_text_label)) },
         )
-        Button(enabled = ready && rating in 1..5, onClick = { vm.saveReview(regionId, scientificName, rating, body) }) {
-            Text(stringResource(R.string.review_save))
+        val feedback = rememberFeedbackSender()
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(enabled = ready && rating in 1..5, onClick = { vm.saveReview(regionId, scientificName, rating, body) }) {
+                Text(stringResource(R.string.review_save))
+            }
+            // Optional: share it with OpenWild (asks first). Tips, local names and corrections help everyone.
+            if (feedback.enabled) {
+                OutlinedButton(enabled = ready && (rating in 1..5 || body.isNotBlank()), onClick = {
+                    vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body)
+                    feedback.send(
+                        regionId, scientificName, "review",
+                        org.json.JSONObject().put("rating", rating).put("text", body.take(4000)),
+                        "${"★".repeat(rating)} " + body.take(120) + if (body.length > 120) "…" else "",
+                    )
+                }) { Text(stringResource(R.string.review_share)) }
+            }
         }
     }
 }

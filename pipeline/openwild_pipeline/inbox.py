@@ -195,3 +195,75 @@ def read_submission(folder: Path) -> tuple[dict, list[tuple[str, str, bytes]]]:
             continue
         images.append((f, str(ph.get("stage", "field")), (folder / f).read_bytes()))
     return meta, images
+
+
+# ---------------------------------------------------------------- feedback (votes, reviews), weekly
+
+FEEDBACK_FIELDS = ["date", "kind", "species", "rating", "text", "correct", "photo", "stage", "app_version"]
+HIDE_MIN_NO = 3          # a photo needs at least this many "wrong plant" answers...
+HIDE_RATIO = 2.0         # ...and twice as many no as yes, before it is hidden
+
+
+def collect_feedback(inbox: Path, today: str) -> tuple[list[Path], dict[str, list[dict]]]:
+    """Read feedback/<REGION>/<species>/*.json. Returns (files read, rows by region). Text is length-limited
+    and kept as plain text; nothing in it is ever executed or turned into app content without a person."""
+    files, by_region = [], {}
+    for f in sorted(inbox.glob("feedback/*/*/*.json")):
+        files.append(f)
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        region = f.parts[-3]
+        kind = str(d.get("kind", ""))[:12]
+        if kind not in ("vote", "review") or d.get("region") != region:
+            continue
+        by_region.setdefault(region, []).append({
+            "date": today, "kind": kind, "species": str(d.get("species", ""))[:120],
+            "rating": int(d.get("rating") or 0) if str(d.get("rating", "0")).lstrip("-").isdigit() else 0,
+            "text": re.sub(r"\s+", " ", str(d.get("text", "")))[:4000],
+            "correct": "" if "correct" not in d else ("yes" if d.get("correct") is True else "no"),
+            "photo": str(d.get("photo", ""))[:500], "stage": str(d.get("stage", ""))[:20],
+            "app_version": str(d.get("app_version", ""))[:20],
+        })
+    return files, by_region
+
+
+def save_feedback(region: str, rows: list[dict]) -> Path:
+    path = COMMUNITY / region / "feedback.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new = not path.exists()
+    with open(path, "a", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=FEEDBACK_FIELDS)
+        if new:
+            w.writeheader()
+        w.writerows(rows)
+    return path
+
+
+def hidden_photos(region: str) -> set[str]:
+    """Photos people say show the wrong plant (enough "no", clearly more than "yes"): left out of packs."""
+    path = COMMUNITY / region / "feedback.csv"
+    if not path.exists():
+        return set()
+    votes: dict[str, list[int]] = {}
+    for r in csv.DictReader(open(path, encoding="utf-8")):
+        if r.get("kind") == "vote" and r.get("photo"):
+            v = votes.setdefault(r["photo"], [0, 0])
+            v[0 if r.get("correct") == "yes" else 1] += 1
+    return {u for u, (yes, no) in votes.items() if no >= HIDE_MIN_NO and no >= HIDE_RATIO * yes}
+
+
+def digest(by_region: dict[str, list[dict]]) -> str:
+    lines = []
+    for region, rows in sorted(by_region.items()):
+        reviews = [r for r in rows if r["kind"] == "review" and (r["text"] or r["rating"])]
+        votes = [r for r in rows if r["kind"] == "vote"]
+        no = sum(1 for r in votes if r["correct"] == "no")
+        lines.append(f"## {region}\n\n{len(reviews)} reviews, {len(votes)} photo answers ({no} said wrong plant).\n")
+        for r in reviews[:200]:
+            stars = "★" * max(0, min(5, r["rating"]))
+            txt = r["text"].replace("@", "@​")[:600]   # no accidental GitHub mentions
+            lines.append(f"- *{r['species']}* {stars} {txt}")
+        lines.append("")
+    return "\n".join(lines)

@@ -631,6 +631,11 @@ def main(argv=None):
             d = ib.decide(meta, images, libs[region], embed, is_sheet)
             if a.approve and d.photos:
                 d.verdict, d.reason = "accept", "approved by a maintainer"
+            # Frequent runs only take FIRST photos of a plant (and drop spam); everything else waits for the
+            # weekly run.
+            if a.first_only and not (d.verdict == "reject" or (d.verdict == "accept" and not d.detail.get("had_photos"))):
+                print(f"INBOX later  {region} {meta.get('species')}: {d.reason} (weekly check)", flush=True)
+                continue
             entry = {"folder": rel, "species": meta.get("species"), "region": region, "credit": ib.clean_credit(meta.get("credit", "")),
                      "reason": d.reason, "detail": d.detail, "photos": len(d.photos)}
             if d.verdict == "accept":
@@ -648,6 +653,30 @@ def main(argv=None):
     sp.add_argument("--out", required=True)
     sp.add_argument("--only", default=None, help="one submission folder, relative to --inbox")
     sp.add_argument("--approve", action="store_true", help="a maintainer approved it: accept if anything usable")
+    sp.add_argument("--first-only", action="store_true", help="only first photos of a plant (and spam); rest weekly")
+
+    def cmd_inbox_feedback(a):
+        """Weekly: file votes and reviews sent from the app, work out which photos people say are wrong."""
+        import datetime as _dt
+        import json as _j
+
+        from . import inbox as ib
+
+        files, by_region = ib.collect_feedback(Path(a.inbox), _dt.date.today().isoformat())
+        hidden = {}
+        for region, rows in by_region.items():
+            if (config.DATA_REGIONS / region / "species.csv").exists():
+                ib.save_feedback(region, rows)
+                hidden[region] = len(ib.hidden_photos(region))
+        Path(a.digest).write_text(ib.digest(by_region), encoding="utf-8")
+        _j.dump({"files": [str(f.relative_to(Path(a.inbox))) for f in files],
+                 "regions": sorted(by_region), "hidden": hidden}, open(a.out, "w"), indent=1)
+        print(f"FEEDBACK {len(files)} files, regions {sorted(by_region)}, hidden photos {hidden}")
+
+    sp = add("inbox-feedback", cmd_inbox_feedback, "weekly: votes and reviews from the app -> content/community")
+    sp.add_argument("--inbox", required=True)
+    sp.add_argument("--out", required=True)
+    sp.add_argument("--digest", required=True)
 
     def cmd_photos_wanted(a):
         from .community import wanted

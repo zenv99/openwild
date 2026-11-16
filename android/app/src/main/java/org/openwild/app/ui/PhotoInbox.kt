@@ -67,6 +67,18 @@ object PhotoInbox {
         return sent.length()
     }
 
+    /**
+     * Small text feedback (a yes/no on a photo, a review, a correction), only after the user agreed.
+     * Goes to feedback/<region>/<species>/<id>.json; the bot reads these once a week.
+     */
+    fun sendFeedback(regionId: String, scientificName: String, kind: String, fields: JSONObject) {
+        val id = UUID.randomUUID().toString().take(12)
+        val body = JSONObject(fields.toString())
+            .put("kind", kind).put("species", scientificName).put("region", regionId)
+            .put("app_version", BuildConfig.VERSION_NAME)
+        put("feedback/$regionId/${slug(scientificName)}/${kind}_$id.json", body.toString(2).toByteArray(), "Feedback ($kind): $scientificName")
+    }
+
     private fun put(path: String, bytes: ByteArray, message: String) {
         val url = URL("$API/repos/${BuildConfig.INBOX_REPO}/contents/$path")
         require(url.host == "api.github.com" && url.protocol == "https")

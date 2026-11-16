@@ -838,6 +838,13 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     if community:
         print(f"COMMUNITY {len(community)} photos for {len({r['scientific_name'].lower() for r in community})} species", flush=True)
     photos = community + photos
+    # Photos people in the app said show the wrong plant (weekly feedback) are left out.
+    from .inbox import hidden_photos
+    hidden = hidden_photos(region_id)
+    if hidden:
+        before = len(photos)
+        photos = [p for p in photos if (p.get("page") or "") not in hidden and (p.get("url") or "") not in hidden]
+        print(f"HIDDEN {before - len(photos)} photos people marked as the wrong plant", flush=True)
     from .freemodel import preprocess
 
     usable = []

@@ -92,3 +92,20 @@ def test_read_submission_ignores_odd_paths(tmp_path):
     meta, images = ib.read_submission(f)
     assert [i[0] for i in images] == ["1_flower.jpg"]
     assert ib.submissions(tmp_path) == [f]
+
+
+def test_feedback_votes_hide_wrong_photos(tmp_path, monkeypatch):
+    monkeypatch.setattr(ib, "COMMUNITY", tmp_path / "community")
+    inbox = tmp_path / "inbox"
+    for k in range(4):
+        f = inbox / "feedback" / "ID-BA" / "gamma_three" / f"vote_{k}.json"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps({"kind": "vote", "region": "ID-BA", "species": "Gamma three", "correct": k == 0, "photo": "http://x/1"}))
+    (inbox / "feedback" / "ID-BA" / "gamma_three" / "review_a.json").write_text(json.dumps(
+        {"kind": "review", "region": "ID-BA", "species": "Gamma three", "rating": 4, "text": "Local name: daun x @someone"}))
+    files, by = ib.collect_feedback(inbox, "2026-11-16")
+    assert len(files) == 5 and len(by["ID-BA"]) == 5
+    ib.save_feedback("ID-BA", by["ID-BA"])
+    assert ib.hidden_photos("ID-BA") == {"http://x/1"}     # 3 no, 1 yes
+    d = ib.digest(by)
+    assert "Local name" in d and "@someone" not in d

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -81,7 +82,8 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
     val pager = rememberPagerState(initialPage = start.coerceIn(0, pages - 1)) { pages }
     var saved by remember { mutableStateOf<ReviewStore.Correction?>(null) }
     val chips = androidx.compose.foundation.lazy.rememberLazyListState()
-    androidx.compose.runtime.LaunchedEffect(pager.currentPage) { chips.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) }
+    // The selected match always sits first on the left, fully visible.
+    androidx.compose.runtime.LaunchedEffect(pager.currentPage) { chips.animateScrollToItem(pager.currentPage) }
     fun go(page: Int) = scope.launch { pager.animateScrollToPage(page.coerceIn(0, pages - 1)) }
 
     Column(Modifier.fillMaxSize()) {
@@ -117,9 +119,10 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
                 } else stringResource(R.string.matches_pick_search)
                 val deadly = k < cands.size && cands[k].isDeadly
                 Text(
-                    label, maxLines = 1, style = MaterialTheme.typography.labelLarge,
+                    label, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelLarge,
                     color = if (selected) MaterialTheme.colorScheme.onPrimary else if (deadly) Danger else MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.clip(RoundedCornerShape(50))
+                    modifier = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(50))
                         .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
                         .clickable { go(k) }.padding(horizontal = 14.dp, vertical = 8.dp),
                 )

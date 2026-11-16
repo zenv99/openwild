@@ -229,8 +229,8 @@
     <string name="near_you_install">Suggested from your location. Install only if this is the region you want.</string>
 
     <string name="review_title">Your review</string>
-    <string name="review_hint">Saved on this phone only. No account. Nothing is uploaded.</string>
-    <string name="review_text_label">Notes</string>
+    <string name="review_hint">Saved on this phone. Share it with OpenWild if you like: tips, local names and corrections help everyone.</string>
+    <string name="review_text_label">Notes, tips, local names, corrections</string>
     <string name="review_save">Save review</string>
     <string name="review_saved">Review saved on this phone</string>
     <string name="review_star">%1$d stars</string>
@@ -300,9 +300,19 @@
     <string name="inbox_ask_what_happens">If accepted, your photos are shown in the app and shared under CC BY 4.0 with your name. Photos that aren’t used are deleted. Nothing is sent unless you tap Send.</string>
     <string name="inbox_ask_yes">Send</string>
     <string name="inbox_ask_no">Not now</string>
+    <string name="feedback_ask_title">Send this to OpenWild?</string>
+    <string name="feedback_ask_sent">We’ll send only this, with the plant name: %1$s</string>
+    <string name="feedback_ask_not_sent">No location, no account, no phone ID. Our bot reads it once a week; useful tips and corrections go into the app.</string>
+    <string name="feedback_votes_remember">Don’t ask again for yes/no answers on photos</string>
+    <string name="feedback_sent">Sent. Thank you!</string>
+    <string name="feedback_failed">Couldn’t send. Check your connection.</string>
+    <string name="vote_question">Right plant?</string>
+    <string name="vote_yes">Yes</string>
+    <string name="vote_no">No</string>
+    <string name="review_share">Share with OpenWild</string>
     <string name="use_my_location">Find my region (optional, uses approximate location)</string>
     <string name="status_online">Download · %1$d species · %2$d MB</string>
-    <string name="parts_title">Part by part</string>
+    <string name="parts_title">Parts identified</string>
     <string name="pp_all">All parts</string>
     <string name="pp_seeds">Seeds / nuts</string>
     <string name="pp_fruit">Fruit</string>

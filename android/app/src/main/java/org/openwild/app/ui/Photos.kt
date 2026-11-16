@@ -236,6 +236,23 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
             }
         }
         PhotoCredit(photos[pager.currentPage].first, Color.Unspecified)
+        val feedback = rememberFeedbackSender()
+        val cur = photos[pager.currentPage].first
+        if (feedback.enabled && cur.stage != "related") {
+            // Is this photo really this plant? Answers help the bot drop wrong photos (asks before sending).
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.vote_question), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                for (yes in listOf(true, false)) {
+                    androidx.compose.material3.TextButton(onClick = {
+                        feedback.send(
+                            pack.regionId, pack.species.scientificNames[i], "vote",
+                            org.json.JSONObject().put("correct", yes).put("photo", cur.url ?: "").put("stage", cur.stage),
+                            (if (yes) "✓ " else "✗ ") + pack.species.scientificNames[i],
+                        )
+                    }) { Text(stringResource(if (yes) R.string.vote_yes else R.string.vote_no)) }
+                }
+            }
+        }
         LifeStageStrip(photos.filter { it.first.stage != "related" }, onAdd = onAdd?.let { f -> { st: String -> f(st) } }) { st ->
             viewerAt = photos.indexOfFirst { it.first.stage == st }.coerceAtLeast(0)
         }
