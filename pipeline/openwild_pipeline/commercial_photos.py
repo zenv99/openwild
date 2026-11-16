@@ -661,6 +661,74 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
 KEY_TARGET = 12  # photos wanted for each poisonous or edible plant
 
 
+def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> list[dict]:
+    """Display photos of the closest relative found ANYWHERE (same genus, best-documented species), for a
+    deadly/poisonous plant with no photo of its own and no relative in the region. Open licences only
+    (iNaturalist research grade, then GBIF). Always labelled in the app as a related plant, never used for ID.
+    Results are cached in folder/relatives.json."""
+    cache_f = folder / "relatives.json"
+    try:
+        cache = json.loads(cache_f.read_text()) if cache_f.exists() else {}
+    except Exception:  # noqa: BLE001
+        cache = {}
+    key = f"{genus.lower()}|{exclude.lower()}"
+    if key in cache:
+        return [c for c in cache[key] if Path(c["path"]).exists()]
+    cands: list[dict] = []
+    if config.ALLOW_INATURALIST:
+        try:
+            data = get_json(INAT_API, {
+                "taxon_name": genus, "photos": "true", "photo_license": INAT_LICENSES, "quality_grade": "research",
+                "per_page": "50", "order_by": "votes",
+            }, retries=2, timeout=40)
+            for obs in data.get("results") or []:
+                t = obs.get("taxon") or {}
+                name = t.get("name") or ""
+                if t.get("rank") != "species" or name.lower() == exclude.lower() or name.split()[0].lower() != genus.lower():
+                    continue
+                user = obs.get("user") or {}
+                for ph in (obs.get("photos") or [])[:2]:
+                    lic = config.photo_license(ph.get("license_code"))
+                    url = (ph.get("url") or "").replace("/square.", "/medium.")
+                    if lic and url:
+                        cands.append({"species": name, "license": lic, "url": url,
+                                      "observer": (user.get("name") or user.get("login") or "")[:200],
+                                      "page": f"https://www.inaturalist.org/observations/{obs.get('id')}"})
+        except Exception as e:  # noqa: BLE001
+            print(f"relatives inat {genus} failed: {e!r}", flush=True)
+    if not cands:
+        try:
+            m = get_json(f"{config.GBIF_API}/species/match", {"name": genus, "rank": "GENUS"}, retries=2)
+            if m.get("usageKey") and (m.get("rank") or "").upper() == "GENUS":
+                for c in from_gbif(int(m["usageKey"]), want=10, pages=2):
+                    if c["stage"] != "specimen":
+                        cands.append({"species": f"{genus} sp.", "license": c["license"], "url": c["url"],
+                                      "observer": c["observer"], "page": c["page"]})
+        except Exception as e:  # noqa: BLE001
+            print(f"relatives gbif {genus} failed: {e!r}", flush=True)
+    # One donor species (the best-documented), so the photos are consistent.
+    counts: dict[str, int] = defaultdict(int)
+    for c in cands:
+        counts[c["species"]] += 1
+    out: list[dict] = []
+    if counts:
+        donor = max(counts, key=counts.get)
+        for c in [c for c in cands if c["species"] == donor]:
+            dest = folder / "relatives" / slug_name(donor) / (hashlib.sha1(c["url"].encode()).hexdigest()[:16] + ".jpg")
+            if _download(c["url"], dest) and not looks_like_sheet(dest, c["page"], c["url"]):
+                out.append({**c, "path": str(dest)})
+            if len(out) >= want:
+                break
+    cache[key] = out
+    folder.mkdir(parents=True, exist_ok=True)
+    cache_f.write_text(json.dumps(cache, indent=1))
+    return out
+
+
+def slug_name(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
+
+
 def safety_species(rows: list[dict]) -> set[str]:
     """Species with poison or food information: curated entries, quick facts, and genera with group rules."""
     from .content import load_curated, load_group_rules, load_quick
@@ -921,6 +989,16 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
                     "observer": f"{p.get('observer') or 'unknown'} — related species: {p['scientific_name']}",
                 } for p, _ in by[donor][:2]]
                 related += 1
+            else:
+                # No relative in the region: the closest relative found anywhere (open licence, labelled).
+                far = genus_relatives(key.split()[0], r["scientific_name"], photos_path.parent)
+                if far:
+                    borrowed = [{
+                        "path": c["path"], "license": c["license"], "url": c["page"], "stage": "related",
+                        "observer": f"{c.get('observer') or 'unknown'} — related species: {c['species']}",
+                    } for c in far]
+                    related += 1
+                    print(f"RELATED-WORLD {r['scientific_name']} <- {far[0]['species']} ({len(far)} photos)", flush=True)
         # Prefer living-plant stages over a herbarium sheet when both exist.
         living = [pair for pair in pairs if pair[0].get("stage") != "specimen"]
         pairs = living or pairs
