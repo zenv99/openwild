@@ -1,23 +1,23 @@
 {
- "photos_tested": 28008,
+ "photos_tested": 28013,
  "species_tested": 3154,
  "species_total": 3263,
  "top_k": {
-  "top1": 0.5223,
+  "top1": 0.5207,
   "top3": 0.6416,
-  "top5": 0.6874,
-  "top10": 0.7448
+  "top5": 0.6866,
+  "top10": 0.746
  },
  "median_rank": 1.0,
  "most_confused": [
   {
-   "true": "Hibiscus \u00d7 rosa-sinensis",
-   "shown_first": "Hibiscus rosa-sinensis",
-   "times": 8
-  },
-  {
    "true": "Hibiscus rosa-sinensis",
    "shown_first": "Hibiscus \u00d7 rosa-sinensis",
+   "times": 10
+  },
+  {
+   "true": "Hibiscus \u00d7 rosa-sinensis",
+   "shown_first": "Hibiscus rosa-sinensis",
    "times": 8
   },
   {
@@ -91,8 +91,13 @@
    "times": 5
   },
   {
-   "true": "Neolamarckia cadamba",
-   "shown_first": "Nauclea orientalis",
+   "true": "Ipomoea nil",
+   "shown_first": "Ipomoea indica",
+   "times": 5
+  },
+  {
+   "true": "Tribulus cistoides",
+   "shown_first": "Tribulus terrestris",
    "times": 5
   },
   {
@@ -126,11 +131,6 @@
    "times": 5
   },
   {
-   "true": "Elsholtzia pubescens",
-   "shown_first": "Pogostemon auricularius",
-   "times": 5
-  },
-  {
    "true": "Marsilea crenata",
    "shown_first": "Marsilea minuta",
    "times": 5
@@ -151,11 +151,6 @@
    "times": 5
   },
   {
-   "true": "Ipomoea nil",
-   "shown_first": "Ipomoea indica",
-   "times": 4
-  },
-  {
    "true": "Nauclea orientalis",
    "shown_first": "Neolamarckia cadamba",
    "times": 4
@@ -171,8 +166,13 @@
    "times": 4
   },
   {
-   "true": "Medinilla cumingii",
-   "shown_first": "Medinilla speciosa",
+   "true": "Ammannia multiflora",
+   "shown_first": "Ammannia baccifera",
+   "times": 4
+  },
+  {
+   "true": "Begonia baliensis",
+   "shown_first": "Begonia lempuyangensis",
    "times": 4
   },
   {
@@ -191,6 +191,11 @@
    "times": 4
   },
   {
+   "true": "Neolamarckia cadamba",
+   "shown_first": "Nauclea orientalis",
+   "times": 4
+  },
+  {
    "true": "Cuscuta australis",
    "shown_first": "Cuscuta campestris",
    "times": 4
@@ -201,11 +206,6 @@
    "times": 4
   },
   {
-   "true": "Tribulus cistoides",
-   "shown_first": "Tribulus terrestris",
-   "times": 4
-  },
-  {
    "true": "Medinilla speciosa",
    "shown_first": "Medinilla cumingii",
    "times": 4
@@ -213,12 +213,12 @@
  ],
  "hardest_species": [
   {
-   "species": "Litsea glutinosa",
-   "photos": 13,
+   "species": "Themeda triandra",
+   "photos": 14,
    "top1": 0.0
   },
   {
-   "species": "Pogonatherum crinitum",
+   "species": "Litsea glutinosa",
    "photos": 13,
    "top1": 0.0
   },
@@ -283,11 +283,6 @@
    "top1": 0.0
   },
   {
-   "species": "Ficus gul",
-   "photos": 9,
-   "top1": 0.0
-  },
-  {
    "species": "Guilandina major",
    "photos": 9,
    "top1": 0.0
@@ -323,12 +318,12 @@
    "top1": 0.0
   },
   {
-   "species": "Arundinella setosa",
+   "species": "Dalbergia latifolia",
    "photos": 9,
    "top1": 0.0
   },
   {
-   "species": "Dalbergia latifolia",
+   "species": "Mangifera odorata",
    "photos": 9,
    "top1": 0.0
   },
@@ -378,17 +373,17 @@
    "top1": 0.0
   },
   {
-   "species": "Vigna umbellata",
-   "photos": 8,
-   "top1": 0.0
-  },
-  {
    "species": "Diplacrum caricinum",
    "photos": 8,
    "top1": 0.0
   },
   {
    "species": "Ficus callosa",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Panicum sumatrense",
    "photos": 8,
    "top1": 0.0
   },
@@ -409,6 +404,11 @@
   },
   {
    "species": "Breynia androgyna",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Microsorum membranifolium",
    "photos": 7,
    "top1": 0.0
   }

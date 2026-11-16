@@ -3,15 +3,15 @@
 Leave-one-out on the pack's own reference photos: each photo is matched as if a user had just taken it,
 with its own fingerprint hidden. Good labelled photos, so treat this as an upper bound for real use.
 
-- Photos tested: 28008 across 3154 species (of 3263 with photos; a species needs 2+ photos to be tested)
-- Right plant shown first: 52.2%
-- In the top 3: 64.2% · top 5: 68.7% · top 10: 74.5%
+- Photos tested: 28013 across 3154 species (of 3263 with photos; a species needs 2+ photos to be tested)
+- Right plant shown first: 52.1%
+- In the top 3: 64.2% · top 5: 68.7% · top 10: 74.6%
 - Median position of the right plant: 1.0
 
 ## Most often confused (true plant -> shown first instead)
 
+- Hibiscus rosa-sinensis -> Hibiscus × rosa-sinensis (10x)
 - Hibiscus × rosa-sinensis -> Hibiscus rosa-sinensis (8x)
-- Hibiscus rosa-sinensis -> Hibiscus × rosa-sinensis (8x)
 - Pandanus tectorius -> Pandanus odorifer (7x)
 - Breynia androgyna -> Phyllanthus androgynus (6x)
 - Tribulus terrestris -> Tribulus cistoides (6x)
@@ -26,20 +26,20 @@ with its own fingerprint hidden. Good labelled photos, so treat this as an upper
 - Thelypteris immersa -> Amblovenatum immersum (6x)
 - Thelypteris callosa -> Pneumatopteris callosa (6x)
 - Ageratum houstonianum -> Ageratum conyzoides (5x)
-- Neolamarckia cadamba -> Nauclea orientalis (5x)
+- Ipomoea nil -> Ipomoea indica (5x)
+- Tribulus cistoides -> Tribulus terrestris (5x)
 - Myrica javanica -> Morella javanica (5x)
 - Passiflora foetida -> Passiflora vesicaria (5x)
 - Thunbergia grandiflora -> Thunbergia laurifolia (5x)
 - Phyllanthus obscurus -> Glochidion obscurum (5x)
 - Viola philippica -> Viola betonicifolia (5x)
 - Passiflora vesicaria -> Passiflora foetida (5x)
-- Elsholtzia pubescens -> Pogostemon auricularius (5x)
 - Marsilea crenata -> Marsilea minuta (5x)
 
 ## Hardest species (3+ test photos, lowest top-1)
 
+- Themeda triandra: 0% top-1 over 14 photos
 - Litsea glutinosa: 0% top-1 over 13 photos
-- Pogonatherum crinitum: 0% top-1 over 13 photos
 - Hibiscus × rosa-sinensis: 0% top-1 over 13 photos
 - Eucalyptus obliqua: 0% top-1 over 13 photos
 - Nephrolepis biserrata: 0% top-1 over 11 photos
@@ -52,7 +52,6 @@ with its own fingerprint hidden. Good labelled photos, so treat this as an upper
 - Horsfieldia iryaghedhi: 0% top-1 over 9 photos
 - Adonidia merrillii: 0% top-1 over 9 photos
 - Cissus verticillata: 0% top-1 over 9 photos
-- Ficus gul: 0% top-1 over 9 photos
 - Guilandina major: 0% top-1 over 9 photos
 - Melinis repens: 0% top-1 over 9 photos
 - Trichosanthes costata: 0% top-1 over 9 photos
@@ -60,6 +59,7 @@ with its own fingerprint hidden. Good labelled photos, so treat this as an upper
 - Citrus maxima: 0% top-1 over 9 photos
 - Ficus racemosa: 0% top-1 over 9 photos
 - Amydrium zippelianum: 0% top-1 over 9 photos
-- Arundinella setosa: 0% top-1 over 9 photos
 - Dalbergia latifolia: 0% top-1 over 9 photos
+- Mangifera odorata: 0% top-1 over 9 photos
 - Vitex glabrata: 0% top-1 over 9 photos
+- Bidens pilosa: 0% top-1 over 8 photos
