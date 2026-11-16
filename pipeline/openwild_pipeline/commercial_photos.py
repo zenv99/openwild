@@ -758,7 +758,7 @@ def _genus_candidates(genus: str) -> list[dict]:
                 if t.get("rank") != "species" or name.split()[0].lower() != genus.lower():
                     continue
                 user = obs.get("user") or {}
-                for ph in (obs.get("photos") or [])[:2]:
+                for ph in (obs.get("photos") or [])[:1]:   # the overview shot, not microscope/detail photos
                     lic = config.photo_license(ph.get("license_code"))
                     url = (ph.get("url") or "").replace("/square.", "/medium.")
                     if lic and url:
@@ -842,8 +842,12 @@ def safety_species(rows: list[dict]) -> set[str]:
     from .content import load_curated, load_group_rules, load_quick
 
     names = set(load_curated()) | set(load_quick())
-    genera = {t for (rank, t) in load_group_rules() if rank == "genus"}
+    rules = load_group_rules()
+    genera = {t for (rank, t) in rules if rank == "genus"}
+    families = {t for (rank, t) in rules if rank == "family"}
     names |= {r["scientific_name"].lower() for r in rows if (r.get("genus") or r["scientific_name"].split()[0]).lower() in genera}
+    # Family-level warnings too (e.g. the carrot family, flagged because it contains deadly hemlocks).
+    names |= {r["scientific_name"].lower() for r in rows if (r.get("family") or "").lower() in families}
     return names
 
 
@@ -1090,7 +1094,8 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
         borrowed: list[dict] = []
         if not pairs:
             # Deadly/poisonous and never photographed alive: the exact plant as a museum specimen first.
-            exact = exact_specimens(r["scientific_name"], photos_path.parent) if key in critical else []
+            fungus = (r.get("kingdom") or "").lower() == "fungi" or str(r.get("is_fungus", "")).lower() in ("1", "true")
+            exact = exact_specimens(r["scientific_name"], photos_path.parent) if key in critical and not fungus else []
             if exact:
                 print(f"EXACT-SPECIMEN {r['scientific_name']} ({exact[0]['observer']})", flush=True)
             kin = sorted((k for k in by_genus.get(key.split()[0], []) if k != key), key=lambda k: -len(by[k]))
