@@ -97,7 +97,7 @@ def boost_pack(full_pack: Path, photos_csv: Path, vecs: dict[str, np.ndarray], o
                 by_page.setdefault(k, r["path"])
     src = sqlite3.connect(full_pack)
     meta = dict(src.execute("SELECT key, value FROM meta"))
-    rows = src.execute("SELECT species_id, url FROM photo WHERE stage NOT IN ('related', 'specimen')").fetchall()
+    rows = src.execute("SELECT species_id, url FROM photo WHERE stage NOT IN ('related', 'specimen', 'exact_specimen')").fetchall()
     src.close()
     out.unlink(missing_ok=True)
     con = sqlite3.connect(out)

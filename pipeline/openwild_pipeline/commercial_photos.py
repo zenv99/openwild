@@ -732,6 +732,49 @@ def _genus_candidates(genus: str) -> list[dict]:
     return cands
 
 
+def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
+    """A deadly/poisonous plant nobody has photographed alive: a museum specimen of THIS exact plant (open
+    licence, from GBIF; CC0 / CC BY). Shown with a "pressed museum specimen of this exact plant" banner,
+    followed by photos of the closest living relative. Never used for photo ID. Cached in folder/specimens.json."""
+    cache_f = folder / "specimens.json"
+    try:
+        cache = json.loads(cache_f.read_text()) if cache_f.exists() else {}
+    except Exception:  # noqa: BLE001
+        cache = {}
+    key = scientific.lower()
+    if key not in cache:
+        cands: list[dict] = []
+        try:
+            m = get_json(f"{config.GBIF_API}/species/match", {"name": scientific, "strict": "true"}, retries=2)
+            if m.get("usageKey") and (m.get("rank") or "").upper() == "SPECIES":
+                d = get_json(f"{config.GBIF_API}/occurrence/search", {
+                    "taxonKey": str(m["usageKey"]), "mediaType": "StillImage", "basisOfRecord": "PRESERVED_SPECIMEN",
+                    "limit": "100", "license": ["CC0_1_0", "CC_BY_4_0"],
+                }, retries=2)
+                for o in d.get("results") or []:
+                    for md in o.get("media") or []:
+                        url = md.get("identifier") or ""
+                        lic = config.photo_license(md.get("license")) or config.photo_license(o.get("license"))
+                        if not url or lic is None or url.endswith("/manifest") or "/300," in url:
+                            continue
+                        cands.append({"license": lic, "url": url,
+                                      "observer": (o.get("institutionCode") or md.get("rightsHolder") or o.get("publisher") or "")[:120],
+                                      "page": f"https://www.gbif.org/occurrence/{o.get('key')}"})
+        except Exception as e:  # noqa: BLE001
+            print(f"specimens {scientific} failed: {e!r}", flush=True)
+        cache[key] = cands[:12]
+        folder.mkdir(parents=True, exist_ok=True)
+        cache_f.write_text(json.dumps(cache))
+    out = []
+    for c in cache[key]:
+        dest = folder / "specimens" / slug_name(scientific) / (hashlib.sha1(c["url"].encode()).hexdigest()[:16] + ".jpg")
+        if _download(c["url"], dest):
+            out.append({**c, "path": str(dest)})
+        if len(out) >= want:
+            break
+    return out
+
+
 def slug_name(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
 
@@ -988,6 +1031,10 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
         pairs = by.get(key, [])
         borrowed: list[dict] = []
         if not pairs:
+            # Deadly/poisonous and never photographed alive: the exact plant as a museum specimen first.
+            exact = exact_specimens(r["scientific_name"], photos_path.parent) if key in critical else []
+            if exact:
+                print(f"EXACT-SPECIMEN {r['scientific_name']} ({exact[0]['observer']})", flush=True)
             kin = sorted((k for k in by_genus.get(key.split()[0], []) if k != key), key=lambda k: -len(by[k]))
             if kin:
                 donor = kin[0]
@@ -1006,6 +1053,10 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
                     } for c in far]
                     related += 1
                     print(f"RELATED-WORLD {r['scientific_name']} <- {far[0]['species']} ({len(far)} photos)", flush=True)
+            borrowed = [{
+                "path": c["path"], "license": c["license"], "url": c["page"], "stage": "exact_specimen",
+                "observer": f"{c.get('observer') or 'museum'} — pressed museum specimen of this exact plant",
+            } for c in exact] + borrowed
         # Prefer living-plant stages over a herbarium sheet when both exist.
         living = [pair for pair in pairs if pair[0].get("stage") != "specimen"]
         pairs = living or pairs

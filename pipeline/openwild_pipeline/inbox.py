@@ -59,7 +59,7 @@ def load_library(pack: Path) -> tuple[np.ndarray, np.ndarray, dict[str, int], se
     vecs /= np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-8
     names = {n.lower(): i for i, n in con.execute("SELECT id, scientific_name FROM species")}
     genus = {i: (n.split()[0].lower() if n else "") for i, n in con.execute("SELECT id, scientific_name FROM species")}
-    have = {r[0] for r in con.execute("SELECT DISTINCT species_id FROM photo WHERE stage NOT IN ('related', 'specimen')")}
+    have = {r[0] for r in con.execute("SELECT DISTINCT species_id FROM photo WHERE stage NOT IN ('related', 'specimen', 'exact_specimen')")}
     con.close()
     return vecs, ids, names, have, genus
 

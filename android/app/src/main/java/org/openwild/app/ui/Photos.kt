@@ -194,6 +194,7 @@ fun stageLabel(stage: String): String = stringResource(
         "closeup" -> R.string.stage_closeup
         "bark" -> R.string.stage_bark
         "related" -> R.string.stage_related
+        "exact_specimen" -> R.string.stage_exact_specimen
         "field" -> R.string.stage_field
         "specimen" -> R.string.stage_specimen
         else -> R.string.stage_unspecified
@@ -227,7 +228,7 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize().clickable { viewerAt = page },
                     )
-                    if (photos[page].first.stage == "related") RelatedBanner(photos[page].first, Modifier.align(Alignment.TopStart))
+                    if (photos[page].first.stage.isBorrowedStage()) RelatedBanner(photos[page].first, Modifier.align(Alignment.TopStart))
                 }
             }
             PagerDots(photos.size, pager.currentPage, Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp))
@@ -238,7 +239,7 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
         PhotoCredit(photos[pager.currentPage].first, Color.Unspecified)
         val feedback = rememberFeedbackSender()
         val cur = photos[pager.currentPage].first
-        if (feedback.enabled && cur.stage != "related") {
+        if (feedback.enabled && !cur.stage.isBorrowedStage()) {
             // Is this photo really this plant? Answers help the bot drop wrong photos (asks before sending).
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.vote_question), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -253,7 +254,7 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
                 }
             }
         }
-        LifeStageStrip(photos.filter { it.first.stage != "related" }, onAdd = onAdd?.let { f -> { st: String -> f(st) } }) { st ->
+        LifeStageStrip(photos.filter { !it.first.stage.isBorrowedStage() }, onAdd = onAdd?.let { f -> { st: String -> f(st) } }) { st ->
             viewerAt = photos.indexOfFirst { it.first.stage == st }.coerceAtLeast(0)
         }
     }
@@ -263,6 +264,21 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
 /** "Related plant, not this one: <name>" across the top of a borrowed photo. Never ambiguous. */
 @Composable
 fun RelatedBanner(p: RegionPack.Photo, modifier: Modifier = Modifier) {
+    if (p.stage == "exact_specimen") {
+        // The exact plant, but pressed in a museum: nobody has published a photo of it alive yet.
+        Row(
+            modifier.fillMaxWidth().background(Color(0xF0263238)).padding(horizontal = 12.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Filled.Info, null, tint = Color.White, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(
+                stringResource(R.string.exact_specimen_banner), color = Color.White, style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis,
+            )
+        }
+        return
+    }
     val other = p.observer?.substringAfter("related species: ", "")?.trim()?.takeIf { it.isNotBlank() }
     Row(
         modifier.fillMaxWidth().background(PhotoWanted.copy(alpha = 0.95f)).padding(horizontal = 12.dp, vertical = 7.dp),
@@ -346,7 +362,7 @@ fun CandidatePhotos(pack: RegionPack, i: Int, name: String, modifier: Modifier =
                     photos[k].second, contentDescription = stringResource(R.string.photo_of, name),
                     contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().clickable { viewerAt = k },
                 )
-                if (cur.stage == "related") {
+                if (cur.stage.isBorrowedStage()) {
                     RelatedBanner(cur, Modifier.align(Alignment.TopStart))
                 } else {
                     Text(
@@ -458,7 +474,7 @@ private fun PhotoViewer(photos: List<Pair<RegionPack.Photo, ImageBitmap>>, start
         val pager = rememberPagerState(initialPage = start) { photos.size }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             HorizontalPager(pager, Modifier.fillMaxSize()) { page -> ZoomableImage(photos[page].second, name) }
-            if (photos[pager.currentPage].first.stage == "related") {
+            if (photos[pager.currentPage].first.stage.isBorrowedStage()) {
                 RelatedBanner(photos[pager.currentPage].first, Modifier.align(Alignment.TopStart).padding(top = 56.dp))
             }
             IconButton(onClick = onClose, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
@@ -510,3 +526,7 @@ private fun ZoomableImage(bmp: ImageBitmap, name: String) {
             .graphicsLayer(scaleX = scale, scaleY = scale, translationX = offset.x, translationY = offset.y),
     )
 }
+
+
+/** Photos that are not a living photo of this plant: a relative's, or a museum specimen. Never used for ID. */
+fun String.isBorrowedStage(): Boolean = this == "related" || this == "exact_specimen"

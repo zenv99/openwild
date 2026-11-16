@@ -21,7 +21,7 @@ def pack_entry(pack: Path, url: str) -> dict:
     photo_species = 0
     if "photo" in tables:
         cols = {r[1] for r in con.execute("PRAGMA table_info(photo)")}
-        where = " WHERE stage NOT IN ('specimen', 'related')" if "stage" in cols else ""
+        where = " WHERE stage NOT IN ('specimen', 'related', 'exact_specimen')" if "stage" in cols else ""
         # Plants with their own photos (not herbarium sheets, not a related species' photo).
         photo_species = con.execute(f"SELECT COUNT(DISTINCT species_id) FROM photo{where}").fetchone()[0]
     protos = con.execute("SELECT COUNT(*) FROM prototype").fetchone()[0] if "prototype" in tables else 0

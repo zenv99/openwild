@@ -349,8 +349,10 @@
     <string name="parts_none">No part-by-part information yet. Don’t eat any part.</string>
     <string name="parts_none_deadly">Treat every part as deadly.</string>
     <string name="stage_related">Related species, not this plant</string>
+    <string name="stage_exact_specimen">Museum specimen of this exact plant</string>
+    <string name="exact_specimen_banner">This exact plant, pressed in a museum. No photo of it alive exists yet.</string>
     <string name="related_banner">Related plant, NOT this one: %1$s</string>
-    <string name="related_tile">Related plant photo</string>
+    <string name="related_tile">No living photo of this plant yet</string>
     <string name="need_photo">Need photo</string>
     <string name="need_photo_sub">Tap to add yours. Your name goes on it.</string>
     <string name="need_photo_add">Add photo</string>
