@@ -13,6 +13,11 @@ import java.security.MessageDigest
 /** Downloads, verifies and stores region packs in app-private storage (filesDir/packs). */
 class PackManager(private val context: Context) {
     companion object {
+        /** The newer download for an installed pack of the same kind (essentials stays essentials), if any. */
+        fun updateFor(p: InstalledPack, r: RemotePack): RemotePack? =
+            if (p.light && r.essentials != null) r.essentials.takeIf { it.version > p.version }
+            else r.takeIf { it.version > p.version }
+
         /** The only hosts the app will ever contact: GitHub release downloads and the CDN they redirect to. */
         val ALLOWED_HOSTS = listOf("github.com", "githubusercontent.com")
     }
@@ -26,9 +31,19 @@ class PackManager(private val context: Context) {
         val sha256: String,
         val size: Long,
         val speciesCount: Int,
+        /** Smaller first download for big regions: every plant, all deadly-plant photos, fewer of the rest. */
+        val essentials: RemotePack? = null,
+    ) {
+        /** What a first download of this region fetches. */
+        val first: RemotePack get() = essentials ?: this
+    }
+
+    data class InstalledPack(
+        val regionId: String, val name: String, val version: Int, val file: File, val compatible: Boolean,
+        /** Installed from the "essentials" download (fewer photos); the full set is offered as an upgrade. */
+        val light: Boolean = false,
     )
 
-    data class InstalledPack(val regionId: String, val name: String, val version: Int, val file: File, val compatible: Boolean)
 
     /** A pack shipped inside the APK. It is not copied onto the device until the user chooses that region. */
     data class BundledPack(
@@ -57,6 +72,7 @@ class PackManager(private val context: Context) {
                 file = f,
                 // Guide-only packs (no photo fingerprints) work with any model.
                 compatible = meta["model_id"] == Embedder.modelId(context) || RegionPack.prototypeCount(f) == 0,
+                light = meta["light"] == "1",
             )
         }.sortedBy { it.name }
 
@@ -139,6 +155,7 @@ class PackManager(private val context: Context) {
         val packs = root.getJSONArray("packs")
         return (0 until packs.length()).map { i ->
             val p = packs.getJSONObject(i)
+            val e = p.optJSONObject("essentials")
             RemotePack(
                 regionId = p.getString("region_id"),
                 name = p.getString("name"),
@@ -147,6 +164,13 @@ class PackManager(private val context: Context) {
                 sha256 = p.getString("sha256"),
                 size = p.optLong("size"),
                 speciesCount = p.optInt("species_count"),
+                essentials = e?.let {
+                    RemotePack(
+                        regionId = p.getString("region_id"), name = p.getString("name"), version = it.getInt("version"),
+                        url = it.getString("url"), sha256 = it.getString("sha256"), size = it.optLong("size"),
+                        speciesCount = p.optInt("species_count"),
+                    )
+                },
             )
         }
     }

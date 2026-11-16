@@ -269,10 +269,10 @@ jobs:
           fi
           python -m openwild_pipeline.cli commercial-pack "${{ inputs.region }}" --version "$V" --photos "${{ inputs.photos || '12' }}" \
             --out "../work/out/${{ inputs.region }}.owpack" --evaluate "../data/regions/${{ inputs.region }}/eval"
-          # Light copy shipped inside the app, cut from the full pack: every photo of every deadly plant, up to 12
-          # per poisonous plant, then food plants, at least one for the rest; under 90 MB (git's limit is 100 MB).
-          # Version one below the full pack, so the app offers the full photo set as an update.
-          if [ "${{ inputs.region }}" = "ID-BA" ]; then
+          # "Essentials" download for big regions, cut from the full pack: every photo of every deadly plant, up to
+          # 12 per poisonous plant, then food plants, at least one for the rest (< 90 MB). Offered as the first
+          # download; the full set is one tap away. Version one below the full pack, so the full set shows as an update.
+          if [ "$(stat -c %s ../work/out/${{ inputs.region }}.owpack)" -gt 150000000 ]; then
             python -c "from pathlib import Path; from openwild_pipeline.commercial_photos import light_pack; light_pack(Path('../work/out/${{ inputs.region }}.owpack'), Path('../work/light/${{ inputs.region }}.owpack'))"
           fi
           python - <<'PY'
@@ -311,6 +311,24 @@ jobs:
           PY
           (cd pipeline && python -m openwild_pipeline.cli pack-index --pack ../work/out/$R.owpack --index ../work/idx/index.json \
             --url "https://github.com/${{ github.repository }}/releases/download/packs/$R.owpack")
+          if [ -f "work/light/$R.owpack" ]; then
+            cp "work/light/$R.owpack" "work/out/$R.essentials.owpack"
+            python3 - <<'PY'
+          import hashlib, json, os, sqlite3
+          r = "${{ inputs.region }}"
+          p = f"work/out/{r}.essentials.owpack"
+          v = int(dict(sqlite3.connect(p).execute("SELECT key, value FROM meta"))["pack_version"])
+          idx = json.load(open("work/idx/index.json"))
+          for e in idx["packs"]:
+              if e["region_id"] == r:
+                  e["essentials"] = {"version": v, "size": os.path.getsize(p),
+                                     "sha256": hashlib.sha256(open(p, "rb").read()).hexdigest(),
+                                     "url": f"https://github.com/${{ github.repository }}/releases/download/packs/{r}.essentials.owpack"}
+          json.dump(idx, open("work/idx/index.json", "w"), indent=1)
+          print("ESSENTIALS", r, v, os.path.getsize(p))
+          PY
+            gh release upload packs "work/out/$R.essentials.owpack" --clobber
+          fi
           gh release upload packs "work/out/$R.owpack" work/idx/index.json --clobber
           # Progress for the scheduler: did any shard stop at its time budget? (then more passes are needed)
           gh release download packs -p photo-progress.json -D work/idx --clobber || echo '{}' > work/idx/photo-progress.json
@@ -339,40 +357,28 @@ jobs:
             for old in $(gh release view photo-store --json assets --jq '.assets[].name' | grep "^$R.tar.part" || true); do gh release delete-asset photo-store "$old" -y; done
             gh release upload photo-store /tmp/$R.tar.part* --clobber
           fi
-      - name: Update the copy shipped in the app, commit, rebuild the app
-        if: inputs.publish == 'true' && inputs.region == 'ID-BA'
+      - name: Commit the accuracy report and photos-wanted list; refresh the BioCLIP 2 file
+        if: inputs.publish == 'true'
         working-directory: .
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           R="${{ inputs.region }}"
           # Start from the newest main (another run may have committed meanwhile), keeping this run's outputs.
-          mkdir -p /tmp/keep && cp -r "data/regions/$R/eval" /tmp/keep/eval
+          mkdir -p /tmp/keep && cp -r "data/regions/$R/eval" /tmp/keep/eval 2>/dev/null || true
           git fetch -q origin main && git reset -q --hard origin/main
-          mkdir -p "data/regions/$R" && rm -rf "data/regions/$R/eval" && cp -r /tmp/keep/eval "data/regions/$R/eval"
-          SZ=$(stat -c %s "work/light/$R.owpack")
-          if [ "$SZ" -ge 95000000 ]; then
-            echo "::warning::light pack $((SZ/1000000)) MB is too big for git; keeping the bundled copy, the full pack is published"
-          else
-            cp "work/light/$R.owpack" "android/app/src/main/assets/packs/$R.owpack"
-          fi
-          (cd pipeline && python - <<'PY'
-          from pathlib import Path
-          import sqlite3
-          from openwild_pipeline.commercial_photos import _write_catalog
-          p = Path("../android/app/src/main/assets/packs/ID-BA.owpack")
-          v = int(dict(sqlite3.connect(p).execute("SELECT key, value FROM meta"))["pack_version"])
-          _write_catalog(p, "ID-BA", v)
-          PY
-          )
+          if [ -d /tmp/keep/eval ]; then mkdir -p "data/regions/$R" && rm -rf "data/regions/$R/eval" && cp -r /tmp/keep/eval "data/regions/$R/eval"; fi
           git config user.name "openwild-data-bot"
           git config user.email "openwild-data-bot@users.noreply.github.com"
-          (cd pipeline && python -m openwild_pipeline.cli photos-wanted "$R" --top 300 --out "../docs/photos-wanted/$R.md")
-          git add android/app/src/main/assets/packs/ "data/regions/$R/eval" docs/photos-wanted
-          git commit -m "Bali pack: more photos per growth stage, more species, photo-ID accuracy report" || echo "No changes"
+          (cd pipeline && python -m openwild_pipeline.cli photos-wanted "$R" --top 300 --out "../docs/photos-wanted/$R.md") || true
+          git add "data/regions/$R/eval" docs/photos-wanted 2>/dev/null || true
+          git commit -m "$R pack: photos, accuracy report, photos wanted" || echo "No changes"
           git push origin HEAD:main
-          gh workflow run android.yml --ref main
-          if [ "${{ inputs.topup }}" != "true" ] && [ "${{ inputs.chain }}" != "false" ]; then
+          # The pack version changed: rebuild its "Better recognition" (BioCLIP 2) file if the region has one.
+          if gh release download packs -p boosts.json -D /tmp/bj --clobber 2>/dev/null && jq -e --arg r "$R" 'map(.region_id) | index($r)' /tmp/bj/boosts.json >/dev/null; then
+            gh workflow run bioclip.yml --ref main -f region="$R" -f export_model=false
+          fi
+          if [ "${{ inputs.topup }}" != "true" ] && [ "${{ inputs.chain }}" != "false" ] && [ "$R" = "ID-BA" ]; then
             gh workflow run bali-photos.yml --ref main -f region="$R" -f max_species="" -f publish=true -f topup=true
           fi
       - name: Hand over to the scheduler (next regions)

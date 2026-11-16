@@ -71,12 +71,7 @@ jobs:
           git config user.email "openwild-data-bot@users.noreply.github.com"
           git fetch -q origin main && git reset -q --hard origin/main
           mkdir -p content/evidence/wiki_parts && cp /tmp/wp.csv "content/evidence/wiki_parts/$R.csv"
-          if [ "$R" = "ID-BA" ]; then
-            (cd pipeline && python -m openwild_pipeline.cli add-parts "../android/app/src/main/assets/packs/$R.owpack" \
-              --version "$(date -u +%Y%m%d%H)" --region "$R")
-            git add android/app/src/main/assets/packs/
-          fi
           git add content/evidence/wiki_parts
           git commit -m "Part-by-part facts from Wikipedia: $R" || { echo "No changes"; exit 0; }
           git push origin HEAD:main
-          if [ "$R" = "ID-BA" ]; then gh workflow run android.yml --ref main; fi
+          # Packs pick the facts up on their next build (no pack ships inside the app any more).

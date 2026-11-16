@@ -122,7 +122,7 @@ private fun ChoiceRow(
                 when {
                     progress != null -> stringResource(R.string.status_downloading, (progress * 100).toInt())
                     pack != null -> stringResource(R.string.status_ready, pack.version, pack.speciesCount)
-                    online != null -> stringResource(R.string.status_online, online.speciesCount, (online.size / 1_000_000.0).let { if (it < 1) 1.0 else it }.toInt())
+                    online != null -> stringResource(R.string.status_online, online.speciesCount, (online.first.size / 1_000_000.0).let { if (it < 1) 1.0 else it }.toInt())
                     else -> stringResource(R.string.status_not_ready)
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -136,7 +136,7 @@ private fun ChoiceRow(
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.install_pack))
             }
-            online != null -> Button(onClick = { vm.download(online) }) {
+            online != null -> Button(onClick = { vm.download(online.first) }) {
                 Icon(Icons.Filled.Download, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.download))

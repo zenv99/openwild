@@ -749,8 +749,8 @@ def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
             if m.get("usageKey") and (m.get("rank") or "").upper() == "SPECIES":
                 d = get_json(f"{config.GBIF_API}/occurrence/search", {
                     "taxonKey": str(m["usageKey"]), "mediaType": "StillImage", "basisOfRecord": "PRESERVED_SPECIMEN",
-                    "limit": "100", "license": ["CC0_1_0", "CC_BY_4_0"],
-                }, retries=2)
+                    "limit": "100",
+                }, retries=6, timeout=90)
                 for o in d.get("results") or []:
                     for md in o.get("media") or []:
                         url = md.get("identifier") or ""
@@ -761,7 +761,11 @@ def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
                                       "observer": (o.get("institutionCode") or md.get("rightsHolder") or o.get("publisher") or "")[:120],
                                       "page": f"https://www.gbif.org/occurrence/{o.get('key')}"})
         except Exception as e:  # noqa: BLE001
+            # A failed lookup is not "no specimen exists": don't remember it, try again next build.
             print(f"specimens {scientific} failed: {e!r}", flush=True)
+            return []
+        # Open licences only; CC0 first, then CC BY.
+        cands.sort(key=lambda c: 0 if c["license"] == "cc0" else 1)
         cache[key] = cands[:12]
         folder.mkdir(parents=True, exist_ok=True)
         cache_f.write_text(json.dumps(cache))
@@ -1254,6 +1258,7 @@ def light_pack(full: Path, out: Path, max_bytes: int = 90_000_000) -> dict:
                      else "poison" if tox in ("poisonous", "toxic") else "food" if edi.startswith("edible") else "")
     by = _group(src.execute("SELECT species_id, id FROM photo ORDER BY species_id, rank, id"))
     src.close()
+    out.parent.mkdir(parents=True, exist_ok=True)
     result = {}
     for poison, food, other in ((12, 6, 3), (12, 4, 2), (12, 3, 2), (12, 3, 1), (8, 3, 1), (6, 2, 1), (4, 2, 1), (3, 1, 1), (1, 1, 1)):
         cap = {"deadly": 99, "poison": poison, "food": food, "": other}

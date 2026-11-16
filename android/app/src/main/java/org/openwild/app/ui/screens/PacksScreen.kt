@@ -90,7 +90,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
         if (state.installingRegion == id) return Status.Installing
         state.downloading[id]?.let { return Status.Downloading(it) }
         installed[id]?.let { p ->
-            val upd = remote[id]?.takeIf { it.version > p.version }
+            val upd = remote[id]?.let { PackManager.updateFor(p, it) }
             return Status.Installed(p.version, id == activeId, upd)
         }
         state.bundled.firstOrNull { it.regionId == id && it.complete }?.let { return Status.Ready(it.version, it.speciesCount) }
@@ -215,7 +215,7 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
             Text(r.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             val sub = when (s) {
                 is Status.Installed -> stringResource(if (s.active) R.string.status_in_use else R.string.status_downloaded, s.version)
-                is Status.Available -> stringResource(R.string.pack_size, mb(s.pack.size), s.pack.speciesCount)
+                is Status.Available -> stringResource(R.string.pack_size, mb(s.pack.first.size), s.pack.speciesCount)
                 is Status.Downloading -> stringResource(R.string.status_downloading, (s.progress * 100).toInt())
                 is Status.Ready -> stringResource(R.string.status_ready, s.version, s.speciesCount)
                 Status.Installing -> stringResource(R.string.installing_pack)
@@ -236,7 +236,7 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
             Status.Installing -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
             }
-            is Status.Available -> IconButton(onClick = { vm.download(s.pack) }) {
+            is Status.Available -> IconButton(onClick = { vm.download(s.pack.first) }) {
                 Icon(Icons.Filled.CloudDownload, stringResource(R.string.download), tint = MaterialTheme.colorScheme.primary)
             }
             is Status.Downloading -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {

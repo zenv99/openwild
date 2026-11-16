@@ -147,6 +147,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
             val bundled = withContext(Dispatchers.IO) { ow.packs.bundledCatalog() }
             _state.update { it.copy(modelMissing = missing, regions = regions, bundled = bundled) }
+            // First-run suggestion without asking for location: the phone's time zone and region setting.
+            if (_state.value.suggestedRegionId == null) {
+                val tz = java.util.TimeZone.getDefault().id
+                val country = java.util.Locale.getDefault().country.uppercase()
+                val guess = when {
+                    tz == "Asia/Makassar" && regions.any { it.id == "ID-BA" } -> "ID-BA"   // Bali, Nusa Tenggara, Sulawesi
+                    else -> regions.firstOrNull { it.id == country }?.id
+                }
+                regions.firstOrNull { it.id == guess }?.let { r ->
+                    _state.update { it.copy(suggestedRegion = r.name, suggestedRegionId = r.id) }
+                }
+            }
             refreshInstalled()
             loadActivePack()
             _state.update { it.copy(bootstrapped = true) }
@@ -185,8 +197,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Download every installed pack that has a newer version in the index. */
     fun updateAll() {
-        val have = _state.value.installed.associate { it.regionId to it.version }
-        _state.value.remote.filter { r -> have[r.regionId]?.let { it < r.version } == true }.forEach { download(it) }
+        val have = _state.value.installed.associateBy { it.regionId }
+        _state.value.remote.mapNotNull { r -> have[r.regionId]?.let { PackManager.updateFor(it, r) } }.forEach { download(it) }
     }
 
     // ---------- navigation ----------

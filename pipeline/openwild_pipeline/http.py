@@ -20,7 +20,7 @@ _host_next: dict[str, float] = {}
 # Minimum seconds between requests per host (Wikimedia asks API clients to be gentle).
 # Commons' API throttles hard (requests stall ~60 s) when hit in parallel: about 2 requests a second.
 MIN_INTERVAL = {"commons.wikimedia.org": 0.5, "wikipedia.org": 0.08, "wikidata.org": 0.2, "wikimedia.org": 0.05,
-                "api.gbif.org": 0.05,
+                "api.gbif.org": 0.35,   # ~3 requests/s: GBIF throttles faster clients
                 "api.inaturalist.org": float(__import__("os").environ.get("OW_INAT_INTERVAL") or 6.0)}
 
 
