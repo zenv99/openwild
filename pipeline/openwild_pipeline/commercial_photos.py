@@ -671,9 +671,32 @@ def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> li
         cache = json.loads(cache_f.read_text()) if cache_f.exists() else {}
     except Exception:  # noqa: BLE001
         cache = {}
-    key = f"{genus.lower()}|{exclude.lower()}"
+    key = genus.lower()
     if key in cache:
-        return [c for c in cache[key] if Path(c["path"]).exists()]
+        cands = cache[key]
+    else:
+        cands = _genus_candidates(genus)
+        cache[key] = cands
+        folder.mkdir(parents=True, exist_ok=True)
+        cache_f.write_text(json.dumps(cache))
+    cands = [c for c in cands if c["species"].lower() != exclude.lower()]
+    # One donor species (the best-documented), so the photos are consistent.
+    counts: dict[str, int] = defaultdict(int)
+    for c in cands:
+        counts[c["species"]] += 1
+    out: list[dict] = []
+    if counts:
+        donor = max(counts, key=counts.get)
+        for c in [c for c in cands if c["species"] == donor]:
+            dest = folder / "relatives" / slug_name(donor) / (hashlib.sha1(c["url"].encode()).hexdigest()[:16] + ".jpg")
+            if _download(c["url"], dest) and not looks_like_sheet(dest, c["page"], c["url"]):
+                out.append({**c, "path": str(dest)})
+            if len(out) >= want:
+                break
+    return out
+
+
+def _genus_candidates(genus: str) -> list[dict]:
     cands: list[dict] = []
     if config.ALLOW_INATURALIST:
         try:
@@ -684,7 +707,7 @@ def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> li
             for obs in data.get("results") or []:
                 t = obs.get("taxon") or {}
                 name = t.get("name") or ""
-                if t.get("rank") != "species" or name.lower() == exclude.lower() or name.split()[0].lower() != genus.lower():
+                if t.get("rank") != "species" or name.split()[0].lower() != genus.lower():
                     continue
                 user = obs.get("user") or {}
                 for ph in (obs.get("photos") or [])[:2]:
@@ -706,23 +729,7 @@ def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> li
                                       "observer": c["observer"], "page": c["page"]})
         except Exception as e:  # noqa: BLE001
             print(f"relatives gbif {genus} failed: {e!r}", flush=True)
-    # One donor species (the best-documented), so the photos are consistent.
-    counts: dict[str, int] = defaultdict(int)
-    for c in cands:
-        counts[c["species"]] += 1
-    out: list[dict] = []
-    if counts:
-        donor = max(counts, key=counts.get)
-        for c in [c for c in cands if c["species"] == donor]:
-            dest = folder / "relatives" / slug_name(donor) / (hashlib.sha1(c["url"].encode()).hexdigest()[:16] + ".jpg")
-            if _download(c["url"], dest) and not looks_like_sheet(dest, c["page"], c["url"]):
-                out.append({**c, "path": str(dest)})
-            if len(out) >= want:
-                break
-    cache[key] = out
-    folder.mkdir(parents=True, exist_ok=True)
-    cache_f.write_text(json.dumps(cache, indent=1))
-    return out
+    return cands
 
 
 def slug_name(s: str) -> str:
@@ -980,7 +987,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
         key = r["scientific_name"].lower()
         pairs = by.get(key, [])
         borrowed: list[dict] = []
-        if not pairs and key in critical:
+        if not pairs:
             kin = sorted((k for k in by_genus.get(key.split()[0], []) if k != key), key=lambda k: -len(by[k]))
             if kin:
                 donor = kin[0]
@@ -1027,7 +1034,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
                 "url": p["page"], "stage": p.get("stage") or "unspecified",
             } for p, _ in pairs] + borrowed,
         ))
-    print(f"RELATED {related} poisonous/edible plants without their own photo show a related species", flush=True)
+    print(f"RELATED {related} plants without their own photo show a related species (labelled, never used for ID)", flush=True)
     dest = out or (config.ANDROID_ASSETS / "packs" / f"{region.id}.owpack")
     build_pack(
         dest, region.id, region.name, version, recs, load_curated(), guide_only=True,
