@@ -1,0 +1,416 @@
+{
+ "photos_tested": 25452,
+ "species_tested": 3769,
+ "species_total": 3968,
+ "top_k": {
+  "top1": 0.4925,
+  "top3": 0.5991,
+  "top5": 0.6422,
+  "top10": 0.6978
+ },
+ "median_rank": 2.0,
+ "most_confused": [
+  {
+   "true": "Hemionitis tenuifolia",
+   "shown_first": "Cheilanthes tenuifolia",
+   "times": 6
+  },
+  {
+   "true": "Thelypteris tenera",
+   "shown_first": "Trigonospora tenera",
+   "times": 6
+  },
+  {
+   "true": "Cheilanthes tenuifolia",
+   "shown_first": "Hemionitis tenuifolia",
+   "times": 6
+  },
+  {
+   "true": "Trigonospora tenera",
+   "shown_first": "Thelypteris tenera",
+   "times": 6
+  },
+  {
+   "true": "Breynia androgyna",
+   "shown_first": "Phyllanthus androgynus",
+   "times": 6
+  },
+  {
+   "true": "Phyllanthus androgynus",
+   "shown_first": "Breynia androgyna",
+   "times": 6
+  },
+  {
+   "true": "Butea monosperma",
+   "shown_first": "Butea superba",
+   "times": 5
+  },
+  {
+   "true": "Thunbergia laurifolia",
+   "shown_first": "Thunbergia grandiflora",
+   "times": 5
+  },
+  {
+   "true": "Rhaphidophora decursiva",
+   "shown_first": "Epipremnum pinnatum",
+   "times": 5
+  },
+  {
+   "true": "Phyllanthus lanceolarius",
+   "shown_first": "Glochidion lanceolarium",
+   "times": 4
+  },
+  {
+   "true": "Alocasia odora",
+   "shown_first": "Leucocasia gigantea",
+   "times": 4
+  },
+  {
+   "true": "Brassica rapa",
+   "shown_first": "Brassica juncea",
+   "times": 4
+  },
+  {
+   "true": "Glochidion lanceolarium",
+   "shown_first": "Phyllanthus lanceolarius",
+   "times": 4
+  },
+  {
+   "true": "Ageratum houstonianum",
+   "shown_first": "Ageratum conyzoides",
+   "times": 4
+  },
+  {
+   "true": "Rhododendron klossii",
+   "shown_first": "Rhododendron moulmainense",
+   "times": 4
+  },
+  {
+   "true": "Physalis angulata",
+   "shown_first": "Physalis cordata",
+   "times": 4
+  },
+  {
+   "true": "Rhaphidophora peepla",
+   "shown_first": "Rhaphidophora decursiva",
+   "times": 4
+  },
+  {
+   "true": "Callicarpa pedunculata",
+   "shown_first": "Callicarpa rubella",
+   "times": 4
+  },
+  {
+   "true": "Rhododendron moulmainense",
+   "shown_first": "Rhododendron klossii",
+   "times": 4
+  },
+  {
+   "true": "Ilex godajam",
+   "shown_first": "Ilex rotunda",
+   "times": 4
+  },
+  {
+   "true": "Phoenix loureiroi",
+   "shown_first": "Phoenix roebelenii",
+   "times": 4
+  },
+  {
+   "true": "Passiflora vesicaria",
+   "shown_first": "Passiflora foetida",
+   "times": 4
+  },
+  {
+   "true": "Murraya koenigii",
+   "shown_first": "Bergera koenigii",
+   "times": 4
+  },
+  {
+   "true": "Utricularia recta",
+   "shown_first": "Utricularia bifida",
+   "times": 4
+  },
+  {
+   "true": "Commelina diffusa",
+   "shown_first": "Commelina communis",
+   "times": 3
+  },
+  {
+   "true": "Fimbristylis dichotoma",
+   "shown_first": "Fimbristylis quinquangularis",
+   "times": 3
+  },
+  {
+   "true": "Russula densifolia",
+   "shown_first": "Russula faustiana",
+   "times": 3
+  },
+  {
+   "true": "Saraca dives",
+   "shown_first": "Saraca indica",
+   "times": 3
+  },
+  {
+   "true": "Dendrobium fimbriatum",
+   "shown_first": "Dendrobium chrysotoxum",
+   "times": 3
+  },
+  {
+   "true": "Viola philippica",
+   "shown_first": "Viola betonicifolia",
+   "times": 3
+  },
+  {
+   "true": "Physalis lagascae",
+   "shown_first": "Physalis cordata",
+   "times": 3
+  },
+  {
+   "true": "Neoalsomitra clavigera",
+   "shown_first": "Melientha suavis",
+   "times": 3
+  },
+  {
+   "true": "Rauvolfia verticillata",
+   "shown_first": "Rauvolfia cambodiana",
+   "times": 3
+  },
+  {
+   "true": "Abroma augustum",
+   "shown_first": "Abelmoschus angulosus",
+   "times": 3
+  },
+  {
+   "true": "Aesculus chinensis",
+   "shown_first": "Aesculus assamica",
+   "times": 3
+  },
+  {
+   "true": "Coelogyne ovalis",
+   "shown_first": "Coelogyne fimbriata",
+   "times": 3
+  },
+  {
+   "true": "Stereospermum chelonoides",
+   "shown_first": "Stereospermum neuranthum",
+   "times": 3
+  },
+  {
+   "true": "Pouzolzia sanguinea",
+   "shown_first": "Celtis sinensis",
+   "times": 3
+  },
+  {
+   "true": "Symplocos anomala",
+   "shown_first": "Lindera communis",
+   "times": 3
+  },
+  {
+   "true": "Cocos nucifera",
+   "shown_first": "Phoenix roebelenii",
+   "times": 3
+  }
+ ],
+ "hardest_species": [
+  {
+   "species": "Terminalia catappa",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Persicaria posumbu",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Luffa aegyptiaca",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Tectona grandis",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Kalanchoe integra",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Alocasia odora",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Begonia longifolia",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Murraya paniculata",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Blumea lanceolaria",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Eragrostis pilosa",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Cocculus diversifolius",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Helicteres angustifolia",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Utania racemosa",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Rauvolfia verticillata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Canarium album",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Sesbania sericea",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Adenanthera microsperma",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Aphanamixis polystachya",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Triumfetta rhomboidea",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Croton cascarilloides",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Fraxinus chinensis",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Uvaria calamistrata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Embelia tsjeriam-cottam",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Solanum capsicoides",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Eragrostis ferruginea",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Barringtonia acutangula",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Zanthoxylum avicennae",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Hubera cerasoides",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Carallia brachiata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Byttneria grandifolia",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Castanopsis indica",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Litsea glutinosa",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Thysanolaena latifolia",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Antidesma montanum",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus benjamina",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Erythrina variegata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Lactuca indica",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Pluchea indica",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Arthraxon hispidus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Cordia dichotoma",
+   "photos": 8,
+   "top1": 0.0
+  }
+ ]
+}
