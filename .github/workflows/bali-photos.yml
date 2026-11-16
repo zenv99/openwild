@@ -191,6 +191,20 @@ jobs:
           pattern: photos-${{ inputs.region }}-*
           path: work/photos_commercial/${{ inputs.region }}
           merge-multiple: true
+      - name: Rebuild only - photos from the permanent store (Bali)
+        if: inputs.skip_collect == 'true' && inputs.merge_runs == '' && inputs.region == 'ID-BA'
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          R="${{ inputs.region }}"
+          D="work/photos_commercial/$R"
+          mkdir -p /tmp/ps "$D"
+          gh release download photo-store -p "$R.tar.part*" -D /tmp/ps
+          cat /tmp/ps/$R.tar.part* | tar -x -C "$D"
+          rm -rf /tmp/ps
+          mv "$D/photos.csv" "$D/photos-shard0-store.csv"
+          wc -l "$D/photos-shard0-store.csv"
       - name: Merge photos collected by earlier runs
         if: inputs.merge_runs != ''
         working-directory: .
