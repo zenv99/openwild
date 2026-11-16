@@ -597,16 +597,30 @@ def _download_scan(url: str, dest: Path, max_side: int = 1600) -> bool:
     size and save a phone-sized JPEG. Naturalis serves a medium size directly."""
     if dest.exists() and dest.stat().st_size > 2000:
         return True
-    url = url.replace("/format/large", "/format/medium")
-    try:
-        import io
+    import io
+    import time
+    import urllib.error
 
+    data = b""
+    for attempt in range(5):
+        # Museums throttle bursts (HTTP 403/429): pace every request and back off on refusals.
+        time.sleep(1.2 if attempt == 0 else 4 * attempt)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "image/*"})
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = resp.read(90_000_000)
+            break
+        except urllib.error.HTTPError as e:
+            if e.code not in (403, 429, 500, 502, 503, 504):
+                print(f"scan download failed {url[:90]}: {e!r}", flush=True)
+                return False
+        except Exception:  # noqa: BLE001
+            pass
+    if len(data) < 2000:
+        print(f"scan download failed {url[:90]}: refused or empty after retries", flush=True)
+        return False
+    try:
         from PIL import Image
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            data = resp.read(90_000_000)
-        if len(data) < 2000:
-            return False
         Image.MAX_IMAGE_PIXELS = None          # trusted museum scan; decoded at reduced size below
         with Image.open(io.BytesIO(data)) as im:
             im.draft("RGB", (max_side, max_side))
@@ -799,8 +813,14 @@ def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
             print(f"specimens {scientific} failed: {e!r}", flush=True)
             return []
         # Open licences only; CC0 first, then CC BY.
+        # CC0 first, then CC BY; alternate institutions so one museum's refusal doesn't block the rest.
         cands.sort(key=lambda c: 0 if c["license"] == "cc0" else 1)
-        cache[key] = cands[:12]
+        seen_inst: dict[str, int] = defaultdict(int)
+        for c in cands:
+            seen_inst[c["observer"]] += 1
+            c["_rank"] = seen_inst[c["observer"]]
+        cands.sort(key=lambda c: (c["_rank"], 0 if c["license"] == "cc0" else 1))
+        cache[key] = [{k: v for k, v in c.items() if k != "_rank"} for c in cands[:30]]
         folder.mkdir(parents=True, exist_ok=True)
         cache_f.write_text(json.dumps(cache))
     out = []
