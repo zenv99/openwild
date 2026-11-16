@@ -202,10 +202,10 @@ class PackManager(private val context: Context) {
     val upgradeModel: File get() = File(upgradeDir, "bioclip2.tflite")
     fun boostFile(regionId: String) = File(upgradeDir, "$regionId.bioclip2.owboost")
 
-    private val prefs get() = context.getSharedPreferences("upgrade", Context.MODE_PRIVATE)
+    private val upgradePrefs get() = context.getSharedPreferences("upgrade", Context.MODE_PRIVATE)
     var betterRecognition: Boolean
-        get() = prefs.getBoolean("on", false)
-        set(v) = prefs.edit().putBoolean("on", v).apply()
+        get() = upgradePrefs.getBoolean("on", false)
+        set(v) = upgradePrefs.edit().putBoolean("on", v).apply()
 
     /** Model and per-region boost files available on GitHub (release "models" and "packs"). */
     fun fetchUpgrade(): Upgrade {
