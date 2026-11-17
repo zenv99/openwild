@@ -737,11 +737,25 @@ def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> li
         donor = max(counts, key=counts.get)
         for c in [c for c in cands if c["species"] == donor]:
             dest = folder / "relatives" / slug_name(donor) / (hashlib.sha1(c["url"].encode()).hexdigest()[:16] + ".jpg")
-            if _download(c["url"], dest) and not looks_like_sheet(dest, c["page"], c["url"]):
+            if _download(c["url"], dest) and not looks_like_sheet(dest, c["page"], c["url"]) and not _looks_like_micrograph(dest):
                 out.append({**c, "path": str(dest)})
             if len(out) >= want:
                 break
     return out
+
+
+def _looks_like_micrograph(path: Path) -> bool:
+    """Microscope shots (spores, cells) on a dark field: no use for recognising a plant or mushroom."""
+    try:
+        import numpy as np
+        from PIL import Image
+        with Image.open(path) as im:
+            im.draft("RGB", (128, 128))
+            v = np.asarray(im.convert("HSV").resize((64, 64)))[..., 2] / 255.0
+        border = np.concatenate([v[:6].ravel(), v[-6:].ravel(), v[:, :6].ravel(), v[:, -6:].ravel()])
+        return float((border < 0.18).mean()) > 0.6 and float(v.std()) > 0.15
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _genus_candidates(genus: str) -> list[dict]:
