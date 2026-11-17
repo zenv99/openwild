@@ -13,5 +13,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q numpy pyyaml pillow
-      - name: Lightning address check
-        run: curl -sS -m 30 https://cake.cash/.well-known/lnurlp/zenv9 | head -c 600; echo
+      - working-directory: pipeline
+        env:
+          OW_INAT_INTERVAL: "1.2"
+        run: python -m openwild_pipeline.garden_probe
