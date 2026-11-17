@@ -216,7 +216,7 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
             val sub = when (s) {
                 is Status.Installed -> stringResource(if (s.active) R.string.status_in_use else R.string.status_downloaded, s.version)
                 is Status.Available -> stringResource(R.string.pack_size, mb(s.pack.first.size), s.pack.speciesCount)
-                is Status.Downloading -> stringResource(R.string.status_downloading, (s.progress * 100).toInt())
+                is Status.Downloading -> stringResource(R.string.status_downloading_named, r.name, (s.progress * 100).toInt())
                 is Status.Ready -> stringResource(R.string.status_ready, s.version, s.speciesCount)
                 Status.Installing -> stringResource(R.string.installing_pack)
                 Status.NotBuilt -> stringResource(R.string.status_not_ready)
@@ -282,10 +282,12 @@ private fun BetterRecognitionCard(state: UiState, vm: AppViewModel) {
             val p = u.progress
             when {
                 p != null -> {
-                    Text(stringResource(R.string.upgrade_downloading, (p * 100).toInt()), style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.upgrade_downloading, state.activeRegionName ?: "", (p * 100).toInt()), style = MaterialTheme.typography.bodySmall)
                     LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxWidth())
                 }
-                !u.modelInstalled -> Button(onClick = vm::installUpgrade) { Text(stringResource(R.string.upgrade_install)) }
+                !u.modelInstalled -> Button(onClick = vm::installUpgrade) {
+                    Text(state.activeRegionName?.let { stringResource(R.string.upgrade_install, it) } ?: stringResource(R.string.upgrade_install_plain))
+                }
                 else -> {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.upgrade_switch), modifier = Modifier.weight(1f))
@@ -294,7 +296,7 @@ private fun BetterRecognitionCard(state: UiState, vm: AppViewModel) {
                     if (u.on && !u.active) {
                         if (u.regionAvailable) {
                             Text(stringResource(R.string.upgrade_region_needed), style = MaterialTheme.typography.bodySmall)
-                            Button(onClick = vm::installUpgrade) { Text(stringResource(R.string.upgrade_region_get, u.regionMb.coerceAtLeast(1))) }
+                            Button(onClick = vm::installUpgrade) { Text(stringResource(R.string.upgrade_region_get, state.activeRegionName ?: "", u.regionMb.coerceAtLeast(1))) }
                         } else {
                             Text(stringResource(R.string.upgrade_region_soon), style = MaterialTheme.typography.bodySmall)
                         }

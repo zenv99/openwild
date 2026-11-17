@@ -120,7 +120,7 @@ private fun ChoiceRow(
             Text(region.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Text(
                 when {
-                    progress != null -> stringResource(R.string.status_downloading, (progress * 100).toInt())
+                    progress != null -> stringResource(R.string.status_downloading_named, region.name, (progress * 100).toInt())
                     pack != null -> stringResource(R.string.status_ready, pack.version, pack.speciesCount)
                     online != null -> stringResource(R.string.status_online, online.speciesCount, (online.first.size / 1_000_000.0).let { if (it < 1) 1.0 else it }.toInt())
                     else -> stringResource(R.string.status_not_ready)

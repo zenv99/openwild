@@ -139,10 +139,11 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                         Text(stringResource(R.string.full_photos_title, fullSet.name), style = MaterialTheme.typography.titleMedium)
                         Text(stringResource(R.string.full_photos_body), style = MaterialTheme.typography.bodyMedium)
                         if (pct != null) {
+                            Text(stringResource(R.string.status_downloading_named, fullSet.name, (pct * 100).toInt()), style = MaterialTheme.typography.bodySmall)
                             LinearProgressIndicator(progress = { pct }, modifier = Modifier.fillMaxWidth())
                         } else {
                             Button(onClick = { vm.download(fullSet) }) {
-                                Text(stringResource(R.string.full_photos_action, (fullSet.size / 1_000_000).toInt()))
+                                Text(stringResource(R.string.full_photos_action, fullSet.name, (fullSet.size / 1_000_000).toInt()))
                             }
                         }
                     }

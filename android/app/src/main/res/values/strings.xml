@@ -150,6 +150,7 @@
     <string name="status_in_use">In use · v%1$d</string>
     <string name="status_downloaded">Downloaded · v%1$d · tap to use</string>
     <string name="status_downloading">Downloading %1$d%%</string>
+    <string name="status_downloading_named">Downloading %1$s… %2$d%%</string>
     <string name="status_coming_soon">Coming soon</string>
 
     <!-- explore -->
@@ -225,7 +226,7 @@
     <string name="pack_update_action">Install update</string>
     <string name="full_photos_title">Get every photo for %1$s</string>
     <string name="full_photos_body">You have the essentials: all photos of deadly plants, most of poisonous ones, and at least one of everything else. The full set shows every plant at every stage, up close. Downloaded from GitHub only, then it works offline.</string>
-    <string name="full_photos_action">Download full set (%1$d MB, Wi‑Fi recommended)</string>
+    <string name="full_photos_action">Download the full %1$s set (%2$d MB, Wi‑Fi recommended)</string>
     <string name="near_you_install">Suggested from your location. Install only if this is the region you want.</string>
 
     <string name="review_title">Your review</string>
@@ -315,12 +316,13 @@
     <string name="upgrade_badge_on">On</string>
     <string name="upgrade_body">A plant-and-fungus specialist model. In our Bali test it named the right plant first 77% of the time from one photo (vs 53% now) and 91% from three photos. Still works fully offline.</string>
     <string name="upgrade_space">Needs about %1$d MB of space. Wi‑Fi recommended. Downloaded from GitHub only.</string>
-    <string name="upgrade_install">Download and turn on</string>
-    <string name="upgrade_downloading">Downloading… %1$d%%</string>
+    <string name="upgrade_install">Download and turn on (model + %1$s)</string>
+    <string name="upgrade_install_plain">Download and turn on</string>
+    <string name="upgrade_downloading">Downloading better recognition for %1$s… %2$d%%</string>
     <string name="upgrade_failed">Download failed: %1$s</string>
     <string name="upgrade_switch">Use better recognition</string>
     <string name="upgrade_region_needed">This region needs its matching file for better recognition.</string>
-    <string name="upgrade_region_get">Get it for this region (%1$d MB)</string>
+    <string name="upgrade_region_get">Get it for %1$s (%2$d MB)</string>
     <string name="upgrade_region_soon">Not ready for this region yet. The standard model is used until it is.</string>
     <string name="upgrade_remove">Remove and free the space</string>
     <string name="use_my_location">Find my region (optional, uses approximate location)</string>
