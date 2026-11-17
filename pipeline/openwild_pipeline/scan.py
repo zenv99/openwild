@@ -187,6 +187,26 @@ class Index:
             np.save(cache, self.text)
             print(f"names done in {time.monotonic() - t:.0f}s", flush=True)
         self.text = self.text.astype(np.float32)
+        # Higher ranks: one name vector per family and per genus ("a photo of Plantae Araceae Alocasia").
+        fams = sorted({(n["kingdom"], n["family"]) for n in self.names if n["family"]})
+        gens = sorted({(n["kingdom"], n["family"], n["genus"]) for n in self.names if n["genus"]})
+        self.fam_names = [f for _, f in fams]
+        self.gen_names = [g for _, _, g in gens]
+        fam_idx = {f: i for i, (_, f) in enumerate(fams)}
+        gen_idx = {(f, g): i for i, (_, f, g) in enumerate(gens)}
+        self.sp_fam = np.array([fam_idx.get(n["family"], -1) for n in self.names])
+        self.sp_gen = np.array([gen_idx.get((n["family"], n["genus"]), -1) for n in self.names])
+        self.gen_fam = np.array([fam_idx.get(f, -1) for _, f, _ in gens])
+        rcache = WORK / f"ranks-{'+'.join(versions)}.npz"
+        if rcache.exists():
+            z = np.load(rcache)
+            self.fam_text, self.gen_text = z["fam"].astype(np.float32), z["gen"].astype(np.float32)
+        else:
+            self.fam_text = model.texts([f"a photo of {k} {f}." for k, f in fams]).astype(np.float32)
+            self.gen_text = model.texts([f"a photo of {k} {f} {g}." for k, f, g in gens]).astype(np.float32)
+            for old in WORK.glob("ranks-*.npz"):
+                old.unlink()
+            np.savez(rcache, fam=self.fam_text.astype(np.float16), gen=self.gen_text.astype(np.float16))
         # Region reference photos (BioCLIP 2 fingerprints from the boost file).
         self.offset = 0.0
         self.img_vecs = np.zeros((0, 768), np.float32)
@@ -206,39 +226,74 @@ class Index:
             con.close()
             if vs:
                 self.img_vecs, self.img_owner = np.stack(vs), np.array(owners)
-        print(f"index {region}: {len(self.names)} species by name, {len(self.img_vecs)} reference photos, "
-              f"text offset {self.offset:.3f}", flush=True)
+        print(f"index {region}: {len(self.names)} species in {len(self.gen_names)} genera and {len(self.fam_names)} "
+              f"families, {len(self.img_vecs)} reference photos, text offset {self.offset:.3f}", flush=True)
 
-    def shortlist(self, q: np.ndarray, k: int = SHORTLIST) -> list[tuple[int, float]]:
-        qm = q.mean(0)
-        qm /= np.linalg.norm(qm) + 1e-8
+    def species_scores(self, qm: np.ndarray) -> np.ndarray:
         score = self.text @ qm + self.offset
         if len(self.img_vecs):
-            sims = self.img_vecs @ qm
             best = np.full(len(self.names), -1.0, np.float32)
-            np.maximum.at(best, self.img_owner, sims)
+            np.maximum.at(best, self.img_owner, self.img_vecs @ qm)
             score = np.maximum(score, best)
         # Local plants first when it's close: a small nudge, never enough to override a clear match.
-        score = score + np.array([0.01 if n["in_region"] else 0.0 for n in self.names], np.float32)
-        order = np.argsort(-score)
-        out, seen_genus = [], {}
-        for i in order:
-            g = self.names[i]["genus"]
-            if seen_genus.get(g, 0) >= 6:      # keep room for other genera
-                continue
-            seen_genus[g] = seen_genus.get(g, 0) + 1
-            out.append((int(i), float(score[i])))
-            if len(out) >= k:
-                break
-        return out
+        return score + np.array([0.01 if n["in_region"] else 0.0 for n in self.names], np.float32)
+
+    def funnel(self, q: np.ndarray, families: int = 4, genera: int = 6, species: int = 12) -> dict:
+        """Narrow down like a botanist: family first, then genus, then species.
+
+        Each rank is scored two ways and the two are combined: how well the photo matches the *name* of the
+        family/genus (BioCLIP 2 learned the tree of life, so it is good at "this is an Araceae" even when it
+        can't name the species), and how well it matches the best real reference photo inside that group.
+        Only the best few families are opened, only the best genera inside them, and only their species go
+        on to the slow photo-by-photo check. The best 3 species from a flat search always stay in too,
+        so one wrong turn high up can't throw the right answer away."""
+        qm = q.mean(0)
+        qm /= np.linalg.norm(qm) + 1e-8
+        sp = self.species_scores(qm)
+
+        def z(x):
+            x = np.where(np.isfinite(x), x, np.nan)
+            m, sd = np.nanmean(x), np.nanstd(x) + 1e-6
+            return np.nan_to_num((x - m) / sd, nan=-9.0)
+
+        def group_max(owner, n):
+            out = np.full(n, -np.inf, np.float32)
+            ok = owner >= 0
+            np.maximum.at(out, owner[ok], sp[ok])
+            return out
+
+        fam_score = 0.5 * z(self.fam_text @ qm) + 0.5 * z(group_max(self.sp_fam, len(self.fam_names)))
+        top_f = [int(i) for i in np.argsort(-fam_score)[:families]]
+        gen_score = 0.5 * z(self.gen_text @ qm) + 0.5 * z(group_max(self.sp_gen, len(self.gen_names)))
+        in_fam = np.isin(self.gen_fam, top_f)
+        top_g = [int(i) for i in np.argsort(-np.where(in_fam, gen_score, -np.inf))[:genera] if in_fam[i]]
+        in_gen = np.isin(self.sp_gen, top_g)
+        picks = [int(i) for i in np.argsort(-np.where(in_gen, sp, -np.inf))[:species] if in_gen[i]]
+        for i in np.argsort(-sp)[:3]:                       # safety net: best flat matches
+            if int(i) not in picks:
+                picks.append(int(i))
+        return {"families": [(self.fam_names[i], float(fam_score[i])) for i in top_f],
+                "genera": [(self.gen_names[i], float(gen_score[i])) for i in top_g],
+                "species": [(i, float(sp[i])) for i in picks]}
+
+    def add_name(self, sci: str, common: str, family: str, genus: str, kingdom: str) -> int:
+        """A species found online inside a likely genus that isn't on the country list (e.g. a houseplant)."""
+        for i, n in enumerate(self.names):
+            if n["scientific_name"].lower() == sci.lower():
+                return i
+        self.names.append({"scientific_name": sci, "common_name": common or "", "kingdom": kingdom,
+                           "family": family, "genus": genus, "in_region": False})
+        return len(self.names) - 1
 
 
 # ---------------------------------------------------------------- verify against real photos
-def inat_photos(scientific: str, exclude_obs: set[int] | None = None) -> list[dict]:
+def inat_photos(scientific: str, exclude_obs: set[int] | None = None, wild: int = WILD, garden: int = GARDEN) -> list[dict]:
     """Community-confirmed iNaturalist photos: wild (research grade) and garden/potted (captive, community
     ID agrees). Only openly licensed photos."""
     out = []
-    for captive, want in (("false", WILD), ("true", GARDEN)):
+    for captive, want in (("false", wild), ("true", garden)):
+        if want <= 0:
+            continue
         params = {"taxon_name": scientific, "photos": "true", "photo_license": LICENSES, "per_page": str(want * 2),
                   "order_by": "votes", "captive": captive}
         if captive == "false":
@@ -272,6 +327,26 @@ def inat_photos(scientific: str, exclude_obs: set[int] | None = None) -> list[di
     return out
 
 
+def genus_species_online(genus: str, have: set[str], limit: int = 3) -> list[dict]:
+    """Most-observed species of a genus worldwide on iNaturalist (garden and potted included), so a plant
+    that isn't on the country's wild list - a houseplant, a crop, an ornamental - can still be found."""
+    try:
+        data = json.loads(_get("https://api.inaturalist.org/v1/observations/species_counts",
+                               {"taxon_name": genus, "photos": "true", "per_page": "15"}, pace=1.05))
+    except Exception:  # noqa: BLE001
+        return []
+    out = []
+    for r in data.get("results") or []:
+        t = r.get("taxon") or {}
+        name = t.get("name") or ""
+        if t.get("rank") != "species" or name.lower() in have or name.split()[0].lower() != genus.lower():
+            continue
+        out.append({"scientific_name": name, "common_name": t.get("preferred_common_name") or ""})
+        if len(out) >= limit:
+            break
+    return out
+
+
 def _load(url: str):
     from PIL import Image
 
@@ -289,57 +364,89 @@ def _thumb(im, size: int = 240) -> str:
     return base64.b64encode(b.getvalue()).decode()
 
 
+def _verify(model: Model, q: np.ndarray, refs: dict[int, list[dict]], cache: dict[str, tuple]) -> dict[int, dict]:
+    """Compare the user's photos with every reference photo; per species, the mean of the 5 closest."""
+    todo = [r for rs in refs.values() for r in rs if r["url"] not in cache]
+    with ThreadPoolExecutor(16) as ex:
+        imgs = list(ex.map(lambda r: _load(r["url"]), todo))
+    got = [(r, im) for r, im in zip(todo, imgs) if im is not None]
+    if got:
+        vecs = model.images([im for _, im in got])
+        for (r, im), v in zip(got, vecs):
+            cache[r["url"]] = (v, im, r)
+    out = {}
+    for i, rs in refs.items():
+        have = [cache[r["url"]] for r in rs if r["url"] in cache]
+        if not have:
+            out[i] = {"score": None, "refs": 0, "best": None}
+            continue
+        sims = q @ np.stack([v for v, _, _ in have]).T
+        top = np.sort(sims, axis=1)[:, ::-1][:, :5]
+        out[i] = {"score": float(top.mean()), "refs": len(have), "best": have[int(np.argmax(sims.max(0)))]}
+    return out
+
+
 def identify(model: Model, index: Index, pil_images: list, exclude_obs: set[int] | None = None) -> dict:
     t0 = time.monotonic()
     q = _query_views(model, pil_images)
-    short = index.shortlist(q)
-    print("shortlist: " + ", ".join(f"{index.names[i]['scientific_name']} {s:.3f}" for i, s in short), flush=True)
-    # Fetch reference photos for every candidate (iNaturalist API is paced to ~1 request/s).
-    refs = {i: inat_photos(index.names[i]["scientific_name"], exclude_obs) for i, _ in short}
-    jobs = [(i, r) for i, rs in refs.items() for r in rs]
-    with ThreadPoolExecutor(16) as ex:
-        imgs = list(ex.map(lambda j: _load(j[1]["url"]), jobs))
-    ok = [(j, im) for j, im in zip(jobs, imgs) if im is not None]
-    print(f"verifying against {len(ok)} real photos", flush=True)
-    vecs = model.images([im for _, im in ok]) if ok else np.zeros((0, 768), np.float32)
-    results = []
-    for i, s1 in short:
-        rows = [k for k, ((ci, _), _) in enumerate(ok) if ci == i]
-        if not rows:
-            results.append({"i": i, "score": s1 - 0.05, "refs": 0, "best": None})
-            continue
-        sims = q @ vecs[rows].T                          # user photos x reference photos
-        top = np.sort(sims, axis=1)[:, ::-1][:, :5]      # 5 closest real photos per user photo
-        score = float(top.mean())
-        best_k = rows[int(np.argmax(sims.max(0)))]
-        results.append({"i": i, "score": score, "refs": len(rows), "best": best_k})
-    results.sort(key=lambda r: -r["score"])
-    s = np.array([r["score"] for r in results])
+    f = index.funnel(q)
+    print("families: " + ", ".join(f"{n} {s:.2f}" for n, s in f["families"]), flush=True)
+    print("genera:   " + ", ".join(f"{n} {s:.2f}" for n, s in f["genera"]), flush=True)
+    cands = {i: s for i, s in f["species"]}
+    # Plants that aren't on the country's wild list (houseplants, crops): most-observed species of the two
+    # best genera, looked up online.
+    have = {n["scientific_name"].lower() for n in index.names}
+    for g, _ in f["genera"][:2]:
+        rep = next((n for n in index.names if n["genus"] == g), None)
+        for extra in genus_species_online(g, have):
+            i = index.add_name(extra["scientific_name"], extra["common_name"], rep["family"] if rep else "",
+                               g, rep["kingdom"] if rep else "")
+            cands.setdefault(i, -1.0)
+    print("checking: " + ", ".join(index.names[i]["scientific_name"] for i in cands), flush=True)
+    cache: dict[str, tuple] = {}
+    # Round 1: a few real photos of every candidate; round 2: many more for the best five only.
+    refs = {i: inat_photos(index.names[i]["scientific_name"], exclude_obs, wild=6, garden=3) for i in cands}
+    r1 = _verify(model, q, refs, cache)
+    ranked = sorted(cands, key=lambda i: -(r1[i]["score"] if r1[i]["score"] is not None else cands[i] - 0.1))
+    best5 = ranked[:5]
+    for i in best5:
+        more = inat_photos(index.names[i]["scientific_name"], exclude_obs)
+        seen = {r["url"] for r in refs[i]}
+        refs[i] += [r for r in more if r["url"] not in seen]
+    r2 = _verify(model, q, {i: refs[i] for i in best5}, cache)
+    final = [{"i": i, **r2[i]} for i in best5] + [{"i": i, **r1[i]} for i in ranked[5:]]
+    for r in final:
+        if r["score"] is None:
+            r["score"] = cands[r["i"]] - 0.1
+    final.sort(key=lambda r: -r["score"])
+    s = np.array([r["score"] for r in final])
     p = np.exp((s - s.max()) / 0.012)
     p /= p.sum()
-    top, second = results[0], results[1] if len(results) > 1 else None
+    top, second = final[0], final[1] if len(final) > 1 else None
     margin = top["score"] - (second["score"] if second else 0)
     same_genus = second is not None and index.names[top["i"]]["genus"] == index.names[second["i"]]["genus"]
-    if top["refs"] >= 5 and top["score"] >= 0.70 and margin >= 0.03:
+    if top["refs"] >= 8 and top["score"] >= 0.70 and margin >= 0.03:
         verdict = "confident"
-    elif top["refs"] >= 3 and top["score"] >= 0.60 and margin >= 0.012:
+    elif top["refs"] >= 4 and top["score"] >= 0.60 and margin >= 0.012:
         verdict = "likely"
     else:
         verdict = "unsure"
-    cands = []
-    for r, prob in list(zip(results, p))[:5]:
+    out = []
+    for r, prob in list(zip(final, p))[:5]:
         n = index.names[r["i"]]
         c = {"scientific_name": n["scientific_name"], "common_name": n["common_name"], "family": n["family"],
              "score": round(r["score"], 4), "probability": round(float(prob), 3), "reference_photos": r["refs"],
              "in_region_pack": n["in_region"]}
         if r["best"] is not None:
-            (_, ref), im = ok[r["best"]]
+            _, im, ref = r["best"]
             c["example_photo_jpeg_b64"] = _thumb(im)
             c["example_credit"] = ref["credit"]
             c["example_is_garden"] = ref["garden"]
-        cands.append(c)
+        out.append(c)
     return {"status": "done", "verdict": verdict, "genus_only": verdict != "confident" and same_genus,
-            "candidates": cands, "seconds": round(time.monotonic() - t0), "method": "bioclip2-shortlist+inat-verify-v1"}
+            "family": f["families"][0][0], "genus": f["genera"][0][0] if f["genera"] else None,
+            "candidates": out, "checked": len(cands), "reference_photos": len(cache),
+            "seconds": round(time.monotonic() - t0), "method": "bioclip2-funnel+inat-verify-v2"}
 
 
 # ---------------------------------------------------------------- inbox driver
@@ -441,6 +548,7 @@ def evaluate(region: str, species: list[str], per_species: int = 1) -> dict:
                     continue
                 res = identify(model, index, ims, exclude_obs={o["id"]})
                 names = [c["scientific_name"].lower() for c in res["candidates"]]
+                true = next((n for n in index.names if n["scientific_name"].lower() == sci.lower()), None)
                 ok1, ok5 = names[:1] == [sci.lower()], sci.lower() in names
                 n += 1
                 hit1 += ok1
@@ -448,9 +556,16 @@ def evaluate(region: str, species: list[str], per_species: int = 1) -> dict:
                 rows.append({"species": sci, "garden": captive == "true", "top1": ok1, "top5": ok5,
                              "verdict": res["verdict"], "answer": names[0] if names else None,
                              "score": res["candidates"][0]["score"] if res["candidates"] else None,
+                             "family_ok": bool(true) and res.get("family") == true["family"],
+                             "genus_ok": bool(true) and res.get("genus") == true["genus"],
+                             "checked": res.get("checked"), "photos": res.get("reference_photos"),
                              "seconds": res["seconds"]})
                 print("EVAL " + json.dumps(rows[-1]), flush=True)
-    summary = {"n": n, "top1": round(hit1 / n, 3) if n else None, "top5": round(hit5 / n, 3) if n else None}
+    summary = {"n": n, "top1": round(hit1 / n, 3) if n else None, "top5": round(hit5 / n, 3) if n else None,
+               "family_right": round(sum(r["family_ok"] for r in rows) / n, 3) if n else None,
+               "genus_right": round(sum(r["genus_ok"] for r in rows) / n, 3) if n else None,
+               "avg_seconds": round(sum(r["seconds"] for r in rows) / n) if n else None,
+               "garden_top1": f"{sum(r['top1'] for r in rows if r['garden'])}/{sum(r['garden'] for r in rows)}"}
     by_v = {}
     for r in rows:
         v = by_v.setdefault(r["verdict"], [0, 0])
