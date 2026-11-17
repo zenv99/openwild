@@ -273,7 +273,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 if (pair != null) {
                     activeEmbedder = pair.first
-                    identifier = Identifier(pair.second, loaded.species, loaded.params, null)
+                    identifier = Identifier(pair.second, loaded.species, org.openwild.app.core.ConfidenceParams.calibrated(loaded.params, "bioclip2"), null)
                     usingUpgrade = true
                 }
             }

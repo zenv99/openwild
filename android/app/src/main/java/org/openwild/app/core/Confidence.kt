@@ -22,6 +22,20 @@ data class ConfidenceParams(
     val margin: Double = 0.30,
 ) {
     companion object {
+        /**
+         * Score calibration belongs to the recognition model, not the pack: measured on Bali's reference photos
+         * (leave-one-out), so that "85%" really means right about 85+ times in 100.
+         *  - ow-dinov2s (built-in): temperature 0.022 (0.03 under-stated confidence).
+         *  - BioCLIP 2 (Better recognition): its similarities sit much closer together, so 0.01; with 0.03 a
+         *    correct answer showed as ~2-20%. At 0.01, photos shown >=85% are right ~98% of the time.
+         */
+        fun calibrated(p: ConfidenceParams, modelId: String?): ConfidenceParams = when {
+            modelId == null -> p
+            modelId.startsWith("bioclip2") -> p.copy(temperature = 0.01, priorBeta = 0.25, openSetThreshold = 0.5)
+            modelId.startsWith("ow-dinov2s") -> p.copy(temperature = 0.022)
+            else -> p
+        }
+
         /** Build from a pack's meta table; missing keys keep their defaults. */
         fun fromMeta(meta: Map<String, String>): ConfidenceParams {
             val d = ConfidenceParams()

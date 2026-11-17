@@ -26,7 +26,7 @@ class RegionPack(file: File) : Closeable {
     val version: Int = meta["pack_version"]?.toIntOrNull() ?: 0
     val modelId: String = meta["model_id"] ?: ""
     val dim: Int = meta["embedding_dim"]?.toIntOrNull() ?: 0
-    val params: ConfidenceParams = ConfidenceParams.fromMeta(meta)
+    val params: ConfidenceParams = ConfidenceParams.calibrated(ConfidenceParams.fromMeta(meta), meta["model_id"])
 
     /** Optional PCA projection (packs built with tens of thousands of species). */
     val projection: Projection? = runCatching {

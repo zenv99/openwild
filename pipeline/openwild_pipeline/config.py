@@ -59,7 +59,7 @@ INPUT_SIZE = 224
 
 # Default confidence parameters (overwritten by calibration)
 DEFAULT_PARAMS = {
-    "temperature": 0.03,
+    "temperature": 0.022,
     "photo_alpha": 0.6,
     "prior_beta": 0.5,
     "open_set_threshold": 0.30,
