@@ -103,6 +103,53 @@ object PhotoInbox {
         return sent.length()
     }
 
+    /**
+     * Online check (opt-in): uploads the photos being identified to scans/<id>/ and returns the scan id.
+     * The cloud check answers in scans/<id>/result.json (read with [scanResult]); the photos are deleted
+     * there once checked unless [share] is true (the user agreed OpenWild may keep them for the library).
+     */
+    fun sendScan(regionId: String, photos: List<Pair<Bitmap, String>>, offlineTop: String, share: Boolean, progress: (Int, Int) -> Unit): String {
+        val id = UUID.randomUUID().toString().replace("-", "").take(16)
+        val folder = "scans/$id"
+        val sent = JSONArray()
+        photos.take(6).forEachIndexed { k, (bmp, part) ->
+            val scaled = scaleDown(bmp)
+            val bytes = ByteArrayOutputStream().use { out -> scaled.compress(Bitmap.CompressFormat.JPEG, 88, out); out.toByteArray() }
+            if (scaled !== bmp) scaled.recycle()
+            val name = "${k + 1}_$part.jpg"
+            put("$folder/$name", bytes, "Online check photo")
+            sent.put(JSONObject().put("file", name).put("part", part))
+            progress(k + 1, minOf(photos.size, 6))
+        }
+        val meta = JSONObject().put("region", regionId).put("photos", sent).put("offline_top", offlineTop)
+            .put("share", share).put("app_version", BuildConfig.VERSION_NAME)
+        if (share) meta.put("license", "CC BY 4.0").put("own_photos", true)
+        put("$folder/meta.json", meta.toString().toByteArray(), "Online check $id")
+        return id
+    }
+
+    /** The answer for scan [id], or null while it is still being checked. */
+    fun scanResult(id: String): JSONObject? {
+        val url = URL("$API/repos/${BuildConfig.INBOX_REPO}/contents/scans/$id/result.json")
+        require(url.host == "api.github.com" && url.protocol == "https")
+        val conn = url.openConnection() as HttpURLConnection
+        try {
+            conn.connectTimeout = 20_000
+            conn.readTimeout = 60_000
+            conn.setRequestProperty("Authorization", "Bearer ${BuildConfig.INBOX_TOKEN}")
+            conn.setRequestProperty("Accept", "application/vnd.github.raw+json")
+            conn.setRequestProperty("User-Agent", "OpenWild/${BuildConfig.VERSION_NAME}")
+            conn.useCaches = false
+            return when (val code = conn.responseCode) {
+                200 -> JSONObject(conn.inputStream.bufferedReader().readText())
+                404 -> null
+                else -> throw java.io.IOException("Check failed ($code)")
+            }
+        } finally {
+            conn.disconnect()
+        }
+    }
+
     private fun scaleDown(b: Bitmap): Bitmap {
         val m = maxOf(b.width, b.height)
         if (m <= MAX_SIDE) return b

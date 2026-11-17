@@ -171,6 +171,13 @@ class RegionPack(file: File) : Closeable {
 
     fun indexOfSpeciesId(id: Long): Int? = idToIndex[id]
 
+    private val nameToIndex: Map<String, Int> by lazy {
+        species.scientificNames.withIndex().associate { (i, n) -> n.lowercase() to i }
+    }
+
+    /** Species index by scientific name (case-insensitive), or null if this pack doesn't have it. */
+    fun indexOfScientificName(name: String): Int? = nameToIndex[name.trim().lowercase()]
+
     /** (description, wikipedia url) */
     fun description(i: Int): Pair<String?, String?> = synchronized(dbLock) {
         db.rawQuery("SELECT description, wiki_url FROM species WHERE id = ?", arrayOf(species.ids[i].toString())).use { c ->

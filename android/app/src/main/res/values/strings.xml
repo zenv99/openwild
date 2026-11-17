@@ -375,5 +375,31 @@
     <string name="matches_swipe_hint">Swipe left or right, or tap a name above</string>
     <string name="matches_next_short">Next</string>
     <string name="matches_pick_search">🔍 Not here? Search</string>
+    <string name="online_turn_off">Turn off online check (ask again next time)</string>
+    <string name="online_title">Online check</string>
+    <string name="online_pitch">More accurate. Compares your photos with thousands of real, confirmed photos (wild and potted) of every plant and mushroom in the country. Takes a few minutes.</string>
+    <string name="online_button">Check online (more accurate)</string>
+    <string name="online_button_short">Check online</string>
+    <string name="online_sending">Sending photos %1$d of %2$d…</string>
+    <string name="online_waiting">Checking against real photos… usually 3 to 8 minutes. You can keep using the app; come back to this screen.</string>
+    <string name="online_elapsed">%1$d min %2$02d s</string>
+    <string name="online_failed">The online check could not finish. Check your connection and try again.</string>
+    <string name="online_timeout">The online check is taking too long. Please try again later.</string>
+    <string name="online_confident">Online check: confident</string>
+    <string name="online_likely">Online check: likely, not certain</string>
+    <string name="online_unsure">Online check: not sure. Take closer photos of a leaf, the flower or fruit, and the whole plant, then try again.</string>
+    <string name="online_genus">Online check: sure of the group, not the exact species. Compare the photos below carefully.</string>
+    <string name="online_disagrees">The online check disagrees with the offline answer. The online check is the more careful of the two.</string>
+    <string name="online_never_eat">Never eat or touch a plant or mushroom based on an app alone.</string>
+    <string name="online_need_photos">We need photos of this plant: share yours</string>
+    <string name="online_again">Clear online answer</string>
+    <string name="online_not_in_pack">Not in your downloaded region</string>
+    <string name="online_example">Real photo: %1$s</string>
+    <string name="online_example_garden">Real photo (garden or potted): %1$s</string>
+    <string name="online_ask_title">Check online?</string>
+    <string name="online_ask_body">Your photos of this plant are sent to OpenWild\'s private server, compared with thousands of real photos, and the answer comes back to this phone. The photos are deleted after the check.</string>
+    <string name="online_ask_not_sent">Sent: only these photos (re-encoded, so no location, time or camera data) and your region. No account, no device ID, no location. Nothing is sent unless you tap Check online.</string>
+    <string name="online_ask_share">Let OpenWild keep these photos to improve the app (you give permission under CC BY 4.0)</string>
+    <string name="not_now">Not now</string>
 </resources>
 

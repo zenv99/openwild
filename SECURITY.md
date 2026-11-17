@@ -25,3 +25,13 @@ Builds are currently signed with the key in `android/app/openwild-dev.keystore`,
 ## Reporting a problem
 
 Open an issue on this repo.
+
+## Online check (opt-in)
+
+The online check is off until the user taps "Check online" and agrees in a dialog. It then sends only the
+photos being identified (re-encoded JPEG: no location, time or camera data), the region and the offline answer
+to the private OpenWild inbox on api.github.com (the same single host as photo sharing). A GitHub Action in
+that private repository identifies them and writes a result file that the phone reads back. The photos are
+deleted after the check unless the user ticked "Let OpenWild keep these photos". Results are removed after two
+days. The phone never contacts any other server; the cloud check itself fetches reference photos from
+iNaturalist, never sending the user's photos there. "Turn off online check" withdraws the consent.

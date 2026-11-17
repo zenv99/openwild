@@ -122,6 +122,9 @@ data class UpgradeState(
 )
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
+    /** Opt-in online check (cloud identification); reset for every new identification. */
+    val online = OnlineCheck(app, viewModelScope)
+
 
     private val ow = app as OpenWildApp
     private val prefs = app.getSharedPreferences("openwild", 0)
@@ -435,6 +438,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun removePhoto(i: Int) = _state.update { s -> s.copy(photos = s.photos.filterIndexed { j, _ -> j != i }) }
 
     fun identify() = viewModelScope.launch {
+        online.reset()
         val s = _state.value
         val emb = activeEmbedder ?: ow.embedder
         val id = identifier
