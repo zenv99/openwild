@@ -230,13 +230,14 @@ class Index:
               f"families, {len(self.img_vecs)} reference photos, text offset {self.offset:.3f}", flush=True)
 
     def species_scores(self, qm: np.ndarray) -> np.ndarray:
+        n0 = len(self.text)          # names added online later (add_name) have no vectors and are not scored
         score = self.text @ qm + self.offset
         if len(self.img_vecs):
-            best = np.full(len(self.names), -1.0, np.float32)
+            best = np.full(n0, -1.0, np.float32)
             np.maximum.at(best, self.img_owner, self.img_vecs @ qm)
             score = np.maximum(score, best)
         # Local plants first when it's close: a small nudge, never enough to override a clear match.
-        return score + np.array([0.01 if n["in_region"] else 0.0 for n in self.names], np.float32)
+        return score + np.array([0.01 if n["in_region"] else 0.0 for n in self.names[:n0]], np.float32)
 
     def funnel(self, q: np.ndarray, families: int = 4, genera: int = 6, species: int = 12) -> dict:
         """Narrow down like a botanist: family first, then genus, then species.
@@ -450,6 +451,12 @@ def identify(model: Model, index: Index, pil_images: list, exclude_obs: set[int]
 
 
 # ---------------------------------------------------------------- inbox driver
+def warm(region: str) -> None:
+    """Build and cache the name vectors for a region (about 40 minutes the first time), so the first real
+    online check doesn't have to."""
+    Index(Model(), region)
+
+
 def process_inbox(inbox: Path) -> int:
     """Handle every scans/<id>/ that has meta.json but no result.json. Returns how many were processed."""
     from PIL import Image

@@ -474,6 +474,11 @@ def cmd_scan_inbox(a):
 
     from .scan import expire, process_inbox
 
+    if a.warm:
+        from .scan import warm
+
+        for r in a.warm.split(","):
+            warm(r.strip())
     n = process_inbox(Path(a.inbox))
     print(f"processed {n}; expired {expire(Path(a.inbox))}")
 
@@ -495,6 +500,7 @@ def main(argv=None):
 
     sp = add("scan-inbox", cmd_scan_inbox, "online check: identify every pending scans/<id>/ in the inbox clone")
     sp.add_argument("--inbox", required=True)
+    sp.add_argument("--warm", default="", help="regions to pre-build name vectors for, e.g. ID-BA")
     sp = add("scan-eval", cmd_scan_eval, "online check accuracy test (leave-one-out on iNaturalist observations)")
     sp.add_argument("region")
     sp.add_argument("--species", required=True)
