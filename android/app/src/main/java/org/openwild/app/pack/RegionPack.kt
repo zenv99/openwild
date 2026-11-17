@@ -97,6 +97,10 @@ class RegionPack(file: File) : Closeable {
      * Prototypes from a "Better recognition" boost file (BioCLIP 2 fingerprints of this pack's reference photos),
      * or null if the file doesn't belong to this exact pack version.
      */
+    /** The boost file's name-match offset (BioCLIP 2 text prototypes onto the photo-match scale). */
+    var boostTextOffset: Double = 0.0
+        private set
+
     fun boostIndex(file: java.io.File): PrototypeIndex? = runCatching {
         android.database.sqlite.SQLiteDatabase.openDatabase(file.path, null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY).use { b ->
             val bm = HashMap<String, String>()
@@ -106,7 +110,8 @@ class RegionPack(file: File) : Closeable {
             val vecs = ByteArrayOutputStream()
             val scales = ArrayList<Float>()
             val owner = ArrayList<Int>()
-            b.rawQuery("SELECT species_id, vec, scale FROM prototype ORDER BY id", null).use { c ->
+            val text = ArrayList<Boolean>()
+            b.rawQuery("SELECT species_id, vec, scale, kind FROM prototype ORDER BY id", null).use { c ->
                 while (c.moveToNext()) {
                     val sp = idToIndex[c.getLong(0)] ?: continue
                     val blob = c.getBlob(1)
@@ -114,10 +119,12 @@ class RegionPack(file: File) : Closeable {
                     vecs.write(blob)
                     scales += c.getFloat(2)
                     owner += sp
+                    text += c.getString(3) == "text"
                 }
             }
+            boostTextOffset = bm["text_offset"]?.toDoubleOrNull() ?: 0.0
             if (scales.isEmpty()) null
-            else PrototypeIndex(bdim, vecs.toByteArray(), scales.toFloatArray(), owner.toIntArray(), BooleanArray(scales.size), species.ids.size)
+            else PrototypeIndex(bdim, vecs.toByteArray(), scales.toFloatArray(), owner.toIntArray(), text.toBooleanArray(), species.ids.size)
         }
     }.getOrNull()
 

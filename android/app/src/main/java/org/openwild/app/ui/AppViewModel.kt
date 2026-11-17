@@ -273,7 +273,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 if (pair != null) {
                     activeEmbedder = pair.first
-                    identifier = Identifier(pair.second, loaded.species, org.openwild.app.core.ConfidenceParams.calibrated(loaded.params, "bioclip2"), null)
+                    // Name matches (plants with no reference photo) are lifted onto the photo-match scale.
+                    val prm = org.openwild.app.core.ConfidenceParams.calibrated(loaded.params, "bioclip2")
+                        .copy(textProtoPenalty = -loaded.boostTextOffset)
+                    identifier = Identifier(pair.second, loaded.species, prm, null)
                     usingUpgrade = true
                 }
             }

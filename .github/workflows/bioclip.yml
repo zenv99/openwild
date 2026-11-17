@@ -115,7 +115,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -q numpy pyyaml pillow
+      - name: Install (BioCLIP 2 text encoder for name prototypes)
+        run: |
+          pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -q numpy pyyaml pillow open_clip_torch
       - uses: actions/download-artifact@v4
         with:
           pattern: b2-*
@@ -148,6 +151,12 @@ jobs:
               vecs.update(zip(z["keys"].tolist(), z["vecs"]))
           info = boost_pack(Path(f"/tmp/pack/{R}.owpack"), config.WORK / "photos_commercial" / R / "photos.csv", vecs,
                             Path(f"/tmp/{R}.bioclip2.owboost"))
+          # Plants with no reference photo: recognise them by name (BioCLIP 2 zero-shot).
+          from openwild_pipeline.bioclip import text_prototypes, add_text_to_boost
+          text, offset, tstats = text_prototypes(Path(f"/tmp/pack/{R}.owpack"), vecs, config.WORK / "photos_commercial" / R / "photos.csv")
+          info["text_prototypes"] = add_text_to_boost(Path(f"/tmp/{R}.bioclip2.owboost"), text, offset)
+          info.update({"text_" + k: v for k, v in tstats.items()})
+          info["bytes"] = Path(f"/tmp/{R}.bioclip2.owboost").stat().st_size
           print("BOOST", json.dumps(info))
           json.dump(info, open("/tmp/boost.json", "w"))
           PY
