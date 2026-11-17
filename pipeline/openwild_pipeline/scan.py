@@ -383,9 +383,17 @@ def expire(inbox: Path, days: float = 2.0) -> int:
 
     n = 0
     cutoff = time.time() - days * 86400
+    import calendar
+
     for d in (inbox / "scans").glob("*"):
         r = d / "result.json"
-        if r.exists() and r.stat().st_mtime < cutoff:
+        if not r.exists():
+            continue
+        try:
+            done = calendar.timegm(time.strptime(json.loads(r.read_text())["finished"], "%Y-%m-%dT%H:%M:%SZ"))
+        except Exception:  # noqa: BLE001
+            done = 0
+        if done < cutoff:   # checkout resets file times, so go by the time written inside the result
             shutil.rmtree(d)
             n += 1
     return n
