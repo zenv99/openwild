@@ -1,0 +1,40 @@
+name: Online check - accuracy test
+run-name: "Online check accuracy (${{ inputs.region }})"
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        default: "ID-BA"
+      species:
+        description: "Comma-separated scientific names"
+        default: "Asplenium nidus,Codiaeum variegatum,Dieffenbachia seguine,Epipremnum aureum,Monstera deliciosa,Sansevieria trifasciata,Calotropis gigantea,Datura metel,Cerbera manghas,Cocos nucifera,Plumeria rubra,Hibiscus rosa-sinensis,Bougainvillea spectabilis,Nerium oleander,Jatropha curcas,Ricinus communis,Abrus precatorius,Gloriosa superba,Alocasia macrorrhizos,Colocasia esculenta,Carica papaya,Musa acuminata,Mangifera indica,Catharanthus roseus,Lantana camara,Mimosa pudica,Ixora coccinea,Cordyline fruticosa,Amanita muscaria,Chlorophyllum molybdites,Pleurotus ostreatus,Schizophyllum commune"
+      per:
+        default: "1"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -q numpy pyyaml pillow open_clip_torch
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            pipeline/work/scan/names-*.npy
+          key: scan-${{ inputs.region }}-${{ github.run_id }}
+          restore-keys: scan-${{ inputs.region }}-
+      - name: Test
+        env:
+          OW_SCAN_WORK: work/scan
+        run: python -m openwild_pipeline.cli scan-eval "${{ inputs.region }}" --species "${{ inputs.species }}" --per "${{ inputs.per }}"

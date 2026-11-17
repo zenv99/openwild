@@ -469,6 +469,21 @@ def cmd_index(a):
     print(f"index has {len(idx['packs'])} packs")
 
 
+def cmd_scan_inbox(a):
+    from pathlib import Path
+
+    from .scan import expire, process_inbox
+
+    n = process_inbox(Path(a.inbox))
+    print(f"processed {n}; expired {expire(Path(a.inbox))}")
+
+
+def cmd_scan_eval(a):
+    from .scan import evaluate
+
+    evaluate(a.region, [s.strip() for s in a.species.split(",") if s.strip()], per_species=a.per)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="openwild-pipeline")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -478,6 +493,12 @@ def main(argv=None):
         sp.set_defaults(fn=fn)
         return sp
 
+    sp = add("scan-inbox", cmd_scan_inbox, "online check: identify every pending scans/<id>/ in the inbox clone")
+    sp.add_argument("--inbox", required=True)
+    sp = add("scan-eval", cmd_scan_eval, "online check accuracy test (leave-one-out on iNaturalist observations)")
+    sp.add_argument("region")
+    sp.add_argument("--species", required=True)
+    sp.add_argument("--per", type=int, default=1)
     add("content-validate", cmd_content_validate, "validate content/curated/*.yaml")
     add("regions-export", cmd_regions_export, "write the app's offline region index (assets/regions.json)")
     sp = add("regions-from-naturalearth", cmd_regions_from_naturalearth, "print regions.yaml entries for every country")
