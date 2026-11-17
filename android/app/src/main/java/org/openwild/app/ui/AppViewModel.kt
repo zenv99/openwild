@@ -86,6 +86,8 @@ data class UiState(
     val installed: List<PackManager.InstalledPack> = emptyList(),
     val remote: List<PackManager.RemotePack> = emptyList(),
     val remoteError: Boolean = false,
+    /** The list of downloadable regions is being fetched from GitHub. */
+    val remoteLoading: Boolean = false,
     val downloading: Map<String, Float> = emptyMap(),
     val filter: KingdomFilter = KingdomFilter.ANY,
     val photos: List<Photo> = emptyList(),
@@ -356,8 +358,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun refreshRemote() = viewModelScope.launch {
         if (!org.openwild.app.BuildConfig.ALLOW_NETWORK) return@launch
-        val r = withContext(Dispatchers.IO) { runCatching { ow.packs.fetchIndex() } }
-        _state.update { it.copy(remote = r.getOrDefault(it.remote), remoteError = r.isFailure) }
+        _state.update { it.copy(remoteLoading = true, remoteError = false) }
+        // First launch can race the network coming up: try a few times before giving up.
+        var r: Result<List<PackManager.RemotePack>> = Result.failure(IllegalStateException())
+        for (attempt in 0 until 3) {
+            r = withContext(Dispatchers.IO) { runCatching { ow.packs.fetchIndex() } }
+            if (r.isSuccess) break
+            kotlinx.coroutines.delay(2000L * (attempt + 1))
+        }
+        _state.update { it.copy(remote = r.getOrDefault(it.remote), remoteError = r.isFailure, remoteLoading = false) }
     }
 
     fun download(p: PackManager.RemotePack) = viewModelScope.launch {

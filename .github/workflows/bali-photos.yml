@@ -193,8 +193,8 @@ jobs:
           pattern: photos-${{ inputs.region }}-*
           path: work/photos_commercial/${{ inputs.region }}
           merge-multiple: true
-      - name: Rebuild only - photos from the permanent store (Bali)
-        if: inputs.skip_collect == 'true' && inputs.merge_runs == '' && inputs.region == 'ID-BA'
+      - name: Rebuild only - photos from the permanent store
+        if: inputs.skip_collect == 'true' && inputs.merge_runs == ''
         working-directory: .
         env:
           GH_TOKEN: ${{ github.token }}
@@ -344,14 +344,16 @@ jobs:
           prog = json.load(open("work/idx/photo-progress.json"))
           e = prog.get(r, {})
           e.update({"mode": mode, "budget_hit": "budget" in st or not st, "top1": acc, "updated": time.strftime("%Y-%m-%dT%H:%MZ", time.gmtime()),
-                    "passes": e.get("passes", 0) + 1, "topups": e.get("topups", 0) + (mode == "topup")})
+                    "passes": e.get("passes", 0) + 1, "topups": e.get("topups", 0) + (mode == "topup"),
+                    # level 2 = built with the Bali treatment: specimen/relative fill, sheet filter, essentials
+                    "level": 2})
           prog[r] = e
           json.dump(prog, open("work/idx/photo-progress.json", "w"), indent=1, sort_keys=True)
           print("PROGRESS", r, e)
           PY
           gh release upload packs work/idx/photo-progress.json --clobber
-          # Bali: keep every collected photo in a permanent store (caches can be cleared by GitHub).
-          if [ "$R" = "ID-BA" ]; then
+          # Keep every region's collected photos in a permanent store (GitHub can clear caches any time).
+          if [ -f "work/photos_commercial/$R/photos.csv" ]; then
             gh release view photo-store >/dev/null 2>&1 || gh release create photo-store --prerelease --title "Collected photos (pipeline store)" --notes "Pipeline working store. Not for users."
             (cd "work/photos_commercial/$R" && tar -c photos.csv img) | split -b 1900m -d - "/tmp/$R.tar.part"
             for old in $(gh release view photo-store --json assets --jq '.assets[].name' | grep "^$R.tar.part" || true); do gh release delete-asset photo-store "$old" -y; done
@@ -375,7 +377,7 @@ jobs:
           git commit -m "$R pack: photos, accuracy report, photos wanted" || echo "No changes"
           git push origin HEAD:main
           # The pack version changed: rebuild its "Better recognition" (BioCLIP 2) file if the region has one.
-          if gh release download packs -p boosts.json -D /tmp/bj --clobber 2>/dev/null && jq -e --arg r "$R" 'map(.region_id) | index($r)' /tmp/bj/boosts.json >/dev/null; then
+          if [ "$R" != "WORLD" ]; then
             gh workflow run bioclip.yml --ref main -f region="$R" -f export_model=false
           fi
           if [ "${{ inputs.topup }}" != "true" ] && [ "${{ inputs.chain }}" != "false" ] && [ "$R" = "ID-BA" ]; then

@@ -1,4 +1,4 @@
-name: Photos scheduler (every region, Bali-level, 3 at a time)
+name: Photos scheduler (every region, Bali-level, one at a time, spread out)
 
 # Works through every published region, nearest to Bali first: a full photo pass, then iNaturalist
 # top-ups, repeating any pass that stopped at its time budget. At most MAX_ACTIVE regions run at once,
@@ -6,7 +6,7 @@ name: Photos scheduler (every region, Bali-level, 3 at a time)
 # the "packs" release (photo-progress.json); regions finish when no pass hits its budget any more.
 on:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "17 */4 * * *"   # every 4 hours: one region at a time, so the work is spread out
   workflow_dispatch:
 
 permissions:
@@ -22,6 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: content/evidence/wiki_parts
       - name: Dispatch the next regions
         env:
           GH_TOKEN: ${{ github.token }}
@@ -31,7 +34,7 @@ jobs:
           gh run list -R "$REPO" --workflow bali-photos.yml --limit 200 --json displayTitle,status,conclusion > /tmp/s/runs.json
           python3 - <<'PY'
           import json, os, subprocess, time
-          MAX_ACTIVE, CAP, PHOTOS, MAX_TOPUPS = 3, "5000", "6", 4
+          MAX_ACTIVE, CAP, PHOTOS, MAX_TOPUPS = 1, "5000", "12", 4   # 12 photos/plant, as Bali
           # Nearest to Bali first, then the rest smallest first (quick wins).
           FIRST = ["ID", "TL", "MY", "SG", "BN", "PH", "TH", "VN", "KH", "LA", "MM", "PG", "AU", "FJ", "NZ",
                    "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US-HI"]
@@ -45,6 +48,11 @@ jobs:
           size = {p["region_id"]: p["species_count"] for p in idx}
           order = [r for r in FIRST if r in size] + sorted((r for r in size if r not in FIRST and r not in SKIP), key=size.get)
           runs = json.load(open("/tmp/s/runs.json"))
+          # Don't start a region while a BioCLIP 2 file is still being built (keeps load low).
+          b = subprocess.run(["gh", "run", "list", "-R", os.environ["REPO"], "--workflow", "bioclip.yml", "--limit", "5",
+                              "--json", "status"], capture_output=True, text=True).stdout
+          if any(x["status"] in ("queued", "in_progress", "waiting", "pending") for x in json.loads(b or "[]")):
+              print("BioCLIP 2 build running; waiting"); raise SystemExit(0)
           active = {r["displayTitle"].split()[1] for r in runs
                     if r["status"] in ("queued", "in_progress", "waiting", "pending", "requested") and r["displayTitle"].startswith("Photos ")}
           print("active:", sorted(active))
@@ -64,8 +72,8 @@ jobs:
                   continue
               e = prog.get(r)
               fresh = False
-              if r == "ID-BA" and e is None:
-                  continue  # Bali is handled by its own runs until it has a progress entry
+              if r == "ID-BA":
+                  continue  # Bali is maintained by its own runs
               if e is None:
                   topup = False
               elif e["mode"] == "full" and e.get("budget_hit"):
@@ -74,11 +82,17 @@ jobs:
                   topup = True
               elif e.get("budget_hit") and e.get("topups", 0) < MAX_TOPUPS:
                   topup = True
+              elif e.get("level", 1) < 2:
+                  topup = True  # finished before the Bali treatment existed: one more pass with it
               else:
                   age = (time.time() - time.mktime(time.strptime(e["updated"], "%Y-%m-%dT%H:%MZ"))) / 86400
                   if age < REFRESH_DAYS:
                       continue  # done for now
                   topup, fresh = True, True  # monthly refresh: new university, community and open photos
+              # Part-by-part facts from Wikipedia first (once per region), as Bali had.
+              if not os.path.exists(f"content/evidence/wiki_parts/{r}.csv"):
+                  subprocess.run(["gh", "workflow", "run", "parts-data.yml", "-R", os.environ["REPO"], "--ref", "main",
+                                  "-f", f"region={r}", "-f", "update_pack=false"], check=False)
               print("dispatch", r, "refresh" if fresh else ("top-up" if topup else "full"))
               subprocess.run(["gh", "workflow", "run", "bali-photos.yml", "-R", os.environ["REPO"], "--ref", "main",
                               "-f", f"region={r}", "-f", "max_species=", "-f", "publish=true",

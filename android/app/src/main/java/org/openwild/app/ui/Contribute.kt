@@ -168,8 +168,10 @@ object Contribute {
     /** Opens the user's Lightning wallet; if none is installed, copies the address instead. */
     fun donateLightning(context: Context) {
         val address = BuildConfig.LIGHTNING_ADDRESS
+        // LNURL-pay: wallets open straight onto a filled-in payment to this address.
+        val target = Lightning.lnurl(address) ?: address
         try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("lightning:$address")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("lightning:$target")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         } catch (_: ActivityNotFoundException) {
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.setPrimaryClip(ClipData.newPlainText("Lightning address", address))

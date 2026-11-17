@@ -216,11 +216,15 @@
     <string name="explore_empty">Nothing in %1$s matches that search.</string>
 
     <string name="choose_region_title">Choose your region</string>
-    <string name="choose_region_body">Pick a region. Bali has full photo ID with thousands of photos. Every other region is a field guide (plant names, poison warnings, lookalikes), and we add photos every week. Packs work offline once downloaded.</string>
+    <string name="choose_region_body">Pick your region to download. It has photo ID, poison warnings and lookalikes, and works offline once downloaded. We add photos every week.</string>
     <string name="region_not_ready">%1$s doesn\'t have a finished pack yet.</string>
     <string name="install_pack">Install</string>
     <string name="installing_pack">Installing…</string>
     <string name="status_not_ready">Not finished — no pack to install</string>
+    <string name="status_checking">Checking what’s available…</string>
+    <string name="regions_loading">Getting the list of regions from GitHub…</string>
+    <string name="regions_failed">Couldn’t reach GitHub to list the regions. Check your internet connection.</string>
+    <string name="retry">Try again</string>
     <string name="status_ready">Ready to install · v%1$d · %2$d species</string>
     <string name="pack_update_banner">A newer pack for this region is included in this version of the app.</string>
     <string name="pack_update_action">Install update</string>
@@ -314,7 +318,7 @@
     <string name="upgrade_title">Better recognition (BioCLIP 2)</string>
     <string name="upgrade_badge_recommended">Recommended</string>
     <string name="upgrade_badge_on">On</string>
-    <string name="upgrade_body">A plant-and-fungus specialist model. In our Bali test it named the right plant first 77% of the time from one photo (vs 53% now) and 91% from three photos. Still works fully offline.</string>
+    <string name="upgrade_body">A plant-and-fungus specialist model. In our tests it named the right plant first about 8 times in 10 from one photo (vs 5 in 10 now), and 9 in 10 from three photos. Still works fully offline.</string>
     <string name="upgrade_space">Needs about %1$d MB of space. Wi‑Fi recommended. Downloaded from GitHub only.</string>
     <string name="upgrade_install">Download and turn on (model + %1$s)</string>
     <string name="upgrade_install_plain">Download and turn on</string>

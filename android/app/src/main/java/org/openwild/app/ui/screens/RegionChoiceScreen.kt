@@ -69,6 +69,20 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
         }
         item {
             Text(stringResource(R.string.choose_region_body), style = MaterialTheme.typography.bodyMedium)
+            if (org.openwild.app.BuildConfig.ALLOW_NETWORK && state.remote.isEmpty()) {
+                if (state.remoteLoading) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.regions_loading), style = MaterialTheme.typography.bodySmall)
+                    }
+                } else if (state.remoteError) {
+                    Column(Modifier.padding(top = 8.dp)) {
+                        Text(stringResource(R.string.regions_failed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                        androidx.compose.material3.OutlinedButton(onClick = { vm.refreshRemote() }) { Text(stringResource(R.string.retry)) }
+                    }
+                }
+            }
         }
         item {
             OutlinedTextField(
@@ -91,14 +105,14 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                         Text(stringResource(R.string.near_you), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
                         Text(stringResource(R.string.near_you_install), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    item { ChoiceRow(suggested, ready[suggested.id], remote[suggested.id], state.installingRegion == suggested.id, state.downloading[suggested.id], vm) }
+                    item { ChoiceRow(suggested, ready[suggested.id], remote[suggested.id], state.installingRegion == suggested.id, state.downloading[suggested.id], vm, state.remoteLoading) }
                 }
             }
         }
         grouped.forEach { (continent, list) ->
             item { Text(continent, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp)) }
             items(list, key = { it.id }) { region ->
-                ChoiceRow(region, ready[region.id], remote[region.id], state.installingRegion == region.id, state.downloading[region.id], vm)
+                ChoiceRow(region, ready[region.id], remote[region.id], state.installingRegion == region.id, state.downloading[region.id], vm, state.remoteLoading)
             }
         }
         item { Spacer(Modifier.size(24.dp)) }
@@ -108,7 +122,7 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
 @Composable
 private fun ChoiceRow(
     region: RegionInfo, pack: PackManager.BundledPack?, online: PackManager.RemotePack?,
-    installing: Boolean, progress: Float?, vm: AppViewModel,
+    installing: Boolean, progress: Float?, vm: AppViewModel, checking: Boolean = false,
 ) {
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
@@ -123,6 +137,7 @@ private fun ChoiceRow(
                     progress != null -> stringResource(R.string.status_downloading_named, region.name, (progress * 100).toInt())
                     pack != null -> stringResource(R.string.status_ready, pack.version, pack.speciesCount)
                     online != null -> stringResource(R.string.status_online, online.speciesCount, (online.first.size / 1_000_000.0).let { if (it < 1) 1.0 else it }.toInt())
+                    checking -> stringResource(R.string.status_checking)
                     else -> stringResource(R.string.status_not_ready)
                 },
                 style = MaterialTheme.typography.bodySmall,
