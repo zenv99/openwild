@@ -79,8 +79,11 @@ def vernacular_names(key: int) -> dict[str, str]:
     for r in d.get("results", []):
         lang = (r.get("language") or "").lower()
         name = (r.get("vernacularName") or "").strip()
-        if lang in NAME_LANGS and name and lang not in names:
-            names[lang] = name[:80]
+        if lang in NAME_LANGS and name:
+            # Keep every name per language (up to 5), "a; b; c": local names differ from village to village.
+            have = [x.strip().lower() for x in names.get(lang, "").split(";") if x.strip()]
+            if name.lower() not in have and len(have) < 5:
+                names[lang] = (names[lang] + "; " if lang in names else "") + name[:80]
     return names
 
 

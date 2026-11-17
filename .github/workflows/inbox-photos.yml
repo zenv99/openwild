@@ -55,6 +55,7 @@ jobs:
           echo "only=$ONLY" >> "$GITHUB_OUTPUT"
           N=$(find ../inbox/inbox -name submission.json 2>/dev/null | wc -l)
           F=$(find ../inbox/feedback -name '*.json' 2>/dev/null | wc -l)
+          F=$((F + $(find ../inbox/reports -name report.json 2>/dev/null | wc -l)))
           WEEKLY=false
           if [ "${{ github.event.schedule }}" = "23 2 * * 1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then WEEKLY=true; fi
           echo "weekly=$WEEKLY" >> "$GITHUB_OUTPUT"
@@ -72,7 +73,7 @@ jobs:
         run: |
           pip install -q numpy pyyaml pillow ai-edge-litert
           mkdir -p /tmp/packs
-          REGIONS=$( (cd ../inbox && ls inbox 2>/dev/null; [ -n "${{ steps.inbox.outputs.only }}" ] && echo "${{ steps.inbox.outputs.only }}" | cut -d/ -f2) | sort -u)
+          REGIONS=$( (cd ../inbox && ls inbox 2>/dev/null; ls reports 2>/dev/null; [ -n "${{ steps.inbox.outputs.only }}" ] && echo "${{ steps.inbox.outputs.only }}" | cut -d/ -f2) | sort -u)
           for R in $REGIONS; do
             if [ -f "android/app/src/main/assets/packs/$R.owpack" ]; then
               ln -sf "$PWD/android/app/src/main/assets/packs/$R.owpack" "/tmp/packs/$R.owpack"
@@ -91,6 +92,10 @@ jobs:
           elif [ "${{ steps.inbox.outputs.weekly }}" = "true" ]; then
             python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json
             python -m openwild_pipeline.cli inbox-feedback --inbox ../../inbox --out /tmp/feedback.json --digest /tmp/digest.md
+            # Wrong-ID reports and corrections with photos: good photos join the library for the right plant.
+            python -m openwild_pipeline.cli inbox-reports --inbox ../../inbox --packs /tmp/packs --out /tmp/reports.json
+            jq -s '{accept: (.[0].accept + .[1].accept), review: (.[0].review + .[1].review), reject: (.[0].reject + .[1].reject)}' \
+              /tmp/result.json /tmp/reports.json > /tmp/merged.json && mv /tmp/merged.json /tmp/result.json
           else
             python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json --first-only
           fi
@@ -121,7 +126,7 @@ jobs:
           # 3. Review issues (photos stay private in the inbox; only the maintainer can open the link).
           gh label create inbox-review --color FBCA04 --description "Photos sent from the app, waiting for a person" --force >/dev/null
           gh label create approved --color 0E8A16 --force >/dev/null
-          jq -c '.review[] | select(.folder | startswith("inbox/"))' /tmp/result.json | while read -r e; do
+          jq -c '.review[] | select((.folder | startswith("inbox/")) or (.folder | startswith("reports/")))' /tmp/result.json | while read -r e; do
             F=$(echo "$e" | jq -r .folder); RF="review/${F#inbox/}"
             gh issue create --label inbox-review \
               --title "Photo review: $(echo "$e" | jq -r .species) ($(echo "$e" | jq -r .region))" \

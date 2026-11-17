@@ -116,6 +116,14 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(sp.commonNames[index] ?: sp.scientificNames[index], style = MaterialTheme.typography.headlineMedium, color = Color.White)
                 if (sp.commonNames[index] != null) Text(sp.scientificNames[index], fontStyle = FontStyle.Italic, color = Color.White.copy(alpha = 0.85f))
+                // Other names people use, the region's own languages first.
+                val aka = remember(index) { pack.alsoCalled(index, localLanguages(pack.regionId)) }
+                if (aka.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.also_called, aka.take(10).joinToString(" · ") { (lang, n) -> "$n (${languageName(lang)})" }),
+                        color = Color.White.copy(alpha = 0.9f), style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     val glass = Color.White.copy(alpha = 0.18f)
                     Pill(stringResource(if (sp.isFungus[index]) R.string.kind_fungus else R.string.kind_plant), Color.White, glass)
@@ -351,3 +359,34 @@ private fun PartsCard(content: org.openwild.app.core.SpeciesContent, showFood: B
         Text(stringResource(R.string.parts_disclaimer), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
+
+
+/** The region's own languages, shown first among a plant's other names. */
+internal fun localLanguages(regionId: String): List<String> {
+    if (regionId == "ID-BA") return listOf("ban", "ind", "jav")
+    return when (regionId.substringBefore('-')) {
+        "ID" -> listOf("ind", "jav", "sun", "ban", "mad", "min")
+        "MY", "BN" -> listOf("msa")
+        "SG" -> listOf("msa", "zho", "tam")
+        "PH" -> listOf("tgl", "ceb")
+        "TL" -> listOf("tet", "ind")
+        "TH" -> listOf("tha")
+        "VN" -> listOf("vie")
+        "KH" -> listOf("khm")
+        "LA" -> listOf("lao")
+        "MM" -> listOf("mya")
+        "CN", "TW" -> listOf("zho")
+        "JP" -> listOf("jpn")
+        "KR" -> listOf("kor")
+        "IN" -> listOf("hin", "tam", "ben")
+        "NP" -> listOf("nep")
+        "LK" -> listOf("sin", "tam")
+        "BD" -> listOf("ben")
+        "NZ" -> listOf("mri")
+        else -> emptyList()
+    } + listOf("eng")
+}
+
+/** "ban" -> "Balinese", in the phone's language; the code itself if Android doesn't know it. */
+internal fun languageName(code: String): String =
+    java.util.Locale.forLanguageTag(code).getDisplayLanguage(java.util.Locale.getDefault()).takeIf { it.isNotBlank() && it != code } ?: code

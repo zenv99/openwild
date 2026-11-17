@@ -49,6 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.openwild.app.R
+import org.openwild.app.ui.ReportSender
+import org.openwild.app.ui.rememberReportSender
 import org.openwild.app.core.Tier
 import org.openwild.app.data.ReviewStore
 import org.openwild.app.ui.AppViewModel
@@ -136,7 +138,19 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stringResource(R.string.correction_saved_detail, c.chosen), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                TextButton(onClick = { Contribute.sendCorrection(context, c); vm.markCorrectionSent(c.id) }) {
+                val reports = rememberReportSender { vm.markCorrectionSent(c.id) }
+                TextButton(onClick = {
+                    if (reports.enabled) {
+                        reports.send(ReportSender.Request(
+                            regionId = c.regionId, predicted = c.predicted, chosen = c.chosen,
+                            fields = org.json.JSONObject().put("kind", "correction").put("chosen_rank", c.chosenRank)
+                                .put("top_matches", c.topMatches).put("pack_version", c.packVersion).put("model", c.modelId),
+                            photos = state.photos,
+                        ))
+                    } else {
+                        Contribute.sendCorrection(context, c); vm.markCorrectionSent(c.id)
+                    }
+                }) {
                     Icon(Icons.AutoMirrored.Filled.Send, null, Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(stringResource(R.string.correction_send))

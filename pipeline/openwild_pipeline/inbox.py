@@ -267,3 +267,65 @@ def digest(by_region: dict[str, list[dict]]) -> str:
             lines.append(f"- *{r['species']}* {stars} {txt}")
         lines.append("")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- reports (wrong ID / corrections), weekly
+
+REPORT_FIELDS = ["date", "kind", "predicted", "target", "matched", "verdict", "photos", "top_matches", "pack_version"]
+CONFUSION_MIN = 3
+
+
+def reports(inbox: Path) -> list[Path]:
+    return sorted(p.parent for p in inbox.glob("reports/*/*/*/report.json"))
+
+
+def resolve_name(text: str, names: dict[str, int], aka: dict[str, str]) -> str | None:
+    """The plant a reporter named: scientific name, or any common / local name in the pack (lowercase)."""
+    t = (text or "").strip().lower()
+    if not t:
+        return None
+    if t in names:
+        return t
+    return aka.get(t)
+
+
+def load_aka(pack: Path) -> dict[str, str]:
+    """Every common and local name (lowercase) -> scientific name (lowercase), unique names only."""
+    con = sqlite3.connect(pack)
+    seen: dict[str, set[str]] = {}
+    for sci, common, cn in con.execute("SELECT scientific_name, common_name, common_names FROM species"):
+        alln = [common or ""]
+        try:
+            alln += [p for v in (json.loads(cn) if cn else {}).values() for p in re.split(r"[;,/]", str(v))]
+        except Exception:  # noqa: BLE001
+            pass
+        for n in alln:
+            n = n.strip().lower()
+            if len(n) >= 3:
+                seen.setdefault(n, set()).add(sci.lower())
+    con.close()
+    return {n: next(iter(s)) for n, s in seen.items() if len(s) == 1}
+
+
+def save_reports(region: str, rows: list[dict]) -> None:
+    path = COMMUNITY / region / "reports.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new = not path.exists()
+    with open(path, "a", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=REPORT_FIELDS)
+        if new:
+            w.writeheader()
+        w.writerows(rows)
+
+
+def confusions(region: str) -> list[tuple[str, str, int]]:
+    """(predicted, actual, count) pairs reported at least CONFUSION_MIN times."""
+    path = COMMUNITY / region / "reports.csv"
+    if not path.exists():
+        return []
+    c: dict[tuple[str, str], int] = {}
+    for r in csv.DictReader(open(path, encoding="utf-8")):
+        a, b = (r.get("predicted") or "").lower(), (r.get("matched") or "").lower()
+        if a and b and a != b:
+            c[(a, b)] = c.get((a, b), 0) + 1
+    return [(a, b, n) for (a, b), n in c.items() if n >= CONFUSION_MIN]

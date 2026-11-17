@@ -43,6 +43,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.openwild.app.R
+import org.openwild.app.ui.ReportSender
+import org.openwild.app.ui.rememberReportSender
 import org.openwild.app.core.Tier
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.Candidate
@@ -150,7 +152,21 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.share_sighting))
             }
-            TextButton(onClick = { Contribute.reportWrongId(context, vm, res) }) {
+            val reports = rememberReportSender()
+            TextButton(onClick = {
+                val pk = vm.pack
+                if (reports.enabled && pk != null) {
+                    reports.send(ReportSender.Request(
+                        regionId = pk.regionId, predicted = pk.species.scientificNames[res.result.top], chosen = null,
+                        fields = org.json.JSONObject().put("kind", "wrong").put("score", res.result.score).put("tier", res.result.tier.name)
+                            .put("top_matches", res.candidates.take(10).joinToString("; ") { pk.species.scientificNames[it.index] })
+                            .put("pack_version", pk.version),
+                        photos = state.photos,
+                    ))
+                } else {
+                    Contribute.reportWrongId(context, vm, res)
+                }
+            }) {
                 Icon(Icons.Filled.Flag, null, Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.report_wrong))

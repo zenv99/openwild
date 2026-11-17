@@ -79,6 +79,37 @@ object PhotoInbox {
         put("feedback/$regionId/${slug(scientificName)}/${kind}_$id.json", body.toString(2).toByteArray(), "Feedback ($kind): $scientificName")
     }
 
+    /**
+     * A wrong-ID report or a correction, with the photos that were identified (re-encoded: no GPS, time or
+     * camera data). The bot checks it weekly; good photos of the named plant go into the library, which is
+     * how the app learns from its mistakes. Goes to reports/<region>/<plant>/<id>/.
+     */
+    fun sendReport(regionId: String, plant: String, fields: JSONObject, photos: List<Pair<Bitmap, String>>, progress: (Int, Int) -> Unit): Int {
+        val id = UUID.randomUUID().toString().take(12)
+        val folder = "reports/$regionId/${slug(plant.ifBlank { "unknown" })}/$id"
+        val sent = JSONArray()
+        photos.forEachIndexed { k, (bmp, part) ->
+            val scaled = scaleDown(bmp)
+            val bytes = ByteArrayOutputStream().use { out -> scaled.compress(Bitmap.CompressFormat.JPEG, 85, out); out.toByteArray() }
+            if (scaled !== bmp) scaled.recycle()
+            val name = "${k + 1}_$part.jpg"
+            put("$folder/$name", bytes, "Report photo $name")
+            sent.put(JSONObject().put("file", name).put("part", part))
+            progress(k + 1, photos.size)
+        }
+        val body = JSONObject(fields.toString()).put("region", regionId).put("photos", sent)
+            .put("license", "CC BY 4.0").put("own_photos", true).put("app_version", BuildConfig.VERSION_NAME)
+        put("$folder/report.json", body.toString(2).toByteArray(), "Report $id: $plant")
+        return sent.length()
+    }
+
+    private fun scaleDown(b: Bitmap): Bitmap {
+        val m = maxOf(b.width, b.height)
+        if (m <= MAX_SIDE) return b
+        val f = MAX_SIDE.toFloat() / m
+        return Bitmap.createScaledBitmap(b, (b.width * f).toInt(), (b.height * f).toInt(), true)
+    }
+
     private fun put(path: String, bytes: ByteArray, message: String) {
         val url = URL("$API/repos/${BuildConfig.INBOX_REPO}/contents/$path")
         require(url.host == "api.github.com" && url.protocol == "https")

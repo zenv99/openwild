@@ -1102,6 +1102,14 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
         by_genus[k.split()[0]].append(k)
     related = 0
     recs = []
+    # Every name people use for each plant (local tongues first), from Wikidata on top of GBIF's.
+    from . import names as _names
+    try:
+        wd_names = _names.region_names(region_id, [r["scientific_name"] for r in species_rows])
+    except Exception as e:  # noqa: BLE001
+        print(f"NAMES failed: {e!r}", flush=True)
+        wd_names = {}
+    local_langs = _names.local_languages(region_id)
     for r in species_rows:
         key = r["scientific_name"].lower()
         pairs = by.get(key, [])
@@ -1144,11 +1152,12 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
                 names = _json.loads(r["common_names"])
             except _json.JSONDecodeError:
                 names = {}
+        names = _names.merge(names, wd_names.get(key, {}))
         recs.append(SpeciesRecord(
             scientific_name=r["scientific_name"],
             kingdom=r.get("kingdom") or "Plantae",
             gbif_key=int(r["gbif_key"]) if (r.get("gbif_key") or "").isdigit() else None,
-            common_name=r.get("common_name") or None,
+            common_name=r.get("common_name") or _names.best_common_name(names, local_langs) or None,
             common_names=names,
             family=r.get("family") or None,
             genus=r.get("genus") or None,

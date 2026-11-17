@@ -275,6 +275,29 @@ def build_pack(
                 "INSERT INTO lookalike VALUES (?,?,?,?)",
                 (name_to_id[key], name_to_id.get(lk["name"].lower()), lk["name"], lk["danger"]),
             )
+    # Plants people actually mixed up (from reports sent in the app, 3+ times): shown as lookalikes both ways.
+    try:
+        from .inbox import confusions
+        tox = {}
+        for sid_, js in con.execute("SELECT species_id, json FROM content"):
+            t = (json.loads(js) or {}).get("toxicity") or ""
+            tox[sid_] = "deadly" if t == "deadly" else "toxic" if t in ("poisonous", "toxic") else "harmless"
+        have = {(a, b) for a, b in con.execute("SELECT species_id, lookalike_species_id FROM lookalike")}
+        added = 0
+        for a, b, n in confusions(region_id):
+            ia, ib = name_to_id.get(a), name_to_id.get(b)
+            if ia is None or ib is None or ia == ib:
+                continue
+            for x, y, yname in ((ia, ib, b), (ib, ia, a)):
+                if (x, y) not in have:
+                    disp = next((r.scientific_name for r in species if r.scientific_name.lower() == yname), yname)
+                    con.execute("INSERT INTO lookalike VALUES (?,?,?,?)", (x, y, disp, tox.get(y, "harmless")))
+                    have.add((x, y))
+                    added += 1
+        if added:
+            print(f"{region_id}: {added} lookalike links from people's reports")
+    except Exception as e:  # noqa: BLE001
+        print(f"{region_id}: report lookalikes skipped ({e!r})")
     con.commit()
     con.execute("VACUUM")
     con.close()

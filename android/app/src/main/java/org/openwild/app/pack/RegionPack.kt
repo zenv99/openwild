@@ -40,6 +40,8 @@ class RegionPack(file: File) : Closeable {
     }.getOrNull()
 
     val species: SpeciesTable
+    private lateinit var akaJson: Array<String?>
+    private lateinit var akaSearch: Array<String>
     private val idToIndex: Map<Long, Int>
     val index: PrototypeIndex
 
@@ -50,7 +52,8 @@ class RegionPack(file: File) : Closeable {
         val fungus = ArrayList<Boolean>()
         val counts = ArrayList<Int>()
         val monthRows = ArrayList<ByteArray?>()
-        db.rawQuery("SELECT id, scientific_name, common_name, kingdom, obs_count, months FROM species ORDER BY id", null).use { c ->
+        val akaRows = ArrayList<String?>()
+        db.rawQuery("SELECT id, scientific_name, common_name, kingdom, obs_count, months, common_names FROM species ORDER BY id", null).use { c ->
             while (c.moveToNext()) {
                 ids += c.getLong(0)
                 sci += c.getString(1)
@@ -58,7 +61,14 @@ class RegionPack(file: File) : Closeable {
                 fungus += c.getString(3) == "Fungi"
                 counts += c.getInt(4)
                 monthRows += if (c.isNull(5)) null else c.getBlob(5)
+                akaRows += if (c.isNull(6)) null else c.getString(6)
             }
+        }
+        akaJson = akaRows.toTypedArray()
+        // Lowercase text of every other name, for search ("biduri", "jaba", "crown flower" all find Calotropis).
+        akaSearch = Array(akaRows.size) { i ->
+            akaRows[i]?.let { j -> runCatching { org.json.JSONObject(j).let { o -> o.keys().asSequence().joinToString(" | ") { o.optString(it) } } }.getOrNull() }
+                ?.lowercase() ?: ""
         }
         val n = ids.size
         val months = Array(12) { m -> IntArray(n) { i -> monthRows[i]?.getOrNull(m)?.toInt()?.and(0xFF) ?: 128 } }
@@ -114,6 +124,24 @@ class RegionPack(file: File) : Closeable {
     /** The built-in copy is cut from the full pack (same species, version one lower), so its boost fits too. */
     val isLight: Boolean = meta["light"] == "1"
     fun boostFits(boostVersion: Int): Boolean = boostVersion == version || (isLight && boostVersion == version + 1)
+
+    /** Other names for this plant: (language code, name), local languages first, the shown name left out. */
+    fun alsoCalled(i: Int, localFirst: List<String>): List<Pair<String, String>> {
+        val j = akaJson.getOrNull(i) ?: return emptyList()
+        val o = runCatching { org.json.JSONObject(j) }.getOrNull() ?: return emptyList()
+        val shown = species.commonNames[i]?.lowercase()
+        val seen = HashSet<String>()
+        val out = ArrayList<Pair<String, String>>()
+        val langs = o.keys().asSequence().toList().sortedBy { l -> localFirst.indexOf(l).let { if (it < 0) 99 else it } }
+        for (lang in langs) {
+            for (n in o.optString(lang).split(';', ',').map { it.trim() }.filter { it.isNotEmpty() }) {
+                val k = n.lowercase()
+                if (k == shown || k == species.scientificNames[i].lowercase() || !seen.add(k)) continue
+                out += lang to n
+            }
+        }
+        return out
+    }
 
     private val contentCache = HashMap<Int, SpeciesContent?>()
 
@@ -209,7 +237,8 @@ class RegionPack(file: File) : Closeable {
             }
             .filter { i ->
                 q.isEmpty() || species.scientificNames[i].lowercase().contains(q) ||
-                    (species.commonNames[i]?.lowercase()?.contains(q) == true)
+                    (species.commonNames[i]?.lowercase()?.contains(q) == true) ||
+                    akaSearch.getOrNull(i)?.contains(q) == true
             }
             .sortedByDescending { species.obsCounts[it] }
             .take(limit)

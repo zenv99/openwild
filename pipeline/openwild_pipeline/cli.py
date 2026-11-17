@@ -655,6 +655,100 @@ def main(argv=None):
     sp.add_argument("--approve", action="store_true", help="a maintainer approved it: accept if anything usable")
     sp.add_argument("--first-only", action="store_true", help="only first photos of a plant (and spam); rest weekly")
 
+    def cmd_inbox_reports(a):
+        """Weekly: wrong-ID reports and corrections sent with photos. Good photos of the plant the reporter
+        named join the library (that is how the app learns); every report is logged for the mix-up list."""
+        import datetime as _dt
+        import json as _j
+        import shutil
+        import tempfile
+
+        import numpy as np
+
+        from . import inbox as ib
+        from .commercial_photos import looks_like_sheet
+        from .freemodel import embed_tflite
+
+        model = config.ANDROID_ASSETS / "embedder.tflite"
+        tmp = Path(tempfile.mkdtemp())
+
+        def embed(blobs):
+            paths = []
+            for k, b in enumerate(blobs):
+                p = tmp / f"q{k}.jpg"
+                p.write_bytes(b)
+                paths.append(p)
+            v = embed_tflite(paths, model).astype(np.float32)
+            return v / (np.linalg.norm(v, axis=1, keepdims=True) + 1e-8)
+
+        def is_sheet(b):
+            p = tmp / "s.jpg"
+            p.write_bytes(b)
+            return looks_like_sheet(p)
+
+        today = _dt.date.today().isoformat()
+        libs, akas, logs = {}, {}, {}
+        result = {"accept": [], "review": [], "reject": []}
+        root = Path(a.inbox)
+        for folder in ib.reports(root):
+            region = folder.parts[-3]
+            rel = str(folder.relative_to(root))
+            pack = Path(a.packs) / f"{region}.owpack"
+            try:
+                rep = _j.loads((folder / "report.json").read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                result["reject"].append({"folder": rel, "reason": "unreadable report"})
+                continue
+            if rep.get("region") != region or not pack.exists():
+                result["reject" if rep.get("region") != region else "review"].append({"folder": rel, "reason": "unknown region or no pack yet"})
+                continue
+            if region not in libs:
+                libs[region], akas[region] = ib.load_library(pack), ib.load_aka(pack)
+            names = libs[region][2]
+            target = ib.resolve_name(rep.get("chosen", ""), names, akas[region]) or ib.resolve_name(rep.get("guess", ""), names, akas[region])
+            images = []
+            for ph in (rep.get("photos") or [])[:10]:
+                fn = str(ph.get("file", ""))
+                if ib._SAFE.match(fn) and (folder / fn).is_file() and (folder / fn).stat().st_size < 15_000_000:
+                    images.append((fn, "field", (folder / fn).read_bytes()))
+            entry = {"folder": rel, "region": region, "species": target or rep.get("guess") or "unknown",
+                     "credit": ib.clean_credit(rep.get("credit", "")), "predicted": rep.get("predicted"), "photos": len(images)}
+            verdict = "logged"
+            if target and images:
+                meta = {"species": target, "region": region, "credit": rep.get("credit") or "Anonymous",
+                        "license": rep.get("license", ""), "own_photos": rep.get("own_photos") is True}
+                d = ib.decide(meta, images, libs[region], embed, is_sheet)
+                entry.update({"reason": d.reason, "detail": d.detail})
+                verdict = d.verdict
+                if d.verdict == "accept":
+                    disp = next((n for n in [rep.get("chosen")] if n and n.lower() == target), target)
+                    meta["species"] = disp[0].upper() + disp[1:] if disp else target
+                    entry["added"] = len(ib.add_to_library(region, meta, "r" + folder.name, d.photos))
+                result["review" if d.verdict == "review" else d.verdict if d.verdict == "accept" else "reject"].append(entry)
+            elif images:
+                entry["reason"] = "the reporter didn't know the plant: a person may recognise it"
+                result["review"].append(entry)
+                verdict = "unknown"
+            else:
+                entry["reason"] = "logged (no photos)"
+                result["reject"].append(entry)
+            logs.setdefault(region, []).append({
+                "date": today, "kind": str(rep.get("kind", ""))[:12], "predicted": str(rep.get("predicted", ""))[:120],
+                "target": str(rep.get("chosen") or rep.get("guess") or "")[:120], "matched": target or "",
+                "verdict": verdict, "photos": len(images), "top_matches": str(rep.get("top_matches", ""))[:600],
+                "pack_version": str(rep.get("pack_version", ""))[:20]})
+            print(f"REPORT {verdict:8} {region} app said {rep.get('predicted')} -> {target or rep.get('guess') or '?'}", flush=True)
+        for region, rows in logs.items():
+            ib.save_reports(region, rows)
+        shutil.rmtree(tmp, ignore_errors=True)
+        _j.dump(result, open(a.out, "w"), indent=1)
+        print(f"REPORTS accepted {len(result['accept'])}, review {len(result['review'])}, logged/rejected {len(result['reject'])}")
+
+    sp = add("inbox-reports", cmd_inbox_reports, "weekly: wrong-ID reports and corrections with photos -> library, mix-up list")
+    sp.add_argument("--inbox", required=True)
+    sp.add_argument("--packs", required=True)
+    sp.add_argument("--out", required=True)
+
     def cmd_inbox_feedback(a):
         """Weekly: file votes and reviews sent from the app, work out which photos people say are wrong."""
         import datetime as _dt

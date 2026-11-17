@@ -332,6 +332,15 @@
     <string name="use_my_location">Find my region (optional, uses approximate location)</string>
     <string name="status_online">Download · %1$d species · %2$d MB</string>
     <string name="parts_title">Parts identified</string>
+    <string name="also_called">Also called: %1$s</string>
+    <string name="report_ask_title">Send this report to OpenWild?</string>
+    <string name="report_ask_body">The app said %1$s. You say: %2$s. Reports with photos teach the app: our bot checks them weekly and good photos join the library for the right plant.</string>
+    <string name="report_unknown">not sure what it is</string>
+    <string name="report_guess">What do you think it is? (optional)</string>
+    <string name="report_with_photos">Include my %1$d photos (location and camera details removed), shared under CC BY 4.0</string>
+    <string name="report_credit">Name to credit (optional, blank = anonymous)</string>
+    <string name="report_ask_not_sent">Never sent: your location, account, contacts or phone ID. Nothing goes unless you tap Send.</string>
+    <string name="report_sent">Report sent. Thank you, this makes the app better for everyone.</string>
     <string name="pp_all">All parts</string>
     <string name="pp_seeds">Seeds / nuts</string>
     <string name="pp_fruit">Fruit</string>

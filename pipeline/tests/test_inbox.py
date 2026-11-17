@@ -109,3 +109,23 @@ def test_feedback_votes_hide_wrong_photos(tmp_path, monkeypatch):
     assert ib.hidden_photos("ID-BA") == {"http://x/1"}     # 3 no, 1 yes
     d = ib.digest(by)
     assert "Local name" in d and "@someone" not in d
+
+
+def test_names_merge_keeps_every_local_name():
+    from openwild_pipeline import names as nm
+    m = nm.merge({"ind": "Biduri", "jav": "Sidogori/Sidaguri"}, {"ind": ["Biduri", "Widuri"], "ban": ["Jaba"]})
+    assert m["ind"] == "Biduri; Widuri" and m["ban"] == "Jaba" and m["jav"] == "Sidogori/Sidaguri"
+    assert nm.best_common_name(m, nm.local_languages("ID-BA")) == "Jaba"
+
+
+def test_reports_resolve_names_and_confusions(tmp_path, monkeypatch):
+    monkeypatch.setattr(ib, "COMMUNITY", tmp_path / "community")
+    names = {"calotropis gigantea": 1, "datura metel": 2}
+    aka = {"biduri": "calotropis gigantea", "kecubung": "datura metel"}
+    assert ib.resolve_name("Biduri", names, aka) == "calotropis gigantea"
+    assert ib.resolve_name("Datura metel", names, aka) == "datura metel"
+    assert ib.resolve_name("no idea", names, aka) is None
+    rows = [{"date": "d", "kind": "correction", "predicted": "Brugmansia suaveolens", "target": "kecubung",
+             "matched": "datura metel", "verdict": "accept", "photos": 2, "top_matches": "", "pack_version": "1"}] * 3
+    ib.save_reports("ID-BA", rows)
+    assert ib.confusions("ID-BA") == [("brugmansia suaveolens", "datura metel", 3)]
