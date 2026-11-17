@@ -170,20 +170,21 @@ class Index:
                 if k == 0:
                     region_ids[sid] = by_name[key]
             con.close()
-        cache = WORK / f"names-{'+'.join(versions)}.npy"
+        import hashlib
+
+        texts = []
+        for n in self.names:
+            tax = " ".join(x for x in (n["kingdom"], n["family"], n["genus"]) if x)
+            texts.append(f"a photo of {tax} {n['scientific_name']}" +
+                         (f" with common name {n['common_name']}" if n["common_name"] else "") + ".")
+        # Keyed by the names themselves, so a pack update that only adds photos never triggers a rebuild.
+        cache = WORK / f"names-{hashlib.sha1(chr(10).join(texts).encode()).hexdigest()[:16]}.npy"
         if cache.exists():
             self.text = np.load(cache)
         else:
             t = time.monotonic()
-            texts = []
-            for n in self.names:
-                tax = " ".join(x for x in (n["kingdom"], n["family"], n["genus"]) if x)
-                texts.append(f"a photo of {tax} {n['scientific_name']}" +
-                             (f" with common name {n['common_name']}" if n["common_name"] else "") + ".")
             print(f"embedding {len(texts)} species names (first run only)", flush=True)
             self.text = model.texts(texts).astype(np.float16)
-            for old in WORK.glob("names-*.npy"):
-                old.unlink()
             np.save(cache, self.text)
             print(f"names done in {time.monotonic() - t:.0f}s", flush=True)
         self.text = self.text.astype(np.float32)
@@ -197,15 +198,13 @@ class Index:
         self.sp_fam = np.array([fam_idx.get(n["family"], -1) for n in self.names])
         self.sp_gen = np.array([gen_idx.get((n["family"], n["genus"]), -1) for n in self.names])
         self.gen_fam = np.array([fam_idx.get(f, -1) for _, f, _ in gens])
-        rcache = WORK / f"ranks-{'+'.join(versions)}.npz"
+        rcache = WORK / f"ranks-{hashlib.sha1(repr((fams, gens)).encode()).hexdigest()[:16]}.npz"
         if rcache.exists():
             z = np.load(rcache)
             self.fam_text, self.gen_text = z["fam"].astype(np.float32), z["gen"].astype(np.float32)
         else:
             self.fam_text = model.texts([f"a photo of {k} {f}." for k, f in fams]).astype(np.float32)
             self.gen_text = model.texts([f"a photo of {k} {f} {g}." for k, f, g in gens]).astype(np.float32)
-            for old in WORK.glob("ranks-*.npz"):
-                old.unlink()
             np.savez(rcache, fam=self.fam_text.astype(np.float16), gen=self.gen_text.astype(np.float16))
         # Region reference photos (BioCLIP 2 fingerprints from the boost file).
         self.offset = 0.0
