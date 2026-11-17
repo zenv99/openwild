@@ -447,6 +447,43 @@ INAT_LICENSES = "cc0,cc-by,cc-by-sa,cc-by-nc,cc-by-nc-sa"
 INAT_PHENOLOGY = {13: "flower", 15: "flower", 14: "fruit", 21: "leaves"}
 
 
+def from_inaturalist_garden(scientific: str, want: int = 30) -> list[dict]:
+    """Garden, potted and planted specimens of the plant (iNaturalist marks these "captive/cultivated", so
+    they never reach research grade). Only observations whose community ID agrees with the species are
+    used, so they are as reliable as wild ones. They teach the app what the plant looks like in a pot, a
+    garden or a hotel lobby, which is how most people meet it."""
+    if not config.ALLOW_INATURALIST:
+        return []
+    try:
+        data = get_json(INAT_API, {
+            "taxon_name": scientific, "photos": "true", "photo_license": INAT_LICENSES, "captive": "true",
+            "identified": "true", "per_page": str(want), "order_by": "votes",
+        }, retries=2, timeout=40)
+    except Exception as e:  # noqa: BLE001
+        print(f"inat garden {scientific} failed: {e!r}", flush=True)
+        return []
+    out = []
+    want_name = scientific.lower().split()
+    for obs in data.get("results") or []:
+        taxon = obs.get("taxon") or {}
+        if (taxon.get("name") or "").lower().split()[:2] != want_name[:2]:
+            continue
+        if not obs.get("community_taxon_id") or obs.get("community_taxon_id") != taxon.get("id"):
+            continue  # nobody else confirmed it: skip
+        user = obs.get("user") or {}
+        for ph in (obs.get("photos") or [])[:2]:
+            lic = config.photo_license(ph.get("license_code"))
+            url = (ph.get("url") or "").replace("/square.", "/medium.")
+            if lic is None or not url:
+                continue
+            out.append({
+                "stage": "field", "garden": True, "license": lic,
+                "observer": (user.get("name") or user.get("login") or "")[:200],
+                "page": f"https://www.inaturalist.org/photos/{ph.get('id')}", "url": url, "source": "inaturalist-garden",
+            })
+    return out
+
+
 def from_inaturalist(scientific: str, want: int = 30) -> list[dict]:
     """Open-licence photos straight from iNaturalist observations (research grade and needs-ID), most-voted
     first, with growth stage from the observers' phenology annotations. Only used when the app is non-commercial."""
@@ -644,16 +681,25 @@ PER_STAGE = 3        # photos kept per growth stage (seedling, leaves, flower, f
 MAX_PER_SPECIES = 12
 
 
-def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
+MORE_REFS = bool(__import__("os").environ.get("OW_MORE_REFS"))
+MORE_TARGET, MORE_TARGET_RARE = 20, 10   # reference photos per plant in the "more references" pass
+GARDEN_CAP = 6                           # of which garden / potted at most
+
+
+def _take(cands: list[dict], img_dir: Path, scientific: str, cap: int | None = None) -> list[dict]:
     """Up to PER_STAGE photos for each growth stage, ordered round-robin across stages so the first
     photos show different stages (a light pack that keeps only the first few still gets variety).
     General field photos fill in when stages are missing. Herbarium sheets and drawings are never used."""
     by: dict[str, list[dict]] = defaultdict(list)
     seen_url = set()
+    per_stage_cap = PER_STAGE * 2 if cap and cap > MAX_PER_SPECIES else PER_STAGE
     for c in cands:
         if c["url"] in seen_url:
             continue
         seen_url.add(c["url"])
+        if c.get("garden"):
+            by["garden"].append(c)
+            continue
         stage = c["stage"] if c["stage"] in (*STAGES, "field", "specimen") else "field"
         by[stage].append({**c, "stage": stage})
     hashes: set[str] = set()
@@ -678,7 +724,7 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
     for stage in STAGES:
         got = []
         for c in by.get(stage, []):
-            if len(got) >= PER_STAGE:
+            if len(got) >= per_stage_cap:
                 break
             r = fetch(c)
             if r:
@@ -686,7 +732,9 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
         if got:
             per_stage[stage] = got
     # Fill with general field photos: up to PER_STAGE, more if no stage photos were found at all.
-    field_cap = PER_STAGE if per_stage else PER_STAGE * 2
+    field_cap = per_stage_cap if per_stage else per_stage_cap * 2
+    if cap and cap > MAX_PER_SPECIES:
+        field_cap = max(field_cap, cap - GARDEN_CAP - sum(len(v) for v in per_stage.values()))
     got = []
     for c in by.get("field", []):
         if len(got) >= field_cap:
@@ -702,8 +750,17 @@ def _take(cands: list[dict], img_dir: Path, scientific: str) -> list[dict]:
             lst = per_stage.get(stage, [])
             if rnd < len(lst):
                 chosen.append(lst[rnd])
+    # Garden / potted photos go last, so a wild photo stays the cover.
+    garden = []
+    for c in by.get("garden", []):
+        if len(garden) >= GARDEN_CAP:
+            break
+        r = fetch(c)
+        if r:
+            garden.append(r)
     # Herbarium sheets are never used: a plant with no living photo shows no photo.
-    return chosen[:MAX_PER_SPECIES]
+    limit = cap or MAX_PER_SPECIES
+    return chosen[:max(0, limit - len(garden))] + garden
 
 
 KEY_TARGET = 12  # photos wanted for each poisonous or edible plant
@@ -865,7 +922,12 @@ def safety_species(rows: list[dict]) -> set[str]:
     return names
 
 
-def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, critical: bool = False) -> list[dict]:
+def more_target(row: dict) -> int:
+    return MORE_TARGET if float(row.get("gbif_count") or 0) >= 20 else MORE_TARGET_RARE
+
+
+def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, critical: bool = False,
+                    skip: set[str] | None = None, have: int = 0) -> list[dict]:
     """Up to 5 photos per species from every commercial-ok source, best (most stage variety) first:
     Commons category with stage subcategories, the Wikidata lead image, Wikipedia page images,
     a Commons title search, then GBIF (licence-filtered, never iNaturalist)."""
@@ -892,7 +954,11 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, cr
     # iNaturalist directly: huge, staged by observers; for species GBIF left short.
     inat_ok = critical or living() == 0 or __import__("os").environ.get("OW_INAT_FULL", "all") == "all" or \
         bool(__import__("os").environ.get("OW_TOPUP"))
-    if inat_ok and living() < (KEY_TARGET if critical else 6):
+    if MORE_REFS:
+        # "More references" pass: many more wild photos plus garden / potted ones, for recognition.
+        step("inat", lambda: from_inaturalist(name, want=60))
+        step("garden", lambda: from_inaturalist_garden(name, want=30))
+    elif inat_ok and living() < (KEY_TARGET if critical else 6):
         step("inat", lambda: from_inaturalist(name, want=60 if critical else 30))
     # Wikimedia Commons is slow and throttled: only walk it for species still short of photos.
     cat = (wiki or {}).get("cat")
@@ -908,8 +974,10 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, cr
         step("wikis", lambda: from_wikipedias(name))
     if critical and living() < 3:
         step("synonyms", lambda: from_synonyms(name, row.get("gbif_key")))
+    if skip:
+        cands = [c for c in cands if (c.get("page") or "") not in skip]
     t0 = _t.monotonic()
-    chosen = _take(cands, img_dir, name)
+    chosen = _take(cands, img_dir, name, cap=max(0, more_target(row) - have) if MORE_REFS else None)
     timing["download"] = (round(_t.monotonic() - t0, 1), len(chosen))
     if TIMING:
         print(f"TIMING {name}: {timing}", flush=True)
@@ -958,13 +1026,17 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
         for r0 in csv.DictReader(open(csv_path, encoding="utf-8")):
             have[r0["scientific_name"]] = have.get(r0["scientific_name"], 0) + 1
             seen_pages.add(r0.get("page") or "")
-        tdone_path = out_dir / "topup_done.txt"
+        tdone_path = out_dir / ("morerefs_done.txt" if MORE_REFS else "topup_done.txt")
         tdone = set(tdone_path.read_text(encoding="utf-8").splitlines()) if tdone_path.exists() else set()
         if __import__("os").environ.get("OW_TOPUP_FRESH"):  # monthly refresh: look again for new open photos
             tdone = set()
             tdone_path.unlink(missing_ok=True)
-        todo = [r for r in rows if r["scientific_name"] not in tdone and
-                have.get(r["scientific_name"], 0) < (KEY_TARGET if r["scientific_name"].lower() in key else 3)]
+        if MORE_REFS:
+            todo = [r for r in rows if r["scientific_name"] not in tdone and
+                    have.get(r["scientific_name"], 0) < more_target(r)]
+        else:
+            todo = [r for r in rows if r["scientific_name"] not in tdone and
+                    have.get(r["scientific_name"], 0) < (KEY_TARGET if r["scientific_name"].lower() in key else 3)]
         if __import__("os").environ.get("OW_CRITICAL_ONLY"):
             todo = [r for r in todo if r["scientific_name"].lower() in key]
         print(f"TOPUP {region}: {len(todo)} species short of photos "
@@ -982,7 +1054,7 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
                 for p in photos:
                     w.writerow({k: p.get(k, "") for k in fields})
             if topup:
-                with open(out_dir / "topup_done.txt", "a", encoding="utf-8") as f:
+                with open(out_dir / ("morerefs_done.txt" if MORE_REFS else "topup_done.txt"), "a", encoding="utf-8") as f:
                     f.write(name + "\n")
             elif photos:  # species with nothing yet are retried on the next run
                 with open(done_path, "a", encoding="utf-8") as f:
@@ -998,7 +1070,8 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
         def one(r, info=info):
             name = r["scientific_name"]
             try:
-                photos = collect_species(r, info.get(name) or {}, descriptions, img_dir, critical=name.lower() in key)
+                photos = collect_species(r, info.get(name) or {}, descriptions, img_dir, critical=name.lower() in key,
+                                         skip=seen_pages if topup else None, have=have.get(name, 0) if topup else 0)
                 if topup:  # keep only photos we don't already have
                     photos = [p for p in photos if (p.get("page") or "") not in seen_pages]
             except Exception as e:  # noqa: BLE001

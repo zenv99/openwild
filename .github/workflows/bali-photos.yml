@@ -6,7 +6,7 @@ name: Region photos (open-licence, 3 per growth stage) -> pack + accuracy
 # split across parallel machines because
 # Commons throttles each connection. Then builds the region pack with the phone's own fingerprint model,
 # publishes it as the in-app download and, for Bali, updates the copy shipped inside the app.
-run-name: "Photos ${{ inputs.region }} (${{ inputs.topup == 'true' && 'top-up' || 'full' }})"
+run-name: "Photos ${{ inputs.region }} (${{ inputs.more_refs == 'true' && 'more references' || inputs.topup == 'true' && 'top-up' || 'full' }})"
 on:
   workflow_dispatch:
     inputs:
@@ -42,6 +42,9 @@ on:
         default: ""
       skip_collect:
         description: "Skip collection and rebuild from merge_runs only"
+        default: "false"
+      more_refs:
+        description: "Top-up for recognition: up to 20 reference photos per plant incl. garden/potted (needs topup=true)"
         default: "false"
       force:
         description: "Publish even if the new pack has fewer plants with photos than the published one"
@@ -130,6 +133,7 @@ jobs:
           OW_TOPUP: ${{ inputs.topup == 'true' && '1' || '' }}
           OW_TOPUP_FRESH: ${{ inputs.fresh == 'true' && '1' || '' }}
           OW_CRITICAL_ONLY: ${{ inputs.critical_only == 'true' && '1' || '' }}
+          OW_MORE_REFS: ${{ inputs.more_refs == 'true' && '1' || '' }}
           # Several regions run at once: keep iNaturalist at about one request per second in total, and in
           # full passes use it only for poisonous/edible plants and plants with nothing yet.
           OW_INAT_INTERVAL: ${{ inputs.photo_cap != '' && '18' || '6' }}
