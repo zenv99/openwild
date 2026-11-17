@@ -11,9 +11,13 @@ on:
       export_model:
         description: "convert and publish the model too (true the first time)"
         default: "true"
+      from_run:
+        description: "reuse fingerprints from this earlier run's artifacts (skips fingerprinting)"
+        default: ""
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   model:
@@ -47,7 +51,7 @@ jobs:
 
   embed:
     needs: model
-    if: always() && (needs.model.result == 'success' || needs.model.result == 'skipped')
+    if: always() && inputs.from_run == '' && (needs.model.result == 'success' || needs.model.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
@@ -102,6 +106,8 @@ jobs:
 
   boost:
     needs: embed
+    # Runs after fingerprinting, or straight away when reusing an earlier run's fingerprints.
+    if: always() && (needs.embed.result == 'success' || inputs.from_run != '')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -115,6 +121,8 @@ jobs:
           pattern: b2-*
           path: /tmp/b2
           merge-multiple: true
+          run-id: ${{ inputs.from_run || github.run_id }}
+          github-token: ${{ github.token }}
       - name: Region pack and photo list
         env:
           GH_TOKEN: ${{ github.token }}
