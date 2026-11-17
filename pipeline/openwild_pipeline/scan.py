@@ -371,9 +371,25 @@ def process_inbox(inbox: Path) -> int:
         (d / "result.json").write_text(json.dumps(res))
         print(f"scan {d.name}: {res.get('verdict')} "
               f"{[c['scientific_name'] for c in res.get('candidates', [])][:3]} in {res.get('seconds')}s", flush=True)
-        if not meta.get("share"):
-            for p in d.glob("*.jpg"):
-                p.unlink()          # private by default: the photos leave the inbox once checked
+        top = (res.get("candidates") or [{}])[0].get("scientific_name")
+        if meta.get("share") and res.get("verdict") == "confident" and top:
+            # The user agreed to share: a confident answer files the photos as a report for that plant,
+            # which the weekly bot adds to the library (that's how the offline app learns).
+            import re
+            import shutil
+
+            dest = inbox / "reports" / region / re.sub(r"[^a-z0-9]+", "_", top.lower()).strip("_") / f"scan{d.name}"
+            dest.mkdir(parents=True, exist_ok=True)
+            photos = []
+            for p in sorted(d.glob("*.jpg")):
+                shutil.move(str(p), dest / p.name)
+                photos.append({"file": p.name, "part": p.stem.split("_", 1)[-1]})
+            (dest / "report.json").write_text(json.dumps({
+                "kind": "online_check", "predicted": meta.get("offline_top"), "chosen": top, "region": region,
+                "online_score": res["candidates"][0]["score"], "photos": photos, "license": "CC BY 4.0",
+                "own_photos": True, "app_version": meta.get("app_version")}, indent=2))
+        for p in d.glob("*.jpg"):
+            p.unlink()              # private by default: the photos leave the inbox once checked
     return len(pending)
 
 

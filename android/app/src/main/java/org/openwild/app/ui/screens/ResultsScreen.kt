@@ -115,6 +115,9 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
         }
         if (tier == Tier.LOW) WarningBox(stringResource(R.string.notice_not_confident))
 
+        // Opt-in: a slower, more careful check in the cloud against thousands of real photos.
+        org.openwild.app.ui.OnlineCheckCard(state, vm)
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (tier != Tier.HIGH && state.photos.size < AppViewModel.MAX_PHOTOS) {
                 OutlinedButton(onClick = vm::addMorePhotos, modifier = Modifier.weight(1f)) {
