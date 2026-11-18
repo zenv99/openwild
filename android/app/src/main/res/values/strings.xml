@@ -401,5 +401,22 @@
     <string name="online_ask_not_sent">Sent: only these photos (re-encoded, so no location, time or camera data) and your region. No account, no device ID, no location. Nothing is sent unless you tap Check online.</string>
     <string name="online_ask_share">Let OpenWild keep these photos to improve the app (you give permission under CC BY 4.0)</string>
     <string name="not_now">Not now</string>
+    <string name="update_ready_title">Update for %1$s</string>
+    <string name="update_ready_body">%1$d more plants with real photos, plus name and photo fixes.</string>
+    <string name="update_ready_body_small">Photo and name fixes. Optional: what you have works fine.</string>
+    <string name="update_ready_action">Update (%1$d MB)</string>
+    <string name="installed_title">On this phone</string>
+    <string name="installed_none">Nothing downloaded yet.</string>
+    <string name="installed_full">All photos</string>
+    <string name="installed_essentials">Essentials (fewer photos)</string>
+    <string name="installed_in_use">in use</string>
+    <string name="installed_update">update available (%1$s)</string>
+    <string name="installed_model">Better recognition (BioCLIP 2 model)</string>
+    <string name="installed_boost">Better recognition data for %1$s</string>
+    <string name="installed_delete_q">Delete %1$s?</string>
+    <string name="installed_delete_body">It is removed from this phone. You can download it again any time.</string>
+    <string name="update_reminders">Update reminders</string>
+    <string name="update_reminders_sub">Show a card on the home screen when a newer download is ready. Updates are never downloaded without you tapping.</string>
+    <string name="cancel">Cancel</string>
 </resources>
 

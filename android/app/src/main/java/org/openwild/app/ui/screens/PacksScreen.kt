@@ -46,6 +46,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.material3.Switch
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -131,6 +135,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
                 }
             }
         }
+        item { InstalledCard(state, vm) }
         if (BuildConfig.ALLOW_NETWORK) item { BetterRecognitionCard(state, vm) }
         if (BuildConfig.ALLOW_NETWORK && state.remoteError && state.remote.isEmpty()) {
             item { WarningBox(stringResource(R.string.offline_list), danger = false) }
@@ -171,6 +176,80 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
             }
         }
         item { Spacer(Modifier.size(24.dp)) }
+    }
+}
+
+/** "Packs" version numbers are dates (2026111711 = 17 Nov 2026, build 11). */
+private fun versionDate(v: Int): String {
+    val t = v.toString()
+    if (t.length < 8) return "v$v"
+    val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    val m = t.substring(4, 6).toIntOrNull()?.let { months.getOrNull(it - 1) } ?: return "v$v"
+    return "${t.substring(6, 8).trimStart('0')} $m ${t.substring(0, 4)}"
+}
+
+/** Everything downloaded onto this phone, what it is, how big, and a delete button for each. */
+@Composable
+private fun InstalledCard(state: UiState, vm: AppViewModel) {
+    var confirm by remember { mutableStateOf<Pair<String, () -> Unit>?>(null) }
+    val remote = state.remote.associateBy { it.regionId }
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.installed_title), style = MaterialTheme.typography.titleMedium)
+            if (state.installed.isEmpty() && vm.upgradeFiles().isEmpty()) {
+                Text(stringResource(R.string.installed_none), style = MaterialTheme.typography.bodySmall)
+            }
+            state.installed.forEach { p ->
+                val upd = remote[p.regionId]?.let { PackManager.updateFor(p, it) }
+                val kind = stringResource(if (p.light) R.string.installed_essentials else R.string.installed_full)
+                InstalledRow(
+                    title = p.name + if (p.regionId == state.activeRegionId) " · " + stringResource(R.string.installed_in_use) else "",
+                    sub = "$kind · ${versionDate(p.version)} · ${mb(p.file.length())}" +
+                        (upd?.let { " · " + stringResource(R.string.installed_update, mb(it.size)) } ?: ""),
+                    onUpdate = upd?.let { u -> { vm.download(u) } },
+                    onDelete = { confirm = p.name to { vm.deletePack(p.regionId) } },
+                )
+            }
+            val files = vm.upgradeFiles()
+            if (files.isNotEmpty()) {
+                files.forEach { f ->
+                    val label = if (f.name.endsWith(".tflite")) stringResource(R.string.installed_model)
+                    else stringResource(R.string.installed_boost, state.regions.firstOrNull { f.name.startsWith(it.id + ".") }?.name ?: f.name.substringBefore("."))
+                    InstalledRow(title = label, sub = mb(f.length()), onUpdate = null,
+                        onDelete = { confirm = label to { vm.deleteUpgradeFile(f) } })
+                }
+            }
+            HorizontalDivider()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.update_reminders), style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.update_reminders_sub), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = state.updateReminders, onCheckedChange = vm::setUpdateReminders)
+            }
+        }
+    }
+    confirm?.let { (what, action) ->
+        AlertDialog(
+            onDismissRequest = { confirm = null },
+            title = { Text(stringResource(R.string.installed_delete_q, what)) },
+            text = { Text(stringResource(R.string.installed_delete_body)) },
+            confirmButton = { TextButton(onClick = { action(); confirm = null }) { Text(stringResource(R.string.delete)) } },
+            dismissButton = { TextButton(onClick = { confirm = null }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun InstalledRow(title: String, sub: String, onUpdate: (() -> Unit)?, onDelete: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (onUpdate != null) IconButton(onClick = onUpdate) { Icon(Icons.Filled.SystemUpdate, stringResource(R.string.update)) }
+        IconButton(onClick = onDelete) { Icon(Icons.Filled.Delete, stringResource(R.string.delete)) }
     }
 }
 

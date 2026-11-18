@@ -33,6 +33,8 @@ class PackManager(private val context: Context) {
         val speciesCount: Int,
         /** Smaller first download for big regions: every plant, all deadly-plant photos, fewer of the rest. */
         val essentials: RemotePack? = null,
+        /** Plants that have at least one real photo in this download (shown as "what's new" on updates). */
+        val photoSpecies: Int = 0,
     ) {
         /** What a first download of this region fetches. */
         val first: RemotePack get() = essentials ?: this
@@ -164,6 +166,7 @@ class PackManager(private val context: Context) {
                 sha256 = p.getString("sha256"),
                 size = p.optLong("size"),
                 speciesCount = p.optInt("species_count"),
+                photoSpecies = p.optInt("photo_species"),
                 essentials = e?.let {
                     RemotePack(
                         regionId = p.getString("region_id"), name = p.getString("name"), version = it.getInt("version"),
