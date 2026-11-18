@@ -107,6 +107,10 @@ def test_feedback_votes_hide_wrong_photos(tmp_path, monkeypatch):
     assert len(files) == 5 and len(by["ID-BA"]) == 5
     ib.save_feedback("ID-BA", by["ID-BA"])
     assert ib.hidden_photos("ID-BA") == {"http://x/1"}     # 3 no, 1 yes
+    ib.save_feedback("ID-BA", by["ID-BA"])                 # weekly re-read must not double-count
+    assert ib.hidden_photos("ID-BA") == {"http://x/1"}
+    (tmp_path / "community" / "ID-BA" / "hide.txt").write_text("# maintainer\nhttp://x/kept\n")
+    assert ib.hidden_photos("ID-BA") == {"http://x/1", "http://x/kept"}
     d = ib.digest(by)
     assert "Local name" in d and "@someone" not in d
 

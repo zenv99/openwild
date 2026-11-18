@@ -199,7 +199,7 @@ def read_submission(folder: Path) -> tuple[dict, list[tuple[str, str, bytes]]]:
 
 # ---------------------------------------------------------------- feedback (votes, reviews), weekly
 
-FEEDBACK_FIELDS = ["date", "kind", "species", "rating", "text", "correct", "photo", "stage", "app_version"]
+FEEDBACK_FIELDS = ["date", "kind", "species", "rating", "text", "correct", "photo", "stage", "app_version", "source"]
 HIDE_MIN_NO = 3          # a photo needs at least this many "wrong plant" answers...
 HIDE_RATIO = 2.0         # ...and twice as many no as yes, before it is hidden
 
@@ -225,6 +225,7 @@ def collect_feedback(inbox: Path, today: str) -> tuple[list[Path], dict[str, lis
             "correct": "" if "correct" not in d else ("yes" if d.get("correct") is True else "no"),
             "photo": str(d.get("photo", ""))[:500], "stage": str(d.get("stage", ""))[:20],
             "app_version": str(d.get("app_version", ""))[:20],
+            "source": str(f.relative_to(inbox))[:300],
         })
     return files, by_region
 
@@ -232,26 +233,55 @@ def collect_feedback(inbox: Path, today: str) -> tuple[list[Path], dict[str, lis
 def save_feedback(region: str, rows: list[dict]) -> Path:
     path = COMMUNITY / region / "feedback.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
+    seen: set[tuple] = set()
+    if path.exists():
+        for prev in csv.DictReader(open(path, encoding="utf-8")):
+            seen.add(_feedback_key(prev))
+    fresh = []
+    for row in rows:
+        key = _feedback_key(row)
+        if key in seen:
+            continue
+        seen.add(key)
+        fresh.append(row)
     new = not path.exists()
     with open(path, "a", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=FEEDBACK_FIELDS)
         if new:
             w.writeheader()
-        w.writerows(rows)
+        w.writerows(fresh)
     return path
 
 
+def _feedback_key(row: dict) -> tuple:
+    """Identity of a vote or review, ignoring the day it was filed, so a weekly re-read does not double-count."""
+    return (
+        row.get("kind", ""), row.get("species", ""), row.get("photo", ""), row.get("correct", ""),
+        (row.get("text") or "")[:80], str(row.get("rating") or ""), row.get("app_version", ""),
+        row.get("source", ""),
+    )
+
+
 def hidden_photos(region: str) -> set[str]:
-    """Photos people say show the wrong plant (enough "no", clearly more than "yes"): left out of packs."""
+    """Photos left out of packs: a maintainer hide list, plus photos people say show the wrong plant
+    (enough "no", clearly more than "yes")."""
+    hidden: set[str] = set()
+    listed = COMMUNITY / region / "hide.txt"
+    if listed.exists():
+        for line in listed.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                hidden.add(line)
     path = COMMUNITY / region / "feedback.csv"
     if not path.exists():
-        return set()
+        return hidden
     votes: dict[str, list[int]] = {}
     for r in csv.DictReader(open(path, encoding="utf-8")):
         if r.get("kind") == "vote" and r.get("photo"):
             v = votes.setdefault(r["photo"], [0, 0])
             v[0 if r.get("correct") == "yes" else 1] += 1
-    return {u for u, (yes, no) in votes.items() if no >= HIDE_MIN_NO and no >= HIDE_RATIO * yes}
+    hidden |= {u for u, (yes, no) in votes.items() if no >= HIDE_MIN_NO and no >= HIDE_RATIO * yes}
+    return hidden
 
 
 def digest(by_region: dict[str, list[dict]]) -> str:

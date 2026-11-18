@@ -20,6 +20,8 @@ class PackManager(private val context: Context) {
 
         /** The only hosts the app will ever contact: GitHub release downloads and the CDN they redirect to. */
         val ALLOWED_HOSTS = listOf("github.com", "githubusercontent.com")
+        private const val ENABLED = "enabled_regions"
+        private const val BRAIN = "brain_on"
     }
 
 
@@ -44,6 +46,9 @@ class PackManager(private val context: Context) {
         val regionId: String, val name: String, val version: Int, val file: File, val compatible: Boolean,
         /** Installed from the "essentials" download (fewer photos); the full set is offered as an upgrade. */
         val light: Boolean = false,
+        val speciesCount: Int = 0,
+        /** True when the pack has photo fingerprints, so Identify can match a picture. */
+        val photoId: Boolean = false,
     )
 
 
@@ -64,6 +69,27 @@ class PackManager(private val context: Context) {
         get() = prefs.getString("active_region", null)
         set(v) = prefs.edit().putString("active_region", v).apply()
 
+    /** Regions included in Identify and eligible for Explore. Empty means the preference was never set. */
+    fun enabledRegionIds(): Set<String> = prefs.getStringSet(ENABLED, null)?.toSet() ?: emptySet()
+
+    fun hasEnabledPreference(): Boolean = prefs.contains(ENABLED)
+
+    fun setEnabledRegions(ids: Set<String>) {
+        prefs.edit().putStringSet(ENABLED, ids.toSet()).apply()
+    }
+
+    /** Photo identification model. Off still leaves search and browse working. */
+    var brainOn: Boolean
+        get() = prefs.getBoolean(BRAIN, true)
+        set(v) = prefs.edit().putBoolean(BRAIN, v).apply()
+
+    /** Bytes of the model shipped inside the app. Zero when this build has no model file. */
+    fun brainAssetBytes(): Long = try {
+        context.assets.openFd("embedder.tflite").use { it.declaredLength }
+    } catch (e: Exception) {
+        0L
+    }
+
     fun installed(): List<InstalledPack> =
         dir.listFiles { f -> f.extension == "owpack" }.orEmpty().mapNotNull { f ->
             val meta = RegionPack.readMeta(f) ?: return@mapNotNull null
@@ -75,6 +101,8 @@ class PackManager(private val context: Context) {
                 // Guide-only packs (no photo fingerprints) work with any model.
                 compatible = meta["model_id"] == Embedder.modelId(context) || RegionPack.prototypeCount(f) == 0,
                 light = meta["light"] == "1",
+                speciesCount = RegionPack.speciesCount(f),
+                photoId = RegionPack.prototypeCount(f) > 0,
             )
         }.sortedBy { it.name }
 
@@ -293,6 +321,7 @@ class PackManager(private val context: Context) {
     fun delete(regionId: String) {
         fileFor(regionId).delete()
         if (activeRegionId == regionId) activeRegionId = null
+        if (hasEnabledPreference()) setEnabledRegions(enabledRegionIds() - regionId)
     }
 
     private fun checkHost(u: URL) {

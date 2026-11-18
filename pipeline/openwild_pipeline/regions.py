@@ -19,6 +19,7 @@ class Region:
     max_species: int = 5000
     continent: str = ""
     wgsrpd: list[str] = field(default_factory=list)  # Kew/TDWG level-3 area codes for WCVP plant lists
+    parent: str | None = None  # coarser pack this region sits inside (ID-BA -> ID). Never implies deletion.
 
     def contains(self, lon: float, lat: float) -> bool:
         return any(b[0] <= lon <= b[2] and b[1] <= lat <= b[3] for b in self.bbox)
@@ -41,6 +42,21 @@ def load_regions(path: Path = config.REGIONS_YAML) -> list[Region]:
         for b in r.bbox:
             if len(b) != 4 or not (b[0] <= b[2] and b[1] <= b[3]):
                 raise ValueError(f"Bad bbox for region {r.id}: {b}")
+        if r.parent is not None and not isinstance(r.parent, str):
+            raise ValueError(f"Region parent must be a string id: {r.id!r} {r.parent!r}")
+    by_id = {r.id: r for r in regions}
+    for r in regions:
+        if not r.parent:
+            continue
+        if r.parent not in by_id:
+            raise ValueError(f"Region {r.id} parent {r.parent} is not a region id")
+        seen = {r.id}
+        cur = by_id[r.parent]
+        while cur.parent:
+            if cur.id in seen:
+                raise ValueError(f"Region parent cycle at {cur.id}")
+            seen.add(cur.id)
+            cur = by_id[cur.parent]
     return regions
 
 
@@ -57,11 +73,44 @@ def locate(regions: list[Region], lon: float, lat: float) -> Region | None:
     return min(hits, key=lambda r: r.area) if hits else None
 
 
+def country_of(regions: list[Region], region: Region) -> Region:
+    """Walk parent links to the country (or world) pack. The finer region is kept."""
+    by_id = {r.id: r for r in regions}
+    seen: set[str] = set()
+    cur = region
+    while cur.parent and cur.id not in seen:
+        seen.add(cur.id)
+        nxt = by_id.get(cur.parent)
+        if nxt is None:
+            break
+        cur = nxt
+    return cur
+
+
+def suggest(regions: list[Region], lon: float, lat: float) -> tuple[Region, Region | None] | None:
+    """Country pack to offer first, plus a finer pack when the point sits inside one (Bali, a US state)."""
+    finest = locate(regions, lon, lat)
+    if finest is None:
+        return None
+    country = country_of(regions, finest)
+    finer = finest if finest.id != country.id else None
+    return country, finer
+
+
+def names_not_in_parent(child: set[str], parent: set[str]) -> set[str]:
+    """Scientific names a finer pack adds on top of its country pack. Same name is stored once."""
+    have = {n.strip().lower() for n in parent}
+    return {n for n in child if n.strip().lower() not in have}
+
+
 def export_app_index(out: Path = config.ANDROID_ASSETS / "regions.json") -> Path:
     regions = load_regions()
     payload = {
-        "schema": 1,
-        "regions": [{"id": r.id, "name": r.name, "continent": r.continent, "bbox": r.bbox} for r in regions],
+        "schema": 2,
+        "regions": [
+            {"id": r.id, "name": r.name, "continent": r.continent, "bbox": r.bbox, "parent": r.parent}
+            for r in regions
+        ],
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=1))

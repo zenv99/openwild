@@ -18,7 +18,9 @@ import java.io.File
 import org.openwild.app.core.ConfidenceResult
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
+import org.openwild.app.core.RegionFusion
 import org.openwild.app.core.RegionInfo
+import org.openwild.app.core.RegionLibrary
 import org.openwild.app.core.RegionLocator
 import org.openwild.app.core.SafetyPolicy
 import org.openwild.app.core.Tier
@@ -108,6 +110,15 @@ data class UiState(
     val installingRegion: String? = null,
     /** Optional "Better recognition" (BioCLIP 2). */
     val upgrade: UpgradeState = UpgradeState(),
+    /** On-device photo model. Off stops photo identification; search and browse stay available. */
+    val brainOn: Boolean = true,
+    /** Size of the model file inside the app. The install keeps this even when the brain is off. */
+    val brainBytes: Long = 0,
+    val modelId: String = "",
+    /** Region packs included in Identify. Explore shows [activeRegionId] among these. */
+    val enabledRegionIds: Set<String> = emptySet(),
+    val finerRegionId: String? = null,
+    val finerRegionName: String? = null,
 ) {
     val screen: Screen get() = stack.last()
 }
@@ -145,6 +156,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var pack: RegionPack? = null
         private set
     private var identifier: Identifier? = null
+    private var openPacks: List<RegionPack> = emptyList()
+    private var libraries: List<RegionLibrary> = emptyList()
     /** BioCLIP 2 embedder when "Better recognition" is active for this pack; otherwise the built-in model. */
     private var activeEmbedder: org.openwild.app.ml.Embedder? = null
     private var upgradeEmbedder: org.openwild.app.ml.Embedder? = null
@@ -155,21 +168,38 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val missing = withContext(Dispatchers.Default) { ow.embedder == null }
             val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
             val bundled = withContext(Dispatchers.IO) { ow.packs.bundledCatalog() }
+            val brainBytes = withContext(Dispatchers.IO) { ow.packs.brainAssetBytes() }
             val ui = getApplication<Application>().getSharedPreferences("ui", android.content.Context.MODE_PRIVATE)
             val dismissed = ui.all.filterKeys { it.startsWith("dismissed_") }
                 .mapNotNull { (k, v) -> (v as? Int)?.let { k.removePrefix("dismissed_") to it } }.toMap()
-            _state.update { it.copy(modelMissing = missing, regions = regions, bundled = bundled,
-                updateReminders = ui.getBoolean("update_reminders", true), dismissedUpdates = dismissed) }
-            // First-run suggestion without asking for location: the phone's time zone and region setting.
+            _state.update {
+                it.copy(
+                    modelMissing = missing,
+                    regions = regions,
+                    bundled = bundled,
+                    updateReminders = ui.getBoolean("update_reminders", true),
+                    dismissedUpdates = dismissed,
+                    brainOn = ow.packs.brainOn,
+                    brainBytes = brainBytes,
+                    modelId = org.openwild.app.ml.Embedder.modelId(getApplication()),
+                )
+            }
+            // First-run suggestion: the phone's country. Asia/Makassar is Bali, Nusa Tenggara and Sulawesi,
+            // so Bali is offered as the finer pack, not as the only region.
             if (_state.value.suggestedRegionId == null) {
                 val tz = java.util.TimeZone.getDefault().id
                 val country = java.util.Locale.getDefault().country.uppercase()
-                val guess = when {
-                    tz == "Asia/Makassar" && regions.any { it.id == "ID-BA" } -> "ID-BA"   // Bali, Nusa Tenggara, Sulawesi
-                    else -> regions.firstOrNull { it.id == country }?.id
-                }
-                regions.firstOrNull { it.id == guess }?.let { r ->
-                    _state.update { it.copy(suggestedRegion = r.name, suggestedRegionId = r.id) }
+                val match = regions.firstOrNull { it.id == country }
+                val finer = if (tz == "Asia/Makassar") regions.firstOrNull { it.id == "ID-BA" } else null
+                if (match != null) {
+                    _state.update {
+                        it.copy(
+                            suggestedRegion = match.name,
+                            suggestedRegionId = match.id,
+                            finerRegionId = finer?.id,
+                            finerRegionName = finer?.name,
+                        )
+                    }
                 }
             }
             refreshInstalled()
@@ -190,6 +220,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return@launch
         }
         refreshInstalled()
+        val enabled = ow.packs.enabledRegionIds().toMutableSet()
+        enabled += regionId
+        ow.packs.setEnabledRegions(enabled)
         ow.packs.activeRegionId = regionId
         loadActivePack()
         _state.update { it.copy(installingRegion = null) }
@@ -252,55 +285,83 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val app = getApplication<Application>()
         val region = withContext(Dispatchers.IO) {
             val loc = Location.lastKnown(app) ?: return@withContext null
-            RegionLocator.locate(Location.bundledRegions(app), loc.first, loc.second)
+            RegionLocator.suggest(Location.bundledRegions(app), loc.first, loc.second)
         } ?: return@launch
-        _state.update { it.copy(suggestedRegion = region.name, suggestedRegionId = region.id) }
-        // Auto-select an installed pack for the detected region if none is active yet.
-        if (ow.packs.activeRegionId == null && _state.value.installed.any { it.regionId == region.id && it.compatible }) {
-            useRegion(region.id)
+        val (country, finer) = region
+        _state.update {
+            it.copy(
+                suggestedRegion = country.name,
+                suggestedRegionId = country.id,
+                finerRegionId = finer?.id,
+                finerRegionName = finer?.name,
+            )
+        }
+        // Auto-select an installed pack for the country if none is active yet. A finer pack already
+        // on the phone is included too, without replacing the country pack.
+        if (ow.packs.activeRegionId == null) {
+            val have = _state.value.installed.filter { it.compatible }.map { it.regionId }.toSet()
+            val pick = listOfNotNull(country.id, finer?.id).filter { it in have }
+            if (pick.isNotEmpty()) {
+                if (!ow.packs.hasEnabledPreference()) ow.packs.setEnabledRegions(pick.toSet())
+                ow.packs.activeRegionId = pick.first()
+                loadActivePack()
+            }
         }
     }
 
     private suspend fun loadActivePack() {
         val installed = _state.value.installed.filter { it.compatible }
-        val id = ow.packs.activeRegionId?.takeIf { a -> installed.any { it.regionId == a } }
-            ?: installed.firstOrNull()?.regionId
-        val loaded = withContext(Dispatchers.IO) {
-            id?.let { runCatching { RegionPack(ow.packs.fileFor(it)) }.getOrNull() }?.also { runCatching { it.safety.size } }
+        if (!ow.packs.hasEnabledPreference()) {
+            val seed = ow.packs.activeRegionId?.takeIf { id -> installed.any { it.regionId == id } }
+                ?: installed.firstOrNull()?.regionId
+            if (seed != null) ow.packs.setEnabledRegions(setOf(seed))
         }
-        pack?.close()
-        pack = loaded
-        identifier = loaded?.let { Identifier(it.index, it.species, it.params, it.projection) }
+        val enabled = ow.packs.enabledRegionIds().filter { id -> installed.any { it.regionId == id } }
+        val focusId = ow.packs.activeRegionId?.takeIf { it in enabled } ?: enabled.firstOrNull()
+        val loaded = withContext(Dispatchers.IO) {
+            enabled.mapNotNull { id ->
+                runCatching { RegionPack(ow.packs.fileFor(id)) }.getOrNull()?.also { runCatching { it.safety.size } }
+            }
+        }
+        openPacks.forEach { runCatching { it.close() } }
+        openPacks = loaded
+        val focus = loaded.firstOrNull { it.regionId == focusId } ?: loaded.firstOrNull()
+        pack = focus
+        libraries = loaded.map { RegionLibrary(it.regionId, it.species, it.index, it.params, it.projection) }
+        identifier = focus?.let { Identifier(it.index, it.species, it.params, it.projection) }
         activeEmbedder = null
-        // Better recognition: BioCLIP 2 model + this pack's boost file -> match with those instead.
+        // Better recognition uses a different fingerprint space, so it stays on the Explore region
+        // rather than being mixed with the built-in fingerprints.
         var usingUpgrade = false
-        if (loaded != null && ow.packs.betterRecognition && ow.packs.upgradeModel.exists()) {
-            val boost = ow.packs.boostFile(loaded.regionId)
+        if (focus != null && ow.packs.betterRecognition && ow.packs.upgradeModel.exists()) {
+            val boost = ow.packs.boostFile(focus.regionId)
             if (boost.exists()) {
                 val pair = withContext(Dispatchers.IO) {
                     val e = upgradeEmbedder ?: org.openwild.app.ml.Embedder.loadFileOrNull(ow.packs.upgradeModel)?.also { upgradeEmbedder = it }
-                    val idx = loaded.boostIndex(boost)
+                    val idx = focus.boostIndex(boost)
                     if (e != null && idx != null && idx.dim == e.dim) e to idx else null
                 }
                 if (pair != null) {
                     activeEmbedder = pair.first
-                    // Name matches (plants with no reference photo) are lifted onto the photo-match scale.
-                    val prm = org.openwild.app.core.ConfidenceParams.calibrated(loaded.params, "bioclip2")
-                        .copy(textProtoPenalty = -loaded.boostTextOffset)
-                    identifier = Identifier(pair.second, loaded.species, prm, null)
+                    val prm = org.openwild.app.core.ConfidenceParams.calibrated(focus.params, "bioclip2")
+                        .copy(textProtoPenalty = -focus.boostTextOffset)
+                    identifier = Identifier(pair.second, focus.species, prm, null)
+                    libraries = emptyList()
                     usingUpgrade = true
                 }
             }
         }
         _state.update { s -> s.copy(upgrade = s.upgrade.copy(on = ow.packs.betterRecognition, modelInstalled = ow.packs.upgradeModel.exists(), active = usingUpgrade)) }
-        if (loaded != null) ow.packs.activeRegionId = loaded.regionId
+        if (focus != null) ow.packs.activeRegionId = focus.regionId
         _state.update {
             it.copy(
-                activeRegionName = loaded?.regionName,
-                activeRegionId = loaded?.regionId,
-                activePackVersion = loaded?.version ?: 0,
-                activeSpeciesCount = loaded?.species?.size ?: 0,
-                photoIdReady = (loaded?.index?.size ?: 0) > 0,
+                activeRegionName = focus?.regionName,
+                activeRegionId = focus?.regionId,
+                activePackVersion = focus?.version ?: 0,
+                activeSpeciesCount = focus?.species?.size ?: 0,
+                photoIdReady = loaded.any { p -> p.index.size > 0 },
+                enabledRegionIds = enabled.toSet(),
+                brainOn = ow.packs.brainOn,
             )
         }
     }
@@ -383,6 +444,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun useRegion(regionId: String) = viewModelScope.launch {
+        val enabled = ow.packs.enabledRegionIds().toMutableSet()
+        enabled += regionId
+        ow.packs.setEnabledRegions(enabled)
         ow.packs.activeRegionId = regionId
         loadActivePack()
     }
@@ -421,11 +485,48 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun deletePack(regionId: String) = viewModelScope.launch {
-        if (pack?.regionId == regionId) {
-            pack?.close(); pack = null; identifier = null
-        }
+        openPacks.forEach { runCatching { it.close() } }
+        openPacks = emptyList()
+        pack = null
+        identifier = null
+        libraries = emptyList()
         withContext(Dispatchers.IO) { ow.packs.delete(regionId) }
         refreshInstalled()
+        loadActivePack()
+    }
+
+    /** Include or leave out a downloaded region for Identify. Turning one on also shows it in Explore. */
+    fun setRegionEnabled(regionId: String, on: Boolean) = viewModelScope.launch {
+        if (on && _state.value.installed.none { it.regionId == regionId && it.compatible }) return@launch
+        val next = ow.packs.enabledRegionIds().toMutableSet()
+        if (on) {
+            next += regionId
+            ow.packs.activeRegionId = regionId
+        } else {
+            next -= regionId
+            if (ow.packs.activeRegionId == regionId) ow.packs.activeRegionId = next.firstOrNull()
+        }
+        ow.packs.setEnabledRegions(next)
+        loadActivePack()
+    }
+
+    fun setBrainOn(on: Boolean) {
+        ow.packs.brainOn = on
+        _state.update { it.copy(brainOn = on) }
+    }
+
+    /**
+     * Turn the photo model off and delete a downloaded "Better recognition" model if one is stored.
+     * The model built into the app cannot be removed from the install; turning it back on uses that copy.
+     */
+    fun deleteBrain() = viewModelScope.launch {
+        ow.packs.brainOn = false
+        upgradeEmbedder?.close()
+        upgradeEmbedder = null
+        activeEmbedder = null
+        withContext(Dispatchers.IO) { ow.packs.removeUpgrade() }
+        val note = getApplication<Application>().getString(R.string.brain_disabled_note)
+        _state.update { it.copy(brainOn = false, message = note) }
         loadActivePack()
     }
 
@@ -478,15 +579,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val p = pack
         val app = getApplication<Application>()
         if (s.photos.isEmpty()) return@launch
-        if (emb == null) {
-            _state.update { it.copy(message = app.getString(R.string.identify_needs_model)) }
+        if (!s.brainOn || emb == null) {
+            _state.update {
+                it.copy(message = app.getString(if (!s.brainOn) R.string.brain_off_search else R.string.identify_needs_model))
+            }
+            tab(Screen.Explore)
             return@launch
         }
-        if (id == null || p == null) {
+        val libs = libraries
+        if (libs.isEmpty() && (id == null || p == null)) {
             _state.update { it.copy(message = app.getString(R.string.identify_needs_pack)) }
             return@launch
         }
-        if (p.index.size == 0) {
+        if (libs.isEmpty() && p != null && p.index.size == 0) {
+            _state.update { it.copy(message = app.getString(R.string.identify_no_fingerprints)) }
+            return@launch
+        }
+        if (libs.isNotEmpty() && libs.none { it.index.size > 0 }) {
             _state.update { it.copy(message = app.getString(R.string.identify_no_fingerprints)) }
             return@launch
         }
@@ -494,13 +603,39 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val res = withContext(Dispatchers.Default) {
             val embeddings = s.photos.map { emb.embed(it.bitmap) }
             val month = Calendar.getInstance().get(Calendar.MONTH) + 1
-            val r = id.identify(embeddings, s.filter, month)
-            val deadly = SafetyPolicy.deadlyCandidates(r) { p.content(it)?.isDeadly == true }
-            // Keep a long ranked list so the user can browse down to the right plant if the first is wrong.
-            val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], p.content(it)?.isDeadly == true) }
-            IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside })
+            if (libs.isNotEmpty()) {
+                val fused = RegionFusion.identify(libs, embeddings, s.filter, month, p?.regionId)
+                if (fused == null) return@withContext null
+                val display = openPacks.firstOrNull { it.regionId == fused.displayRegionId } ?: p ?: return@withContext null
+                val r = fused.result
+                val deadly = SafetyPolicy.deadlyCandidates(r) { display.content(it)?.isDeadly == true }
+                val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], display.content(it)?.isDeadly == true) }
+                display to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside })
+            } else {
+                val shown = p ?: return@withContext null
+                val r = id!!.identify(embeddings, s.filter, month)
+                val deadly = SafetyPolicy.deadlyCandidates(r) { shown.content(it)?.isDeadly == true }
+                val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], shown.content(it)?.isDeadly == true) }
+                shown to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside })
+            }
         }
-        _state.update { it.copy(busy = false, result = res) }
+        if (res == null) {
+            _state.update { it.copy(busy = false, message = app.getString(R.string.identify_no_fingerprints)) }
+            return@launch
+        }
+        val (display, result) = res
+        pack = display
+        ow.packs.activeRegionId = display.regionId
+        _state.update {
+            it.copy(
+                busy = false,
+                result = result,
+                activeRegionId = display.regionId,
+                activeRegionName = display.regionName,
+                activeSpeciesCount = display.species.size,
+                activePackVersion = display.version,
+            )
+        }
         if (_state.value.screen == Screen.Results) replaceTop(Screen.Results) else go(Screen.Results)
     }
 
@@ -542,7 +677,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
-        pack?.close()
+        openPacks.forEach { runCatching { it.close() } }
+        openPacks = emptyList()
+        pack = null
         super.onCleared()
     }
 }
