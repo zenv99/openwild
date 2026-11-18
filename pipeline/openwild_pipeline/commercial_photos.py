@@ -1260,12 +1260,39 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             "Wikidata (CC0)",
         ],
     )
+    _write_refpages(dest, by)
     _write_catalog(dest, region.id, version)
     stale = dest.parent / f"{region.id}-data-update.owpack"
     if stale.exists() and stale.resolve() != dest.resolve():
         stale.unlink()
     _write_stats(dest, region.id)
     return dest
+
+
+REF_PAGES = 24   # reference photos per plant that Better recognition fingerprints (only 12 are shipped as pictures)
+
+
+def _write_refpages(pack: Path, by: dict) -> None:
+    """Index of every good reference photo per plant (page URLs only, no images). The BioCLIP 2 boost
+    fingerprints these, so recognition learns from more photos than the app ships to show."""
+    import sqlite3
+    con = sqlite3.connect(pack)
+    con.execute("CREATE TABLE IF NOT EXISTS refpage (species_id INTEGER NOT NULL, page TEXT NOT NULL)")
+    con.execute("DELETE FROM refpage")
+    n = 0
+    for sid, name in con.execute("SELECT id, scientific_name FROM species").fetchall():
+        pages, seen = [], set()
+        for p, _ in by.get(name.lower(), []):
+            u = p.get("page") or p.get("url")
+            if u and u not in seen and (p.get("stage") or "") not in ("related", "specimen", "exact_specimen"):
+                seen.add(u)
+                pages.append(u)
+        for u in pages[:REF_PAGES]:
+            con.execute("INSERT INTO refpage VALUES (?,?)", (sid, u))
+            n += 1
+    con.commit()
+    con.close()
+    print(f"REFPAGES {n} reference photos indexed for Better recognition", flush=True)
 
 
 def _write_catalog(pack: Path, region_id: str, version: int) -> None:
@@ -1423,6 +1450,7 @@ def light_pack(full: Path, out: Path, max_bytes: int = 90_000_000) -> dict:
         con.execute("CREATE TEMP TABLE keep(id INTEGER PRIMARY KEY)")
         con.executemany("INSERT INTO keep VALUES (?)", [(i,) for i in keep])
         con.execute("DELETE FROM photo WHERE id NOT IN (SELECT id FROM keep)")
+        con.execute("DROP TABLE IF EXISTS refpage")   # only the cloud needs it
         v = int(dict(con.execute("SELECT key, value FROM meta"))["pack_version"]) - 1
         con.execute("UPDATE meta SET value = ? WHERE key = 'pack_version'", (str(v),))
         con.execute("INSERT OR REPLACE INTO meta(key, value) VALUES ('light', '1')")
