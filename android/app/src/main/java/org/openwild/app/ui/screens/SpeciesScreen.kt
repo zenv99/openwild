@@ -131,7 +131,13 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
                         Pill(stringResource(R.string.toxicity, content.toxicity), Color.White, glass)
                         // Reported food use is not a recommendation to eat, and never a mushroom verdict.
                         if (!sp.isFungus[index] && content.edibility.startsWith("edible")) {
-                            Pill(stringResource(R.string.badge_food_reported), Color.White, glass)
+                            Pill(
+                                stringResource(R.string.badge_food_reported),
+                                Color.White,
+                                glass,
+                                contentDescription = stringResource(R.string.badge_food_reported_cd),
+                                singleLine = true,
+                            )
                         }
                     }
                     if (content?.psychoactive == true) Pill(stringResource(R.string.badge_psychoactive), Color.White, Psychedelic)

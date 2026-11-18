@@ -122,13 +122,14 @@
     <string name="tile_deadly_sub">Learn what to never touch or eat</string>
     <string name="tile_survival_sub">Food, water, fire and shelter plants</string>
 
-    <!-- badges -->
+    <!-- badges. On photos the food chip is the short word. It means a reported food use, not that the plant is safe to eat. -->
     <string name="badge_deadly">DEADLY</string>
     <string name="badge_psychoactive">Psychoactive</string>
     <string name="badge_toxic">Toxic</string>
     <string name="badge_caution">Caution</string>
-    <string name="badge_edible">Food use reported</string>
-    <string name="badge_food_reported">Food use reported</string>
+    <string name="badge_food_reported">Food</string>
+    <string name="badge_food_reported_cd">Food use reported</string>
+    <string name="badge_edible">@string/badge_food_reported</string>
 
     <!-- results -->
     <string name="based_on_photos">Based on %1$d photo(s)</string>
