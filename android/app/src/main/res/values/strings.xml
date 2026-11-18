@@ -92,7 +92,8 @@
     <string name="legacy_pack_offer">%1$s is now part of %2$s. Download %2$s. %1$s keeps working until that download is on this phone.</string>
     <string name="legacy_pack_action">Download %1$s</string>
     <string name="legacy_pack_remove">%1$s replaces %2$s. You can remove %2$s.</string>
-    <string name="landing_art_credit">Opening photograph: Dominicus Johannes Bergsma, CC BY-SA 4.0, Wikimedia Commons. The night-forest landing is drawn around that photograph. The separate original artwork was not in this build.</string>
+    <string name="landing_art_credit">Home artwork: original art created for Open Wild. AI-generated.</string>
+    <string name="landing_forest_cd">Night forest with a fly agaric, glowing mushrooms, and a distant elephant</string>
     <string name="enter_openwild">Tap to continue</string>
 
     <!-- Species page -->

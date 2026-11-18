@@ -17,7 +17,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,7 +33,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -60,7 +58,6 @@ fun motionAllowed(context: Context): Boolean {
 }
 
 private val Night = Color(0xFF04140F)
-private val Glow = Color(0xFF7CFFC4)
 private val SporeGlow = Color(0xFFD6FFE8)
 
 /**
@@ -110,9 +107,8 @@ fun GlassPanel(modifier: Modifier = Modifier, content: @Composable ColumnScope.(
 }
 
 /**
- * Home backdrop. The forest artwork file was not in this build, so this is the fly agaric
- * photograph set in a drawn night forest. Scroll shifts it slightly. Drift and spores pause
- * when motion should stay still.
+ * Home backdrop: original artwork made for Open Wild, full bleed.
+ * Scroll and a slow drift shift it. Spores and the drift pause when motion should stay still.
  */
 @Composable
 fun ForestBackdrop(scrollPx: Float, motion: Boolean, modifier: Modifier = Modifier) {
@@ -121,7 +117,7 @@ fun ForestBackdrop(scrollPx: Float, motion: Boolean, modifier: Modifier = Modifi
         val t by loop.animateFloat(
             initialValue = 0f,
             targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(20_000, easing = LinearEasing), RepeatMode.Restart),
+            animationSpec = infiniteRepeatable(tween(22_000, easing = LinearEasing), RepeatMode.Restart),
             label = "drift",
         )
         t
@@ -129,34 +125,30 @@ fun ForestBackdrop(scrollPx: Float, motion: Boolean, modifier: Modifier = Modifi
         0f
     }
     val spores = remember { sporeField() }
-    Box(modifier.background(Brush.verticalGradient(listOf(Color(0xFF02110E), Color(0xFF0A2A28), Color(0xFF071018))))) {
+    val sway = sin(drift * 2f * PI.toFloat())
+    Box(modifier.background(Night)) {
+        Image(
+            painterResource(R.drawable.landing_forest),
+            contentDescription = stringResource(R.string.landing_forest_cd),
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize().graphicsLayer {
+                scaleX = 1.08f
+                scaleY = 1.08f
+                translationY = -scrollPx * 0.18f + sway * 14f
+                translationX = sway * 10f
+            },
+        )
         Canvas(Modifier.fillMaxSize()) {
-            drawForest(scrollPx, drift)
             drawSpores(spores, scrollPx, if (motion) drift else 0f, animate = motion)
         }
-        Image(
-            painterResource(R.drawable.hero_mushroom),
-            contentDescription = stringResource(R.string.hero_mushroom_cd),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 96.dp)
-                .fillMaxWidth(0.72f)
-                .aspectRatio(1.15f)
-                .graphicsLayer {
-                    translationY = -scrollPx * 0.16f + sin(drift * 2f * PI.toFloat()) * 10f
-                    translationX = sin(drift * 2f * PI.toFloat()) * 8f
-                }
-                .clip(RoundedCornerShape(32.dp)),
-        )
         Box(
             Modifier.fillMaxSize().background(
                 Brush.verticalGradient(
                     listOf(
+                        Night.copy(alpha = 0.55f),
+                        Night.copy(alpha = 0.08f),
+                        Night.copy(alpha = 0.12f),
                         Night.copy(alpha = 0.72f),
-                        Night.copy(alpha = 0.05f),
-                        Night.copy(alpha = 0.28f),
-                        Night.copy(alpha = 0.82f),
                     ),
                 ),
             ),
@@ -177,43 +169,6 @@ private fun sporeField(): List<Spore> {
             phase = rnd.nextFloat(),
         )
     }
-}
-
-private fun DrawScope.drawForest(scrollPx: Float, drift: Float) {
-    val w = size.width
-    val h = size.height
-    val sway = sin(drift * 2f * PI.toFloat()) * 8f
-    drawCircle(Glow.copy(alpha = 0.16f), w * 0.42f, Offset(w * 0.5f + sway, h * 0.34f - scrollPx * 0.08f))
-    drawCircle(Color(0xFF3D6BFF).copy(alpha = 0.10f), w * 0.28f, Offset(w * 0.18f, h * 0.62f))
-    drawCircle(Color(0xFFFF4FA3).copy(alpha = 0.08f), w * 0.22f, Offset(w * 0.82f, h * 0.58f))
-    mushroom(Offset(w * 0.16f + sway, h * 0.72f), w * 0.16f, Color(0xFF1FA87A))
-    mushroom(Offset(w * 0.84f - sway, h * 0.66f), w * 0.20f, Color(0xFF7A4DFF))
-    leaf(Offset(w * 0.08f, h * 0.40f), w * 0.22f, 40f)
-    leaf(Offset(w * 0.92f, h * 0.46f), w * 0.26f, -30f)
-    // Distant elephant, small and calm, on the right horizon.
-    val ex = w * 0.78f
-    val ey = h * 0.78f
-    drawCircle(Color(0xFF0C1A16), w * 0.035f, Offset(ex, ey))
-    drawCircle(Color(0xFF0C1A16), w * 0.012f, Offset(ex + w * 0.03f, ey - w * 0.01f))
-    drawLine(Color(0xFF0C1A16), Offset(ex + w * 0.02f, ey), Offset(ex + w * 0.045f, ey + w * 0.04f), strokeWidth = 3f)
-}
-
-private fun DrawScope.mushroom(at: Offset, cap: Float, color: Color) {
-    drawLine(color.copy(alpha = 0.7f), Offset(at.x, at.y - cap * 0.15f), Offset(at.x, at.y + cap * 0.55f), strokeWidth = cap * 0.14f)
-    drawCircle(color.copy(alpha = 0.9f), cap * 0.48f, Offset(at.x, at.y - cap * 0.28f))
-    drawCircle(Glow.copy(alpha = 0.4f), cap * 0.1f, Offset(at.x - cap * 0.16f, at.y - cap * 0.38f))
-}
-
-private fun DrawScope.leaf(at: Offset, len: Float, tilt: Float) {
-    val path = Path().apply {
-        moveTo(at.x, at.y)
-        quadraticTo(at.x + len * 0.2f, at.y - len, at.x - len * 0.15f, at.y - len * 1.3f)
-        quadraticTo(at.x - len * 0.45f, at.y - len * 0.4f, at.x, at.y)
-        close()
-    }
-    drawPath(path, Color(0xFF143C30).copy(alpha = 0.9f))
-    // tilt is reserved so the two leaves are not identical; the path already leans.
-    if (tilt < 0) drawCircle(Glow.copy(alpha = 0.12f), len * 0.15f, at)
 }
 
 private fun DrawScope.drawSpores(spores: List<Spore>, scrollPx: Float, drift: Float, animate: Boolean) {

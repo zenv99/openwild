@@ -59,7 +59,7 @@ Rules: poison always beats food; a food claim from one source, or without docume
 | Fly agaric (*Amanita muscaria*) on autumn leaves | Dominicus Johannes Bergsma | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Vliegenzwam_(Amanita_muscaria)._Locatie_De_Famberhorst._27-09-2020_(d.j.b.).jpg |
 | Tropical fruit | Peggy Greb, USDA Agricultural Research Service | Public domain | https://commons.wikimedia.org/wiki/File:ARS_tropical_fruit_no_labels.jpg |
 
-Fetched and licence-checked by `.github/workflows/hero-images.yml` (refuses anything that isn't public domain, CC0, CC BY or CC BY-SA). The opening screen still shows this animation. The home landing draws a night forest around the same fly agaric photograph, because the separate original artwork was not in this build. The resized fly agaric image remains under CC BY-SA 4.0 and the credit stays in the app.
+Fetched and licence-checked by `.github/workflows/hero-images.yml` (refuses anything that isn't public domain, CC0, CC BY or CC BY-SA). The opening screen still shows this animation, and the credit stays under it. The home screen behind the buttons is separate original artwork created for Open Wild (AI-generated), stored as `landing_forest.webp`. It is not a photograph and does not replace the fly agaric credit.
 
 ## Community photos (the long-term library)
 
