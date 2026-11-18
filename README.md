@@ -15,7 +15,7 @@ OpenWild is a free, open-source, non-commercial Android app. Point the camera at
 1. On your phone, download **[OpenWild.apk](https://github.com/zenv99/openwild/releases/download/app-latest/OpenWild.apk)**, open it, and allow installing from this source.
 2. **Automatic updates:** install [Obtainium](https://github.com/ImranR98/Obtainium) (free, open source), tap *Add app*, paste `https://github.com/zenv99/openwild`. Obtainium checks for new releases and installs them. OpenWild itself never goes online.
 
-Every build gets a new version number and a release (`v0.6.N`), checked automatically for no internet permission, no backup and no debug mode.
+Every build gets a new version number and a release (`v1.0.N`), checked automatically for no internet permission, no backup and no debug mode.
 
 ## What it does
 
