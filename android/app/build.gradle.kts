@@ -25,7 +25,7 @@ android {
         // CI stamps every build with a rising number so updaters (Obtainium, F-Droid clients) see new versions.
         val build = (System.getenv("OW_BUILD_NUMBER") ?: "0").toInt()
         versionCode = 100 + build
-        versionName = if (build > 0) "0.6.$build" else "0.6.0-dev"
+        versionName = if (build > 0) "0.7.$build" else "0.7.0-dev"
         buildConfigField("String", "PACK_INDEX_URL", "\"$packIndexUrl\"")
         buildConfigField("String", "REPO_URL", "\"$repoUrl\"")
         buildConfigField("String", "LIGHTNING_ADDRESS", "\"$lightningAddress\"")

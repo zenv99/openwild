@@ -82,7 +82,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           OW_BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          VER="0.6.${OW_BUILD_NUMBER}"
+          VER="0.7.${OW_BUILD_NUMBER}"
           cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
           NOTES="OpenWild ${VER}. Goes online only to download regions from GitHub; HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
           Install: download OpenWild.apk on your Android phone, open it, allow installing from this source.

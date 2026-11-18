@@ -5,8 +5,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.foundation.layout.aspectRatio
-import org.openwild.app.ui.PhotoMorph
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.platform.LocalContext
+import org.openwild.app.ui.ForestBackdrop
+import org.openwild.app.ui.GlassPanel
+import org.openwild.app.ui.motionAllowed
 import org.openwild.app.core.Tier
 import org.openwild.app.ui.SpeciesTile
 import androidx.compose.runtime.remember
@@ -76,26 +81,30 @@ import org.openwild.app.ui.theme.Lime
 fun HomeScreen(state: UiState, vm: AppViewModel) {
     val regionOn = state.activeRegionName != null
     val canPhoto = regionOn && state.brainOn && !state.modelMissing && state.photoIdReady
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        // ---------- Hero ----------
-        Box(
-            Modifier.fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                .background(HeroGradient)
-                .padding(horizontal = 20.dp, vertical = 24.dp),
+    val scroll = rememberScrollState()
+    val motion = motionAllowed(LocalContext.current)
+    Box(Modifier.fillMaxSize().background(Color(0xFF04140F))) {
+        ForestBackdrop(scroll.value.toFloat(), motion, Modifier.fillMaxSize())
+        Column(
+            Modifier.fillMaxSize().verticalScroll(scroll)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall, color = Color.White)
-                Text(stringResource(R.string.tagline), style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.85f))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Pill(
-                        text = state.activeRegionName?.let { stringResource(R.string.region_pill, it, state.activeSpeciesCount) }
-                            ?: stringResource(R.string.no_region_pill),
-                        fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
-                    )
-                }
-                // Landing art (Zen V's vision): a real fly agaric whose flecks lift off and become leaves and fruit
-                PhotoMorph(Modifier.fillMaxWidth().aspectRatio(1.25f).clip(RoundedCornerShape(24.dp)))
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall, color = Color.White)
+            Text(stringResource(R.string.tagline), style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.85f))
+            Pill(
+                text = state.activeRegionName?.let { stringResource(R.string.region_pill, it, state.activeSpeciesCount) }
+                    ?: stringResource(R.string.no_region_pill),
+                fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
+            )
+            Text(
+                stringResource(R.string.landing_art_credit),
+                color = Color.White.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Spacer(Modifier.height(168.dp))
+            GlassPanel {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(
                         Modifier.clip(CircleShape)
@@ -112,20 +121,20 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                     ) {
                         Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = ForestDeep, modifier = Modifier.size(28.dp))
                         Spacer(Modifier.width(10.dp))
-                        Text(stringResource(R.string.identify), color = ForestDeep, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            stringResource(R.string.identify),
+                            color = ForestDeep,
+                            fontWeight = FontWeight.ExtraBold,
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
-                Text(
-                    stringResource(R.string.works_offline),
-                    color = Color.White.copy(alpha = 0.75f),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Text(stringResource(R.string.works_offline), color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
+                LegacyPackOffer(state, vm)
+                OnThisPhone(state, vm)
             }
-        }
-
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            OnThisPhone(state, vm)
+            GlassPanel {
+                Text(stringResource(R.string.explore), color = Color.White, style = MaterialTheme.typography.titleMedium)
             if (state.activeRegionName != null && state.brainOn && (state.modelMissing || !state.photoIdReady)) {
                 WarningBox(stringResource(R.string.model_missing), danger = false)
             }
@@ -191,13 +200,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 }
             }
             state.suggestedRegion?.let {
-                Text(stringResource(R.string.suggested_region, it), style = MaterialTheme.typography.bodySmall)
-            }
-            state.finerRegionName?.let { finer ->
-                if (state.installed.none { it.regionId == state.finerRegionId }) {
-                    Text(stringResource(R.string.finer_pack_offer, finer), style = MaterialTheme.typography.bodySmall)
-                    TextButton(onClick = { vm.tab(Screen.Packs) }) { Text(stringResource(R.string.finer_pack_open)) }
-                }
+                Text(stringResource(R.string.suggested_region, it), color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodySmall)
             }
 
             // ---------- Quick tiles ----------
@@ -212,6 +215,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                     Modifier.weight(1f), Icons.Filled.HealthAndSafety, Leaf, stringResource(R.string.survival_guide),
                     stringResource(R.string.tile_survival_sub), enabled = state.activeRegionName != null,
                 ) { vm.go(Screen.Survival) }
+            }
             }
 
             // ---------- Photo rows: food and deadly species of this region ----------
@@ -290,12 +294,35 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
 }
 
 @Composable
+private fun LegacyPackOffer(state: UiState, vm: AppViewModel) {
+    state.installed.forEach { installed ->
+        val info = state.regions.firstOrNull { it.id == installed.regionId && it.hidden } ?: return@forEach
+        val parent = state.regions.firstOrNull { it.id == info.parentId && !it.hidden } ?: return@forEach
+        val haveParent = state.installed.any { it.regionId == parent.id }
+        if (haveParent) return@forEach
+        val remote = state.remote.firstOrNull { it.regionId == parent.id }
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                stringResource(R.string.legacy_pack_offer, installed.name, parent.name),
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            if (remote != null) {
+                Button(onClick = { vm.download(remote) }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
+            } else {
+                TextButton(onClick = { vm.tab(Screen.Packs) }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
+            }
+        }
+    }
+}
+
+@Composable
 private fun OnThisPhone(state: UiState, vm: AppViewModel) {
     var deleteRegion by remember { mutableStateOf<String?>(null) }
     var deleteBrain by remember { mutableStateOf(false) }
     val mb = { bytes: Long -> if (bytes <= 0L) "—" else "%.0f MB".format(bytes / 1_000_000.0) }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(stringResource(R.string.on_this_phone), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.on_this_phone), color = Color.White, style = MaterialTheme.typography.titleMedium)
         Card(
             Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -353,6 +380,15 @@ private fun OnThisPhone(state: UiState, vm: AppViewModel) {
                                 stringResource(if (explore) R.string.region_explore_focus else R.string.region_also_on),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = Leaf,
+                            )
+                        }
+                        val info = state.regions.firstOrNull { it.id == installed.regionId && it.hidden }
+                        val parent = info?.parentId?.let { id -> state.regions.firstOrNull { it.id == id } }
+                        if (parent != null && state.installed.any { it.regionId == parent.id }) {
+                            Text(
+                                stringResource(R.string.legacy_pack_remove, parent.name, installed.name),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Lime,
                             )
                         }
                     }

@@ -103,7 +103,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
     }
 
     val q = query.trim().lowercase()
-    val regions = state.regions.filter { q.isEmpty() || it.name.lowercase().contains(q) || it.id.lowercase().contains(q) }
+    val regions = state.regions.filter { !it.hidden && (q.isEmpty() || it.name.lowercase().contains(q) || it.id.lowercase().contains(q)) }
     val grouped = regions.groupBy { it.continent.ifBlank { "Other" } }.toSortedMap()
     val totalBytes = state.installed.sumOf { it.file.length() }
     val updates = state.installed.count { p -> remote[p.regionId]?.let { it.version > p.version } == true }

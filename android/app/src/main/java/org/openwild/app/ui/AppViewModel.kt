@@ -184,22 +184,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     modelId = org.openwild.app.ml.Embedder.modelId(getApplication()),
                 )
             }
-            // First-run suggestion: the phone's country. Asia/Makassar is Bali, Nusa Tenggara and Sulawesi,
-            // so Bali is offered as the finer pack, not as the only region.
+            // First-run suggestion is a country. Asia/Makassar covers Bali, Sulawesi and Nusa Tenggara,
+            // so the suggestion is Indonesia, not Bali.
             if (_state.value.suggestedRegionId == null) {
                 val tz = java.util.TimeZone.getDefault().id
                 val country = java.util.Locale.getDefault().country.uppercase()
-                val match = regions.firstOrNull { it.id == country }
-                val finer = if (tz == "Asia/Makassar") regions.firstOrNull { it.id == "ID-BA" } else null
+                val guess = if (tz == "Asia/Jakarta" || tz == "Asia/Makassar" || tz == "Asia/Jayapura") "ID" else country
+                val match = regions.firstOrNull { it.id == guess && !it.hidden }
+                    ?: regions.firstOrNull { it.id == country && !it.hidden }
                 if (match != null) {
-                    _state.update {
-                        it.copy(
-                            suggestedRegion = match.name,
-                            suggestedRegionId = match.id,
-                            finerRegionId = finer?.id,
-                            finerRegionName = finer?.name,
-                        )
-                    }
+                    _state.update { it.copy(suggestedRegion = match.name, suggestedRegionId = match.id) }
                 }
             }
             refreshInstalled()
@@ -287,23 +281,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val loc = Location.lastKnown(app) ?: return@withContext null
             RegionLocator.suggest(Location.bundledRegions(app), loc.first, loc.second)
         } ?: return@launch
-        val (country, finer) = region
-        _state.update {
-            it.copy(
-                suggestedRegion = country.name,
-                suggestedRegionId = country.id,
-                finerRegionId = finer?.id,
-                finerRegionName = finer?.name,
-            )
-        }
-        // Auto-select an installed pack for the country if none is active yet. A finer pack already
-        // on the phone is included too, without replacing the country pack.
+        val (country, _) = region
+        _state.update { it.copy(suggestedRegion = country.name, suggestedRegionId = country.id) }
+        // Use the country pack when it is already on the phone. A hidden pack such as Bali keeps
+        // working until that country download exists.
         if (ow.packs.activeRegionId == null) {
             val have = _state.value.installed.filter { it.compatible }.map { it.regionId }.toSet()
-            val pick = listOfNotNull(country.id, finer?.id).filter { it in have }
-            if (pick.isNotEmpty()) {
-                if (!ow.packs.hasEnabledPreference()) ow.packs.setEnabledRegions(pick.toSet())
-                ow.packs.activeRegionId = pick.first()
+            if (country.id in have) {
+                if (!ow.packs.hasEnabledPreference()) ow.packs.setEnabledRegions(setOf(country.id))
+                ow.packs.activeRegionId = country.id
                 loadActivePack()
             }
         }
@@ -317,7 +303,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             if (seed != null) ow.packs.setEnabledRegions(setOf(seed))
         }
         val enabled = ow.packs.enabledRegionIds().filter { id -> installed.any { it.regionId == id } }
-        val focusId = ow.packs.activeRegionId?.takeIf { it in enabled } ?: enabled.firstOrNull()
+        var focusId = ow.packs.activeRegionId?.takeIf { it in enabled } ?: enabled.firstOrNull()
+        val focusInfo = _state.value.regions.firstOrNull { it.id == focusId }
+        if (focusInfo?.hidden == true && focusInfo.parentId != null && focusInfo.parentId in enabled) {
+            focusId = focusInfo.parentId
+            ow.packs.activeRegionId = focusId
+        }
         val loaded = withContext(Dispatchers.IO) {
             enabled.mapNotNull { id ->
                 runCatching { RegionPack(ow.packs.fileFor(id)) }.getOrNull()?.also { runCatching { it.safety.size } }
@@ -481,7 +472,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         _state.update { it.copy(downloading = it.downloading - p.regionId, message = r.exceptionOrNull()?.message) }
         refreshInstalled()
-        if (r.isSuccess && (pack == null || pack?.regionId == p.regionId)) useRegion(p.regionId)
+        if (r.isSuccess) {
+            val cur = pack?.regionId
+            val curInfo = _state.value.regions.firstOrNull { it.id == cur }
+            val replacesLegacy = curInfo?.hidden == true && curInfo.parentId == p.regionId
+            if (cur == null || cur == p.regionId || replacesLegacy) useRegion(p.regionId)
+        }
     }
 
     fun deletePack(regionId: String) = viewModelScope.launch {

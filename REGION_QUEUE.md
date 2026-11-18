@@ -7,6 +7,8 @@ The weekly data bot fills one region per week, top to bottom. For each region it
 
 Then it moves to the next region. Already-filled regions get topped up once the queue is done.
 
+Downloads in the app are whole countries. ID-BA, US-CA, US-HI, and US-AK stay in this queue as data to fold into Indonesia and the United States. They are not separate downloads.
+
 - [x] ID-BA — Bali, Indonesia (done 2026-11-14: top 1,000 most-observed species all have safety info; 713 hand-written Bali one-liners + auto rows; 1,768 of 4,386 species still without any — top up later)
 - [ ] ID — Indonesia (rest)
 - [ ] PH — Philippines

@@ -47,7 +47,7 @@ object Contribute {
         val top = pack.species.scientificNames[res.result.top]
         val title = "Wrong ID: app said $top"
         val body = buildString {
-            appendLine("**App said:** $top (${res.result.score}%, ${res.result.tier})")
+            appendLine("**App said:** $top (${res.result.score}% match confidence, ${res.result.tier})")
             appendLine("**Region pack:** ${pack.regionId} v${pack.version}")
             appendLine("**Photos used:** ${res.photoCount}")
             appendLine()

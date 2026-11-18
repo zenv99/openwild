@@ -37,11 +37,10 @@ jobs:
           MAX_ACTIVE, CAP, PHOTOS, MAX_TOPUPS = 1, "5000", "12", 4   # 12 photos/plant, as Bali
           # Nearest to Bali first, then the rest smallest first (quick wins).
           FIRST = ["ID", "TL", "MY", "SG", "BN", "PH", "TH", "VN", "KH", "LA", "MM", "PG", "AU", "FJ", "NZ",
-                   "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US-HI"]
-          # Finer packs wait until their country pack has photos, so a phone is not asked to download
-          # the same species twice before the country pack exists. Bali is maintained on its own.
-          CHILDREN = {"ID-BA": "ID", "US-CA": "US", "US-HI": "US", "US-AK": "US"}
-          SKIP = {"WORLD"}
+                   "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US"]
+          # Sub-country packs are not built or offered on their own. Their data is folded into the
+          # country pack (Bali into Indonesia, California / Hawaii / Alaska into the United States).
+          SKIP = {"WORLD", "ID-BA", "US-CA", "US-HI", "US-AK"}
           REFRESH_DAYS = 30
           idx = json.load(open("/tmp/s/index.json"))["packs"]
           try:
@@ -72,15 +71,12 @@ jobs:
           for r in order:
               if slots <= 0:
                   break
-              if r in active or r in broken:
-                  continue
-              parent = CHILDREN.get(r)
-              if parent and parent in size and photo.get(parent, 0) == 0 and parent not in broken and parent not in active:
+              if r in active or r in broken or r in SKIP:
                   continue
               e = prog.get(r)
               fresh = False
-              if r == "ID-BA":
-                  continue  # Bali is maintained by its own runs
+              if r in SKIP:
+                  continue
               if e is None:
                   topup = False
               elif e["mode"] == "full" and e.get("budget_hit"):

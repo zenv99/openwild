@@ -36,6 +36,7 @@ object Location {
                 },
                 continent = r.optString("continent", ""),
                 parentId = r.optString("parent", "").ifBlank { null },
+                hidden = r.optBoolean("hidden", false),
             )
         }
     } catch (e: Exception) {

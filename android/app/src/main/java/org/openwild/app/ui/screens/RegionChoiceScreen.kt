@@ -52,7 +52,7 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
         if (org.openwild.app.BuildConfig.ALLOW_NETWORK && state.remote.isEmpty()) vm.refreshRemote()
     }
     val regions = state.regions.filter { r ->
-        q.isEmpty() || r.name.lowercase().contains(q) || r.id.lowercase().contains(q)
+        !r.hidden && (q.isEmpty() || r.name.lowercase().contains(q) || r.id.lowercase().contains(q))
     }
     val grouped = regions.groupBy { it.continent.ifBlank { "Other" } }.toSortedMap()
 

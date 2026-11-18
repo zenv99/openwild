@@ -20,6 +20,7 @@ class Region:
     continent: str = ""
     wgsrpd: list[str] = field(default_factory=list)  # Kew/TDWG level-3 area codes for WCVP plant lists
     parent: str | None = None  # coarser pack this region sits inside (ID-BA -> ID). Never implies deletion.
+    hidden: bool = False  # kept in the file and in pack builds; not offered as its own download
 
     def contains(self, lon: float, lat: float) -> bool:
         return any(b[0] <= lon <= b[2] and b[1] <= lat <= b[3] for b in self.bbox)
@@ -88,13 +89,57 @@ def country_of(regions: list[Region], region: Region) -> Region:
 
 
 def suggest(regions: list[Region], lon: float, lat: float) -> tuple[Region, Region | None] | None:
-    """Country pack to offer first, plus a finer pack when the point sits inside one (Bali, a US state)."""
-    finest = locate(regions, lon, lat)
-    if finest is None:
-        return None
-    country = country_of(regions, finest)
-    finer = finest if finest.id != country.id else None
-    return country, finer
+    """The country download for this point. Hidden finer packs (Bali, a US state) resolve to their parent.
+
+    The second value is always None. It stays in the return so older callers keep working.
+    """
+    hits = [r for r in regions if r.id != "WORLD" and r.contains(lon, lat)]
+    visible = [r for r in hits if not r.hidden]
+    if visible:
+        return min(visible, key=lambda r: r.area), None
+    if hits:
+        finest = min(hits, key=lambda r: r.area)
+        country = country_of(regions, finest)
+        if not country.hidden:
+            return country, None
+    world = next((r for r in regions if r.id == "WORLD" and not r.hidden and r.contains(lon, lat)), None)
+    if world is not None:
+        return world, None
+    return None
+
+
+def merged_donors(region_id: str, regions: list[Region] | None = None) -> list[str]:
+    """Hidden packs whose photos, names, and votes fold into this country on the next build. Nothing is deleted."""
+    regions = load_regions() if regions is None else regions
+    return [r.id for r in regions if r.hidden and r.parent == region_id]
+
+
+def union_species_rows(parent: list[dict], extras: list[dict]) -> list[dict]:
+    """Species from a folded pack that the country list does not already have, matched on scientific name."""
+    have = {(r.get("scientific_name") or "").strip().lower() for r in parent}
+    out = list(parent)
+    for row in extras:
+        key = (row.get("scientific_name") or "").strip().lower()
+        if key and key not in have:
+            have.add(key)
+            out.append(row)
+    return out
+
+
+def union_photo_rows(rows: list[dict]) -> list[dict]:
+    """One row per species and source page. The same photo from Bali and Indonesia is kept once."""
+    seen: set[tuple[str, str]] = set()
+    out = []
+    for row in rows:
+        key = (
+            (row.get("scientific_name") or "").strip().lower(),
+            (row.get("page") or row.get("url") or row.get("path") or "").strip(),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(row)
+    return out
 
 
 def names_not_in_parent(child: set[str], parent: set[str]) -> set[str]:
@@ -108,7 +153,14 @@ def export_app_index(out: Path = config.ANDROID_ASSETS / "regions.json") -> Path
     payload = {
         "schema": 2,
         "regions": [
-            {"id": r.id, "name": r.name, "continent": r.continent, "bbox": r.bbox, "parent": r.parent}
+            {
+                "id": r.id,
+                "name": r.name,
+                "continent": r.continent,
+                "bbox": r.bbox,
+                "parent": r.parent,
+                "hidden": r.hidden,
+            }
             for r in regions
         ],
     }

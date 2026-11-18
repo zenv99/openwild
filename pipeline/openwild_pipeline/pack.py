@@ -183,6 +183,11 @@ def build_pack(
     pfaf_rows = load_pfaf(pfaf_path) if pfaf_path.exists() else {}
     from .wiki_parts import load as load_wiki_parts
     wiki_rows = load_wiki_parts(config.REPO_ROOT / "content" / "evidence" / "wiki_parts" / f"{region_id}.csv")
+    from .regions import merged_donors
+    for donor in merged_donors(region_id):
+        extra = load_wiki_parts(config.REPO_ROOT / "content" / "evidence" / "wiki_parts" / f"{donor}.csv")
+        for name, rows in extra.items():
+            wiki_rows.setdefault(name, rows)
     rules_for_photos = load_group_rules() if group_rules is None else group_rules
     quick_for_photos = load_quick() if quick_rows is None else quick_rows
     # Species with real eating/poison info get extra photos (people will study them closely).
@@ -278,13 +283,15 @@ def build_pack(
     # Plants people actually mixed up (from reports sent in the app, 3+ times): shown as lookalikes both ways.
     try:
         from .inbox import confusions
+        from .regions import merged_donors
         tox = {}
         for sid_, js in con.execute("SELECT species_id, json FROM content"):
             t = (json.loads(js) or {}).get("toxicity") or ""
             tox[sid_] = "deadly" if t == "deadly" else "toxic" if t in ("poisonous", "toxic") else "harmless"
         have = {(a, b) for a, b in con.execute("SELECT species_id, lookalike_species_id FROM lookalike")}
         added = 0
-        for a, b, n in confusions(region_id):
+        for rid in (region_id, *merged_donors(region_id)):
+          for a, b, n in confusions(rid):
             ia, ib = name_to_id.get(a), name_to_id.get(b)
             if ia is None or ib is None or ia == ib:
                 continue

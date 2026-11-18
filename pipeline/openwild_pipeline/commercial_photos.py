@@ -1177,13 +1177,24 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     photos = list(csv.DictReader(open(photos_path, encoding="utf-8"))) if photos_path.exists() else []
     # Community photos (users' own, CC BY 4.0) go first, so they become each plant's cover and lead the gallery.
     from .community import load as load_community
+    from .inbox import hidden_photos
+    from .regions import merged_donors, union_photo_rows
+
     community = load_community(region_id)
+    hidden = hidden_photos(region_id)
+    donors = merged_donors(region_id)
+    for donor in donors:
+        extra = config.WORK / "photos_commercial" / donor / "photos.csv"
+        if extra.exists():
+            photos.extend(csv.DictReader(open(extra, encoding="utf-8")))
+        community.extend(load_community(donor))
+        hidden |= hidden_photos(donor)
     if community:
         print(f"COMMUNITY {len(community)} photos for {len({r['scientific_name'].lower() for r in community})} species", flush=True)
-    photos = community + photos
+    if donors:
+        print(f"MERGED photos from {', '.join(donors)} into {region_id}", flush=True)
+    photos = union_photo_rows(community + photos)
     # Photos people in the app said show the wrong plant (weekly feedback) are left out.
-    from .inbox import hidden_photos
-    hidden = hidden_photos(region_id)
     if hidden:
         before = len(photos)
         photos = [p for p in photos if (p.get("page") or "") not in hidden and (p.get("url") or "") not in hidden]
@@ -1245,6 +1256,15 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     # A poisonous or edible plant with no photo of its own gets display-only photos of its closest relative
     # (same genus, most photos), clearly labelled "related species". Never used for photo ID.
     species_rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
+    from .regions import merged_donors, union_species_rows
+    for donor in merged_donors(region_id):
+        extra = config.DATA_REGIONS / donor / "species.csv"
+        if extra.exists():
+            species_rows = union_species_rows(species_rows, list(csv.DictReader(open(extra, encoding="utf-8"))))
+        ddesc = config.DATA_REGIONS / donor / "descriptions.csv"
+        if ddesc.exists():
+            for row in csv.DictReader(open(ddesc, encoding="utf-8")):
+                descs.setdefault((row.get("scientific_name") or "").lower(), row)
     critical = safety_species(species_rows)
     by_genus: dict[str, list[str]] = defaultdict(list)
     for k, v in by.items():

@@ -143,15 +143,20 @@ class RegionLocatorTest {
     }
 
     @Test
-    fun countryPackIsTheDefaultAndBaliStays() {
+    fun countryDownloadSkipsHiddenFinerPacks() {
         val world = RegionInfo("WORLD", "World", listOf(doubleArrayOf(-180.0, -90.0, 180.0, 90.0)))
         val indonesia = RegionInfo("ID", "Indonesia", listOf(doubleArrayOf(94.9, -11.1, 141.1, 6.1)))
-        val bali = RegionInfo("ID-BA", "Bali, Indonesia", listOf(doubleArrayOf(114.4, -8.86, 115.72, -8.06)), parentId = "ID")
-        val regions = listOf(world, indonesia, bali)
+        val bali = RegionInfo("ID-BA", "Bali, Indonesia", listOf(doubleArrayOf(114.4, -8.86, 115.72, -8.06)), parentId = "ID", hidden = true)
+        val us = RegionInfo("US", "United States", listOf(doubleArrayOf(-124.8, 24.5, -66.9, 49.4)))
+        val hawaii = RegionInfo("US-HI", "Hawaii, USA", listOf(doubleArrayOf(-160.3, 18.9, -154.8, 22.3)), parentId = "US", hidden = true)
+        val regions = listOf(world, indonesia, bali, us, hawaii)
         assertEquals("ID-BA", RegionLocator.locate(regions, 115.2, -8.65)?.id)
-        val (country, finer) = RegionLocator.suggest(regions, 115.2, -8.65)!!
-        assertEquals("ID", country.id)
-        assertEquals("ID-BA", finer?.id)
+        val (baliCountry, baliFiner) = RegionLocator.suggest(regions, 115.2, -8.65)!!
+        assertEquals("ID", baliCountry.id)
+        assertEquals(null, baliFiner)
+        val (hi, hiFiner) = RegionLocator.suggest(regions, -157.8, 21.3)!!
+        assertEquals("US", hi.id)
+        assertEquals(null, hiFiner)
         val manila = RegionInfo("PH", "Philippines", listOf(doubleArrayOf(116.9, 4.5, 126.7, 21.2)))
         val (ph, none) = RegionLocator.suggest(listOf(world, manila), 121.0, 14.6)!!
         assertEquals("PH", ph.id)

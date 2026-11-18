@@ -43,7 +43,9 @@
 
     <!-- Results -->
     <string name="results">Results</string>
-    <string name="confidence">%1$d%% confidence</string>
+    <string name="confidence">%1$d%% match confidence</string>
+    <string name="match_confidence_label">match confidence</string>
+    <string name="results_safety_note">Never eat a plant you haven\'t independently identified. This is not medical advice.</string>
     <string name="tier_high">High confidence</string>
     <string name="tier_medium">Medium confidence</string>
     <string name="tier_low">Low confidence</string>
@@ -86,7 +88,12 @@
     <string name="region_also_on">Also used when identifying</string>
     <string name="finer_pack_offer">%1$s is a finer pack you can add. The country pack stays.</string>
     <string name="finer_pack_open">See packs</string>
-    <string name="no_region_on_phone">No region pack on this phone yet. Choose one under Packs. A country pack is the one to start with. Finer areas, such as Bali, can be added as well.</string>
+    <string name="no_region_on_phone">No country pack on this phone yet. Choose one under Packs. Each download is a whole country.</string>
+    <string name="legacy_pack_offer">%1$s is now part of %2$s. Download %2$s. %1$s keeps working until that download is on this phone.</string>
+    <string name="legacy_pack_action">Download %1$s</string>
+    <string name="legacy_pack_remove">%1$s replaces %2$s. You can remove %2$s.</string>
+    <string name="landing_art_credit">Opening photograph: Dominicus Johannes Bergsma, CC BY-SA 4.0, Wikimedia Commons. The night-forest landing is drawn around that photograph. The separate original artwork was not in this build.</string>
+    <string name="enter_openwild">Tap to continue</string>
 
     <!-- Species page -->
     <string name="lookalikes">Lookalikes</string>
@@ -160,7 +167,7 @@
     <string name="add_photo">Add photo</string>
     <string name="share_sighting">Share sighting</string>
     <string name="report_wrong">Wrong ID?</string>
-    <string name="share_text">I found what might be %1$s (%2$d%% confidence), identified offline with OpenWild. Confirm it on iNaturalist to help science.</string>
+    <string name="share_text">I found what might be %1$s (%2$d%% match confidence), identified offline with OpenWild. Confirm it on iNaturalist to help science.</string>
     <string name="lookalike_line">Lookalike: %1$s — %2$s</string>
 
     <!-- regions (packs) -->
@@ -241,7 +248,7 @@
     <string name="explore_empty">Nothing in %1$s matches that search.</string>
 
     <string name="choose_region_title">Choose your region</string>
-    <string name="choose_region_body">Pick your region to download. It has photo ID, poison warnings and lookalikes, and works offline once downloaded. We add photos every week.</string>
+    <string name="choose_region_body">Each download is one country. It has photo identification, poison warnings and lookalikes, and it works offline once it is on this phone. Photos are added every week.</string>
     <string name="region_not_ready">%1$s doesn\'t have a finished pack yet.</string>
     <string name="install_pack">Install</string>
     <string name="installing_pack">Installing…</string>

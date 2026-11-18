@@ -40,7 +40,7 @@ License interpretation (for example, whether model fingerprints are derivative w
 
 | Source | Licence | What we take |
 |---|---|---|
-| Plants For A Future (pfaf.org), database of ~8,800 useful plants | Used with permission of PFAF | Facts only (content/evidence/pfaf_facts.csv): parts eaten, raw or cooked, kinds of hazard, food/medicine ratings, survival uses, link to the PFAF page. No PFAF text, selection or structure is reproduced; the database itself is not redistributed. |
+| Plants For A Future (pfaf.org), database of ~8,800 useful plants | Used with permission of PFAF | Facts only (content/evidence/pfaf_facts.csv): parts eaten, raw or cooked, kinds of hazard, food/medicine ratings, survival uses, link to the PFAF page. No PFAF text, selection or structure is reproduced; the database itself is not redistributed. The file is left as-is. Nothing new is fetched from pfaf.org or tropical.theferns.info. Keeping the file is Zen's decision. |
 | Kew, World Checklist of Useful Plant Species (Diazgranados et al. 2020, KNB doi:10.5063/F1CV4G34) | CC BY 4.0 | Human food / medicine / poison / fuel flags for ~40,000 species (includes PROSEA, Plant Resources of South-East Asia) |
 | Wikipedia categories, English and Indonesian (edible fruits, vegetables, spices, herbs, edible and poisonous mushrooms, medicinal plants, and more) | CC BY-SA | Category membership only, mapped to species through Wikidata |
 | Wikimedia Commons curated categories (poisonous plants, poisonous/deadly/psychoactive fungi, medicinal plants) | CC BY-SA | Category membership only |
@@ -59,7 +59,7 @@ Rules: poison always beats food; a food claim from one source, or without docume
 | Fly agaric (*Amanita muscaria*) on autumn leaves | Dominicus Johannes Bergsma | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Vliegenzwam_(Amanita_muscaria)._Locatie_De_Famberhorst._27-09-2020_(d.j.b.).jpg |
 | Tropical fruit | Peggy Greb, USDA Agricultural Research Service | Public domain | https://commons.wikimedia.org/wiki/File:ARS_tropical_fruit_no_labels.jpg |
 
-Fetched and licence-checked by `.github/workflows/hero-images.yml` (refuses anything that isn't public domain, CC0, CC BY or CC BY-SA). The app shows the credit under the animation. The resized fly agaric image remains under CC BY-SA 4.0.
+Fetched and licence-checked by `.github/workflows/hero-images.yml` (refuses anything that isn't public domain, CC0, CC BY or CC BY-SA). The opening screen still shows this animation. The home landing draws a night forest around the same fly agaric photograph, because the separate original artwork was not in this build. The resized fly agaric image remains under CC BY-SA 4.0 and the credit stays in the app.
 
 ## Community photos (the long-term library)
 

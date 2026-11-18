@@ -371,7 +371,7 @@ private fun PartsCard(content: org.openwild.app.core.SpeciesContent, showFood: B
 internal fun localLanguages(regionId: String): List<String> {
     if (regionId == "ID-BA") return listOf("ban", "ind", "jav")
     return when (regionId.substringBefore('-')) {
-        "ID" -> listOf("ind", "jav", "sun", "ban", "mad", "min")
+        "ID" -> listOf("ind", "ban", "jav", "sun", "mad", "min")
         "MY", "BN" -> listOf("msa")
         "SG" -> listOf("msa", "zho", "tam")
         "PH" -> listOf("tgl", "ceb")
