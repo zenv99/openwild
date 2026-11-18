@@ -766,7 +766,7 @@ def _take(cands: list[dict], img_dir: Path, scientific: str, cap: int | None = N
 KEY_TARGET = 12  # photos wanted for each poisonous or edible plant
 
 
-def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> list[dict]:
+def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2, cache_only: bool = False) -> list[dict]:
     """Display photos of the closest relative found ANYWHERE (same genus, best-documented species), for a
     deadly/poisonous plant with no photo of its own and no relative in the region. Open licences only
     (iNaturalist research grade, then GBIF). Always labelled in the app as a related plant, never used for ID.
@@ -779,6 +779,8 @@ def genus_relatives(genus: str, exclude: str, folder: Path, want: int = 2) -> li
     key = genus.lower()
     if key in cache:
         cands = cache[key]
+    elif cache_only:
+        return []
     else:
         cands = _genus_candidates(genus)
         cache[key] = cands
@@ -851,7 +853,7 @@ def _genus_candidates(genus: str) -> list[dict]:
     return cands
 
 
-def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
+def exact_specimens(scientific: str, folder: Path, want: int = 1, cache_only: bool = False) -> list[dict]:
     """A deadly/poisonous plant nobody has photographed alive: a museum specimen of THIS exact plant (open
     licence, from GBIF; CC0 / CC BY). Shown with a "pressed museum specimen of this exact plant" banner,
     followed by photos of the closest living relative. Never used for photo ID. Cached in folder/specimens.json."""
@@ -861,6 +863,8 @@ def exact_specimens(scientific: str, folder: Path, want: int = 1) -> list[dict]:
     except Exception:  # noqa: BLE001
         cache = {}
     key = scientific.lower()
+    if key not in cache and cache_only:
+        return []
     if key not in cache:
         cands: list[dict] = []
         try:
@@ -1183,14 +1187,44 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
         print(f"NAMES failed: {e!r}", flush=True)
         wd_names = {}
     local_langs = _names.local_languages(region_id)
+    # Online look-ups for plants without a photo (museum specimens, relatives found worldwide) are slow and
+    # paced. They get a time budget so the build always finishes and publishes; results are cached in the
+    # photo store, so every later build continues where this one stopped. Deadly/poisonous plants go first.
+    import os as _os
+    import time as _time
+    fb_deadline = _time.monotonic() + float(_os.environ.get("OW_FALLBACK_MINUTES", "100")) * 60
+    folder = photos_path.parent
+
+    def _fungus(r):
+        return (r.get("kingdom") or "").lower() == "fungi" or str(r.get("is_fungus", "")).lower() in ("1", "true")
+
+    def _no_kin(key):
+        return not [k for k in by_genus.get(key.split()[0], []) if k != key]
+
+    warm = 0
+    for r in species_rows:
+        key = r["scientific_name"].lower()
+        if key in critical and not by.get(key):
+            if _time.monotonic() > fb_deadline:
+                break
+            if not _fungus(r):
+                exact_specimens(r["scientific_name"], folder)
+            if _no_kin(key):
+                genus_relatives(key.split()[0], r["scientific_name"], folder)
+            warm += 1
+    print(f"FALLBACK deadly/poisonous plants looked up first: {warm}", flush=True)
+    fb_skipped = 0
     for r in species_rows:
         key = r["scientific_name"].lower()
         pairs = by.get(key, [])
         borrowed: list[dict] = []
+        cache_only = _time.monotonic() > fb_deadline
+        if cache_only and not pairs:
+            fb_skipped += 1
         if not pairs:
             # Deadly/poisonous and never photographed alive: the exact plant as a museum specimen first.
             fungus = (r.get("kingdom") or "").lower() == "fungi" or str(r.get("is_fungus", "")).lower() in ("1", "true")
-            exact = exact_specimens(r["scientific_name"], photos_path.parent) if key in critical and not fungus else []
+            exact = exact_specimens(r["scientific_name"], photos_path.parent, cache_only=cache_only) if key in critical and not fungus else []
             if exact:
                 print(f"EXACT-SPECIMEN {r['scientific_name']} ({exact[0]['observer']})", flush=True)
             kin = sorted((k for k in by_genus.get(key.split()[0], []) if k != key), key=lambda k: -len(by[k]))
@@ -1203,7 +1237,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
                 related += 1
             else:
                 # No relative in the region: the closest relative found anywhere (open licence, labelled).
-                far = genus_relatives(key.split()[0], r["scientific_name"], photos_path.parent)
+                far = genus_relatives(key.split()[0], r["scientific_name"], photos_path.parent, cache_only=cache_only)
                 if far:
                     borrowed = [{
                         "path": c["path"], "license": c["license"], "url": c["page"], "stage": "related",
@@ -1245,6 +1279,8 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             } for p, _ in pairs] + borrowed,
         ))
     print(f"RELATED {related} plants without their own photo show a related species (labelled, never used for ID)", flush=True)
+    if fb_skipped:
+        print(f"FALLBACK time budget reached: {fb_skipped} plants without a photo wait for the next build", flush=True)
     dest = out or (config.ANDROID_ASSETS / "packs" / f"{region.id}.owpack")
     build_pack(
         dest, region.id, region.name, version, recs, load_curated(), guide_only=True,
