@@ -87,8 +87,14 @@ jobs:
         working-directory: pipeline
         run: |
           if [ -n "${{ steps.inbox.outputs.only }}" ]; then
-            python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json \
-              --only "${{ steps.inbox.outputs.only }}" --approve
+            ONLY="${{ steps.inbox.outputs.only }}"
+            if [ -f "../../inbox/$ONLY/report.json" ]; then
+              python -m openwild_pipeline.cli inbox-reports --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json \
+                --only "$ONLY" --approve
+            else
+              python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json \
+                --only "$ONLY" --approve
+            fi
           elif [ "${{ steps.inbox.outputs.weekly }}" = "true" ]; then
             python -m openwild_pipeline.cli inbox-process --inbox ../../inbox --packs /tmp/packs --out /tmp/result.json
             python -m openwild_pipeline.cli inbox-feedback --inbox ../../inbox --out /tmp/feedback.json --digest /tmp/digest.md

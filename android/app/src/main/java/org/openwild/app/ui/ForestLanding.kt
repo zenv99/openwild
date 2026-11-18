@@ -65,20 +65,20 @@ fun motionAllowed(context: Context): Boolean {
 private val Night = Color(0xFF04140F)
 private val SporeGlow = Color(0xFFD6FFE8)
 
-/** The whole fly agaric photograph, 1440 by 1152, then a short push toward the cap. */
+/** The whole forest artwork, 720 by 1280, then a short push toward the mushroom. */
 const val SPLASH_MS = 2800
 
-/** Where the cap sits in the photograph, as fractions of width and height. */
-const val CAP_X = 0.50f
-const val CAP_Y = 0.36f
+/** Where the foreground mushroom cap sits in the artwork, as fractions of width and height. */
+const val CAP_X = 0.52f
+const val CAP_Y = 0.48f
 
 data class FitFrame(val left: Float, val top: Float, val width: Float, val height: Float)
 
 object SplashLayout {
-    const val IMAGE_W = 1440f
-    const val IMAGE_H = 1152f
+    const val IMAGE_W = 720f
+    const val IMAGE_H = 1280f
 
-    /** The whole photograph, fitted inside the screen. Nothing is cropped. */
+    /** The whole artwork, fitted inside the screen. Nothing is cropped. */
     fun fit(viewW: Float, viewH: Float): FitFrame {
         if (viewW <= 0f || viewH <= 0f) return FitFrame(0f, 0f, 0f, 0f)
         val imageAspect = IMAGE_W / IMAGE_H
@@ -104,8 +104,9 @@ object SplashLayout {
 }
 
 /**
- * Opening screen. The whole fly agaric photograph is shown first, then the view eases in
- * toward the cap. A tap skips it. The wait is the same length as before.
+ * Opening screen. The forest artwork is shown whole first, then the view eases in toward the
+ * mushroom. Glitter stays on unless the phone asks for reduced motion or is saving battery.
+ * A tap skips it.
  */
 @Composable
 fun MushroomOpening(onContinue: () -> Unit) {
@@ -117,22 +118,12 @@ fun MushroomOpening(onContinue: () -> Unit) {
     }
     Box(Modifier.fillMaxSize().background(Night).clickable(onClick = onContinue)) {
         MushroomSplash(motion)
-        Column(
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp, start = 20.dp, end = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                stringResource(R.string.hero_photo_credit),
-                color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.labelSmall,
-            )
-            Text(
-                stringResource(R.string.enter_openwild),
-                color = Color.White.copy(alpha = 0.85f),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(top = 6.dp),
-            )
-        }
+        Text(
+            stringResource(R.string.enter_openwild),
+            color = Color.White.copy(alpha = 0.85f),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 28.dp),
+        )
     }
 }
 
@@ -159,7 +150,7 @@ private fun MushroomSplash(motion: Boolean) {
         val frame = SplashLayout.fit(maxWidth.value, maxHeight.value)
         val (ox, oy) = SplashLayout.capOrigin(frame, maxWidth.value, maxHeight.value)
         Image(
-            painterResource(R.drawable.hero_mushroom),
+            painterResource(R.drawable.landing_forest),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize().blur(28.dp).graphicsLayer { alpha = 0.55f },
@@ -170,8 +161,8 @@ private fun MushroomSplash(motion: Boolean) {
             ),
         )
         Image(
-            painterResource(R.drawable.hero_mushroom),
-            contentDescription = stringResource(R.string.hero_mushroom_cd),
+            painterResource(R.drawable.landing_forest),
+            contentDescription = stringResource(R.string.landing_forest_cd),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize().graphicsLayer {
                 val scale = 1f + 0.14f * push

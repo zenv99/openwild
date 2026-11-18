@@ -50,6 +50,8 @@ data class IdResult(
     val deadly: List<Int>,
     val photoCount: Int,
     val hasUnderside: Boolean,
+    /** Fingerprints of the photos just identified, same order as the photos. Kept for a wrong-ID report. */
+    val embeddings: List<FloatArray> = emptyList(),
 )
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
@@ -115,6 +117,8 @@ data class UiState(
     /** Size of the model file inside the app. The install keeps this even when the brain is off. */
     val brainBytes: Long = 0,
     val modelId: String = "",
+    /** careful, fast, or bioclip. Careful is the built-in model with several crops. */
+    val brainChoice: String = org.openwild.app.pack.PackManager.BRAIN_CAREFUL,
     /** Region packs included in Identify. Explore shows [activeRegionId] among these. */
     val enabledRegionIds: Set<String> = emptySet(),
     val finerRegionId: String? = null,
@@ -181,6 +185,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     dismissedUpdates = dismissed,
                     brainOn = ow.packs.brainOn,
                     brainBytes = brainBytes,
+                    brainChoice = ow.packs.brainChoice,
                     modelId = org.openwild.app.ml.Embedder.modelId(getApplication()),
                 )
             }
@@ -199,6 +204,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             refreshInstalled()
             loadActivePack()
             _state.update { it.copy(bootstrapped = true) }
+            withContext(Dispatchers.IO) { runCatching { ReportOutbox.flush(getApplication()) } }
         }
     }
 
@@ -342,7 +348,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
         }
-        _state.update { s -> s.copy(upgrade = s.upgrade.copy(on = ow.packs.betterRecognition, modelInstalled = ow.packs.upgradeModel.exists(), active = usingUpgrade)) }
+        val shownModel = if (usingUpgrade) "bioclip2-vitl14-224-v1" else org.openwild.app.ml.Embedder.modelId(getApplication())
+        _state.update { s ->
+            s.copy(
+                upgrade = s.upgrade.copy(on = ow.packs.betterRecognition, modelInstalled = ow.packs.upgradeModel.exists(), active = usingUpgrade),
+                brainChoice = ow.packs.brainChoice,
+                modelId = shownModel,
+            )
+        }
         if (focus != null) ow.packs.activeRegionId = focus.regionId
         _state.update {
             it.copy(
@@ -390,6 +403,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                         _state.update { s -> s.copy(upgrade = s.upgrade.copy(progress = 0.9f + f * 0.1f)) }
                     }
                 }
+                ow.packs.brainChoice = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
                 ow.packs.betterRecognition = true
             }
         }
@@ -397,8 +411,32 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         loadActivePack()
     }
 
+    fun setBrainChoice(choice: String) = viewModelScope.launch {
+        ow.packs.brainChoice = choice
+        ow.packs.betterRecognition = choice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
+        loadActivePack()
+        if (choice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP) refreshUpgrade()
+    }
+
+    /** Names from every installed pack, for the wrong-ID sheet. Offline. */
+    fun suggestNames(query: String): List<org.openwild.app.core.NameSuggest.Hit> {
+        val out = ArrayList<org.openwild.app.core.NameSuggest.Hit>()
+        val seen = HashSet<String>()
+        for (p in openPacks) {
+            for (hit in org.openwild.app.core.NameSuggest.matches(query, p.species.scientificNames, p.species.commonNames)) {
+                if (seen.add(hit.scientific.lowercase())) out += hit
+                if (out.size >= 6) return out
+            }
+        }
+        return out
+    }
+
     fun setBetterRecognition(on: Boolean) = viewModelScope.launch {
         ow.packs.betterRecognition = on
+        if (on) ow.packs.brainChoice = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
+        else if (ow.packs.brainChoice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP) {
+            ow.packs.brainChoice = org.openwild.app.pack.PackManager.BRAIN_CAREFUL
+        }
         loadActivePack()
     }
 
@@ -596,8 +634,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return@launch
         }
         _state.update { it.copy(busy = true) }
+        val careful = s.brainChoice != org.openwild.app.pack.PackManager.BRAIN_FAST
         val res = withContext(Dispatchers.Default) {
-            val embeddings = s.photos.map { emb.embed(it.bitmap) }
+            val embeddings = s.photos.map { emb.embed(it.bitmap, careful) }
             val month = Calendar.getInstance().get(Calendar.MONTH) + 1
             if (libs.isNotEmpty()) {
                 val fused = RegionFusion.identify(libs, embeddings, s.filter, month, p?.regionId)
@@ -606,13 +645,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 val r = fused.result
                 val deadly = SafetyPolicy.deadlyCandidates(r) { display.content(it)?.isDeadly == true }
                 val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], display.content(it)?.isDeadly == true) }
-                display to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside })
+                display to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings)
             } else {
                 val shown = p ?: return@withContext null
                 val r = id!!.identify(embeddings, s.filter, month)
                 val deadly = SafetyPolicy.deadlyCandidates(r) { shown.content(it)?.isDeadly == true }
                 val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], shown.content(it)?.isDeadly == true) }
-                shown to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside })
+                shown to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings)
             }
         }
         if (res == null) {

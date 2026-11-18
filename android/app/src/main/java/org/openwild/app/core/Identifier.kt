@@ -33,7 +33,8 @@ class Identifier(
         }
         val inputs = if (projection != null) embeddings.map { projection.apply(it) } else embeddings
         val sim = index.similarityBatch(inputs, params.textProtoPenalty, allowed)
-        val prior = Confidence.prior(species.obsCounts, species.months[(month - 1).coerceIn(0, 11)])
+        val counts = Cultivated.floorCounts(species.scientificNames, species.obsCounts)
+        val prior = Confidence.prior(counts, species.months[(month - 1).coerceIn(0, 11)])
         val logPrior = DoubleArray(prior.size) { ln(prior[it]) }
         return Confidence.score(sim, logPrior, params)
     }

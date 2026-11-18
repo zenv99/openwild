@@ -22,6 +22,10 @@ class PackManager(private val context: Context) {
         val ALLOWED_HOSTS = listOf("github.com", "githubusercontent.com")
         private const val ENABLED = "enabled_regions"
         private const val BRAIN = "brain_on"
+        private const val BRAIN_CHOICE = "brain_choice"
+        const val BRAIN_CAREFUL = "careful"
+        const val BRAIN_FAST = "fast"
+        const val BRAIN_BIOCLIP = "bioclip"
     }
 
 
@@ -82,6 +86,23 @@ class PackManager(private val context: Context) {
     var brainOn: Boolean
         get() = prefs.getBoolean(BRAIN, true)
         set(v) = prefs.edit().putBoolean(BRAIN, v).apply()
+
+    /**
+     * Which brain Identify uses. "careful" and "fast" are the built-in DINOv2 small model
+     * (several crops, or one). "bioclip" is the optional download and only runs when that
+     * file and a matching region boost are on the phone.
+     * A phone that already turned on better recognition keeps it until the person picks another brain.
+     */
+    var brainChoice: String
+        get() {
+            val raw = prefs.getString(BRAIN_CHOICE, null)
+            if (raw == BRAIN_CAREFUL || raw == BRAIN_FAST || raw == BRAIN_BIOCLIP) return raw
+            return if (betterRecognition) BRAIN_BIOCLIP else BRAIN_CAREFUL
+        }
+        set(v) {
+            val choice = if (v == BRAIN_FAST || v == BRAIN_BIOCLIP) v else BRAIN_CAREFUL
+            prefs.edit().putString(BRAIN_CHOICE, choice).apply()
+        }
 
     /** Bytes of the model shipped inside the app. Zero when this build has no model file. */
     fun brainAssetBytes(): Long = try {
@@ -316,6 +337,7 @@ class PackManager(private val context: Context) {
     fun removeUpgrade() {
         upgradeDir.listFiles()?.forEach { it.delete() }
         betterRecognition = false
+        if (brainChoice == BRAIN_BIOCLIP) brainChoice = BRAIN_CAREFUL
     }
 
     fun delete(regionId: String) {

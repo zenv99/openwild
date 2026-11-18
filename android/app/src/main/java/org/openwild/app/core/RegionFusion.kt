@@ -71,7 +71,8 @@ object RegionFusion {
         if (allow != null && !allow.any { it }) return null
         val sim = lib.index.similarityBatch(inputs, lib.params.textProtoPenalty, allow)
         if (!sim[0].any { it.isFinite() }) return null
-        val prior = Confidence.prior(lib.species.obsCounts, lib.species.months[(month - 1).coerceIn(0, 11)])
+        val counts = Cultivated.floorCounts(lib.species.scientificNames, lib.species.obsCounts)
+        val prior = Confidence.prior(counts, lib.species.months[(month - 1).coerceIn(0, 11)])
         val logPrior = DoubleArray(prior.size) { ln(prior[it]) }
         return Confidence.score(sim, logPrior, lib.params)
     }
@@ -125,7 +126,10 @@ object RegionFusion {
         if (slots.isEmpty()) return null
         val names = slots.keys.toList()
         val simMatrix = Array(nPhotos) { p -> DoubleArray(names.size) { u -> slots[names[u]]!!.sims[p] } }
-        val obs = IntArray(names.size) { slots[names[it]]!!.obs }
+        val obs = IntArray(names.size) {
+            val slot = slots[names[it]]!!
+            if (Cultivated.isCultivated(names[it])) maxOf(slot.obs, Cultivated.OBS_FLOOR) else slot.obs
+        }
         val monthFreq = IntArray(names.size) { slots[names[it]]!!.monthFreq }
         val prior = Confidence.prior(obs, monthFreq)
         val logPrior = DoubleArray(prior.size) { ln(prior[it]) }

@@ -2,7 +2,13 @@ package org.openwild.app.ui.screens
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedTextField
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.foundation.layout.WindowInsets
@@ -130,6 +136,9 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                     }
                 }
                 Text(stringResource(R.string.works_offline), color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
+            }
+            // Packs and the brain stay in their own block, directly under Identify, on every screen size.
+            GlassPanel {
                 LegacyPackOffer(state, vm)
                 OnThisPhone(state, vm)
             }
@@ -316,6 +325,7 @@ private fun LegacyPackOffer(state: UiState, vm: AppViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OnThisPhone(state: UiState, vm: AppViewModel) {
     var deleteRegion by remember { mutableStateOf<String?>(null) }
@@ -347,6 +357,23 @@ private fun OnThisPhone(state: UiState, vm: AppViewModel) {
                         onCheckedChange = vm::setBrainOn,
                         colors = SwitchDefaults.colors(checkedTrackColor = Leaf),
                     )
+                }
+                BrainMenu(state, vm)
+                if (state.brainChoice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP && !state.upgrade.active) {
+                    val pct = state.upgrade.progress
+                    if (pct != null) {
+                        Text(stringResource(R.string.upgrade_downloading, state.activeRegionName ?: "", (pct * 100).toInt()), style = MaterialTheme.typography.bodySmall)
+                        LinearProgressIndicator(progress = { pct }, modifier = Modifier.fillMaxWidth())
+                    } else if (state.upgrade.regionAvailable) {
+                        Button(onClick = { vm.installUpgrade() }) {
+                            Text(stringResource(R.string.brain_bioclip_get))
+                        }
+                    } else if (state.upgrade.modelMb > 0) {
+                        Text(stringResource(R.string.upgrade_region_soon), style = MaterialTheme.typography.bodySmall)
+                    }
+                    state.upgrade.error?.let {
+                        Text(stringResource(R.string.upgrade_failed, it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
                 TextButton(onClick = { deleteBrain = true }, enabled = state.brainOn) {
                     Text(stringResource(R.string.brain_delete))
@@ -436,6 +463,52 @@ private fun OnThisPhone(state: UiState, vm: AppViewModel) {
                 TextButton(onClick = { deleteBrain = false }) { Text(stringResource(R.string.not_now)) }
             },
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BrainMenu(state: UiState, vm: AppViewModel) {
+    LaunchedEffect(state.activeRegionId) { vm.refreshUpgrade() }
+    var open by remember { mutableStateOf(false) }
+    val careful = stringResource(R.string.brain_careful)
+    val fast = stringResource(R.string.brain_fast)
+    val bioclip = stringResource(R.string.brain_bioclip)
+    val selected = when (state.brainChoice) {
+        org.openwild.app.pack.PackManager.BRAIN_FAST -> fast
+        org.openwild.app.pack.PackManager.BRAIN_BIOCLIP -> bioclip
+        else -> careful
+    }
+    val options = listOf(
+        org.openwild.app.pack.PackManager.BRAIN_CAREFUL to (careful to stringResource(R.string.brain_careful_meta)),
+        org.openwild.app.pack.PackManager.BRAIN_FAST to (fast to stringResource(R.string.brain_fast_meta)),
+        org.openwild.app.pack.PackManager.BRAIN_BIOCLIP to (bioclip to stringResource(R.string.brain_bioclip_meta)),
+    )
+    ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
+        OutlinedTextField(
+            value = selected,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.brain_choose)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            options.forEach { (id, texts) ->
+                DropdownMenuItem(
+                    text = {
+                        Column {
+                            Text(texts.first, style = MaterialTheme.typography.titleSmall)
+                            Text(texts.second, style = MaterialTheme.typography.bodySmall)
+                        }
+                    },
+                    onClick = {
+                        open = false
+                        vm.setBrainChoice(id)
+                    },
+                )
+            }
+        }
     }
 }
 

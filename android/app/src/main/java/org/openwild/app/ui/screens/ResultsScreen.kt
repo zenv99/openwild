@@ -167,19 +167,17 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.share_sighting))
             }
-            val reports = rememberReportSender()
+            val reports = rememberReportSender(suggestions = vm::suggestNames)
             TextButton(onClick = {
                 val pk = vm.pack
-                if (reports.enabled && pk != null) {
+                if (pk != null) {
                     reports.send(ReportSender.Request(
-                        regionId = pk.regionId, predicted = pk.species.scientificNames[res.result.top], chosen = null,
-                        fields = org.json.JSONObject().put("kind", "wrong").put("score", res.result.score).put("tier", res.result.tier.name)
-                            .put("top_matches", res.candidates.take(10).joinToString("; ") { pk.species.scientificNames[it.index] })
-                            .put("pack_version", pk.version),
+                        regionId = pk.regionId,
+                        predicted = pk.species.scientificNames[res.result.top],
+                        chosen = null,
+                        fields = org.openwild.app.ui.wrongIdFields(res, pk.species.scientificNames, pk.version, state.modelId, "wrong"),
                         photos = state.photos,
                     ))
-                } else {
-                    Contribute.reportWrongId(context, vm, res)
                 }
             }) {
                 Icon(Icons.Filled.Flag, null, Modifier.size(16.dp))

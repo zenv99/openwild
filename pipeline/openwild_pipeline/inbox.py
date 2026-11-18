@@ -306,7 +306,10 @@ CONFUSION_MIN = 3
 
 
 def reports(inbox: Path) -> list[Path]:
-    return sorted(p.parent for p in inbox.glob("reports/*/*/*/report.json"))
+    """Wrong-ID folders, including ones already moved to review/."""
+    found = list(inbox.glob("reports/*/*/*/report.json"))
+    found += [p for p in inbox.glob("review/**/report.json") if p.is_file()]
+    return sorted({p.parent for p in found}, key=lambda p: str(p))
 
 
 def resolve_name(text: str, names: dict[str, int], aka: dict[str, str]) -> str | None:
@@ -335,6 +338,105 @@ def load_aka(pack: Path) -> dict[str, str]:
                 seen.setdefault(n, set()).add(sci.lower())
     con.close()
     return {n: next(iter(s)) for n, s in seen.items() if len(s) == 1}
+
+
+# Suggested names from a wrong identification. status is "review" until a person marks "reviewed".
+# A phone cannot set status; candidate_from_report ignores anything the report itself claims.
+CANDIDATE_FIELDS = [
+    "date", "region", "suggested", "matched", "predicted", "note", "top_matches", "model",
+    "pack_version", "app_version", "has_photos", "has_embedding", "share_location", "status", "source",
+]
+
+
+def candidate_from_report(rep: dict, region: str, matched: str | None, source: str, today: str, status: str = "review") -> dict:
+    """A candidate label for a person to check. Never trusted, even if the payload says so."""
+    suggested = str(rep.get("suggested") or rep.get("guess") or rep.get("chosen") or "").strip()[:160]
+    kept = "reviewed" if status == "reviewed" else "review"
+    return {
+        "date": today,
+        "region": region[:32],
+        "suggested": suggested,
+        "matched": (matched or "")[:160],
+        "predicted": str(rep.get("predicted") or "")[:160],
+        "note": re.sub(r"\s+", " ", str(rep.get("note") or "")).strip()[:500],
+        "top_matches": str(rep.get("top_matches") or "")[:800],
+        "model": str(rep.get("model") or "")[:80],
+        "pack_version": str(rep.get("pack_version") or "")[:40],
+        "app_version": str(rep.get("app_version") or "")[:40],
+        "has_photos": "yes" if rep.get("photos") else "no",
+        "has_embedding": "yes" if rep.get("embeddings") else "no",
+        "share_location": "yes" if rep.get("share_location") is True else "no",
+        "status": kept,
+        "source": source[:300],
+    }
+
+
+def _candidate_key(row: dict) -> tuple:
+    return (
+        row.get("source", ""), row.get("suggested", ""), row.get("predicted", ""),
+        row.get("status", ""), (row.get("note") or "")[:80],
+    )
+
+
+def save_candidates(region: str, rows: list[dict]) -> int:
+    """Append candidate labels. A weekly re-read does not duplicate them. Returns how many were new."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,32}", region or ""):
+        return 0
+    path = COMMUNITY / region / "candidate_labels.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    seen: set[tuple] = set()
+    if path.exists():
+        for prev in csv.DictReader(open(path, encoding="utf-8")):
+            seen.add(_candidate_key(prev))
+    fresh = []
+    for row in rows:
+        item = {k: row.get(k, "") for k in CANDIDATE_FIELDS}
+        item["status"] = "reviewed" if item.get("status") == "reviewed" else "review"
+        key = _candidate_key(item)
+        if key in seen:
+            continue
+        seen.add(key)
+        fresh.append(item)
+    new = not path.exists()
+    with open(path, "a", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=CANDIDATE_FIELDS)
+        if new:
+            w.writeheader()
+        w.writerows(fresh)
+    return len(fresh)
+
+
+def fingerprint_jobs(region: str) -> list[dict]:
+    """Reviewed labels that name a species already resolved to the library.
+
+    Unreviewed rows are not jobs. A free-text suggestion with no matched species is not a job:
+    a fingerprint is only queued once a person has confirmed which plant it is.
+    """
+    path = COMMUNITY / region / "candidate_labels.csv"
+    if not path.exists():
+        return []
+    out = []
+    for row in csv.DictReader(open(path, encoding="utf-8")):
+        if row.get("status") == "reviewed" and (row.get("matched") or "").strip():
+            out.append(row)
+    return out
+
+
+def wrong_id_feedback(inbox: Path, today: str) -> list[tuple[str, dict]]:
+    """Wrong-ID notes that landed in feedback/ instead of reports/. (region, candidate row)."""
+    rows = []
+    for f in sorted(inbox.glob("feedback/*/*/*.json")):
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        if str(d.get("kind", "")) not in ("wrong", "correction", "report"):
+            continue
+        region = f.parts[-3]
+        if d.get("region") not in (None, "", region):
+            continue
+        rows.append((region, candidate_from_report(d, region, None, str(f.relative_to(inbox)), today)))
+    return rows
 
 
 def save_reports(region: str, rows: list[dict]) -> None:

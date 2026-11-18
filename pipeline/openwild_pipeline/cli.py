@@ -741,8 +741,12 @@ def main(argv=None):
     sp.add_argument("--first-only", action="store_true", help="only first photos of a plant (and spam); rest weekly")
 
     def cmd_inbox_reports(a):
-        """Weekly: wrong-ID reports and corrections sent with photos. Good photos of the plant the reporter
-        named join the library (that is how the app learns); every report is logged for the mix-up list."""
+        """Weekly: wrong-ID reports. The name the person suggests becomes a candidate label (status review).
+
+        It is not trusted and it does not change fingerprints. A maintainer passes --approve on one folder
+        after checking it; that writes status reviewed and, when the photos are usable, adds them to the
+        library for the resolved species. fingerprint_jobs() then lists those reviewed rows for a later pack.
+        """
         import datetime as _dt
         import json as _j
         import shutil
@@ -772,67 +776,99 @@ def main(argv=None):
             return looks_like_sheet(p)
 
         today = _dt.date.today().isoformat()
-        libs, akas, logs = {}, {}, {}
+        libs, akas, logs, cands = {}, {}, {}, {}
         result = {"accept": [], "review": [], "reject": []}
         root = Path(a.inbox)
+        only = (getattr(a, "only", None) or "").strip("/")
+        approve = bool(getattr(a, "approve", False))
         for folder in ib.reports(root):
-            region = folder.parts[-3]
             rel = str(folder.relative_to(root))
+            if only and rel != only:
+                continue
+            if len(folder.parts) < 4:
+                continue
+            region = folder.parts[-3]
             pack = Path(a.packs) / f"{region}.owpack"
             try:
                 rep = _j.loads((folder / "report.json").read_text(encoding="utf-8"))
             except Exception:  # noqa: BLE001
                 result["reject"].append({"folder": rel, "reason": "unreadable report"})
                 continue
-            if rep.get("region") != region or not pack.exists():
-                result["reject" if rep.get("region") != region else "review"].append({"folder": rel, "reason": "unknown region or no pack yet"})
+            if rep.get("region") != region:
+                result["reject"].append({"folder": rel, "reason": "unknown region"})
                 continue
-            if region not in libs:
-                libs[region], akas[region] = ib.load_library(pack), ib.load_aka(pack)
-            names = libs[region][2]
-            target = ib.resolve_name(rep.get("chosen", ""), names, akas[region]) or ib.resolve_name(rep.get("guess", ""), names, akas[region])
+            target = None
+            if pack.exists():
+                if region not in libs:
+                    libs[region], akas[region] = ib.load_library(pack), ib.load_aka(pack)
+                names = libs[region][2]
+                target = (
+                    ib.resolve_name(str(rep.get("chosen") or ""), names, akas[region])
+                    or ib.resolve_name(str(rep.get("guess") or rep.get("suggested") or ""), names, akas[region])
+                )
+            ib.save_candidates(region, [ib.candidate_from_report(
+                rep, region, target, rel, today, status="reviewed" if approve else "review",
+            )])
             images = []
             for ph in (rep.get("photos") or [])[:10]:
                 fn = str(ph.get("file", ""))
                 if ib._SAFE.match(fn) and (folder / fn).is_file() and (folder / fn).stat().st_size < 15_000_000:
                     images.append((fn, "field", (folder / fn).read_bytes()))
-            entry = {"folder": rel, "region": region, "species": target or rep.get("guess") or "unknown",
-                     "credit": ib.clean_credit(rep.get("credit", "")), "predicted": rep.get("predicted"), "photos": len(images)}
-            verdict = "logged"
-            if target and images:
+            suggested = str(rep.get("guess") or rep.get("suggested") or rep.get("chosen") or "")
+            entry = {"folder": rel, "region": region, "species": target or suggested or "unknown",
+                     "credit": ib.clean_credit(rep.get("credit", "")), "predicted": rep.get("predicted"),
+                     "photos": len(images), "matched": target or "", "status": "reviewed" if approve else "review"}
+            useful = bool(images or suggested.strip() or rep.get("embeddings") or rep.get("top_matches") or rep.get("note"))
+            verdict = "review"
+            if approve and target and images and pack.exists() and model.exists():
                 meta = {"species": target, "region": region, "credit": rep.get("credit") or "Anonymous",
                         "license": rep.get("license", ""), "own_photos": rep.get("own_photos") is True}
                 d = ib.decide(meta, images, libs[region], embed, is_sheet)
-                entry.update({"reason": d.reason, "detail": d.detail})
-                verdict = d.verdict
-                if d.verdict == "accept":
-                    disp = next((n for n in [rep.get("chosen")] if n and n.lower() == target), target)
-                    meta["species"] = disp[0].upper() + disp[1:] if disp else target
+                entry.update({"reason": "approved by a maintainer", "detail": d.detail})
+                if d.photos:
+                    meta["species"] = target[:1].upper() + target[1:]
                     entry["added"] = len(ib.add_to_library(region, meta, "r" + folder.name, d.photos))
-                result["review" if d.verdict == "review" else d.verdict if d.verdict == "accept" else "reject"].append(entry)
-            elif images:
-                entry["reason"] = "the reporter didn't know the plant: a person may recognise it"
+                    verdict = "accept"
+                    result["accept"].append(entry)
+                else:
+                    entry["reason"] = "approved, but no usable photo remained"
+                    result["review"].append(entry)
+            elif useful:
+                entry["reason"] = "suggested name kept for review; not applied to fingerprints"
+                if images and pack.exists() and model.exists() and region in libs:
+                    meta = {"species": target or "unknown", "region": region, "credit": rep.get("credit") or "Anonymous",
+                            "license": rep.get("license", "") or "CC BY 4.0", "own_photos": True}
+                    if target:
+                        d = ib.decide(meta, images, libs[region], embed, is_sheet)
+                        entry["detail"] = d.detail
+                        entry["reason"] = d.reason + "; candidate label only, not trusted"
                 result["review"].append(entry)
-                verdict = "unknown"
             else:
-                entry["reason"] = "logged (no photos)"
+                entry["reason"] = "nothing to review"
+                verdict = "reject"
                 result["reject"].append(entry)
             logs.setdefault(region, []).append({
                 "date": today, "kind": str(rep.get("kind", ""))[:12], "predicted": str(rep.get("predicted", ""))[:120],
-                "target": str(rep.get("chosen") or rep.get("guess") or "")[:120], "matched": target or "",
+                "target": suggested[:120], "matched": target or "",
                 "verdict": verdict, "photos": len(images), "top_matches": str(rep.get("top_matches", ""))[:600],
                 "pack_version": str(rep.get("pack_version", ""))[:20]})
-            print(f"REPORT {verdict:8} {region} app said {rep.get('predicted')} -> {target or rep.get('guess') or '?'}", flush=True)
+            print(f"REPORT {verdict:8} {region} app said {rep.get('predicted')} -> {target or suggested or '?'}", flush=True)
         for region, rows in logs.items():
             ib.save_reports(region, rows)
+        for region, row in ib.wrong_id_feedback(root, today):
+            cands.setdefault(region, []).append(row)
+        for region, rows in cands.items():
+            ib.save_candidates(region, rows)
         shutil.rmtree(tmp, ignore_errors=True)
         _j.dump(result, open(a.out, "w"), indent=1)
         print(f"REPORTS accepted {len(result['accept'])}, review {len(result['review'])}, logged/rejected {len(result['reject'])}")
 
-    sp = add("inbox-reports", cmd_inbox_reports, "weekly: wrong-ID reports and corrections with photos -> library, mix-up list")
+    sp = add("inbox-reports", cmd_inbox_reports, "weekly: wrong-ID reports become candidate labels; reviewed ones can update fingerprints")
     sp.add_argument("--inbox", required=True)
     sp.add_argument("--packs", required=True)
     sp.add_argument("--out", required=True)
+    sp.add_argument("--only", default=None, help="one report folder, relative to --inbox")
+    sp.add_argument("--approve", action="store_true", help="a maintainer confirmed this report")
 
     def cmd_inbox_feedback(a):
         """Weekly: file votes and reviews sent from the app, work out which photos people say are wrong."""
@@ -841,16 +877,20 @@ def main(argv=None):
 
         from . import inbox as ib
 
-        files, by_region = ib.collect_feedback(Path(a.inbox), _dt.date.today().isoformat())
+        today = _dt.date.today().isoformat()
+        files, by_region = ib.collect_feedback(Path(a.inbox), today)
         hidden = {}
         for region, rows in by_region.items():
             if (config.DATA_REGIONS / region / "species.csv").exists():
                 ib.save_feedback(region, rows)
                 hidden[region] = len(ib.hidden_photos(region))
+        labelled = 0
+        for region, row in ib.wrong_id_feedback(Path(a.inbox), today):
+            labelled += ib.save_candidates(region, [row])
         Path(a.digest).write_text(ib.digest(by_region), encoding="utf-8")
         _j.dump({"files": [str(f.relative_to(Path(a.inbox))) for f in files],
-                 "regions": sorted(by_region), "hidden": hidden}, open(a.out, "w"), indent=1)
-        print(f"FEEDBACK {len(files)} files, regions {sorted(by_region)}, hidden photos {hidden}")
+                 "regions": sorted(by_region), "hidden": hidden, "candidate_labels": labelled}, open(a.out, "w"), indent=1)
+        print(f"FEEDBACK {len(files)} files, regions {sorted(by_region)}, hidden photos {hidden}, candidate labels {labelled}")
 
     sp = add("inbox-feedback", cmd_inbox_feedback, "weekly: votes and reviews from the app -> content/community")
     sp.add_argument("--inbox", required=True)

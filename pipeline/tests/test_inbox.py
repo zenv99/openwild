@@ -122,6 +122,48 @@ def test_names_merge_keeps_every_local_name():
     assert nm.best_common_name(m, nm.local_languages("ID-BA")) == "Jaba"
 
 
+def test_suggested_names_stay_untrusted_until_reviewed(tmp_path, monkeypatch):
+    monkeypatch.setattr(ib, "COMMUNITY", tmp_path / "community")
+    raw = {
+        "kind": "wrong", "predicted": "Nephrolepis cordifolia", "guess": "bird's nest fern",
+        "suggested": "Asplenium nidus", "note": "in a pot indoors", "status": "trusted",
+        "top_matches": "Nephrolepis cordifolia 40%", "model": "ow-dinov2s-384-v1",
+        "embeddings": [[0.1, 0.2]], "share_location": False, "photos": [],
+    }
+    row = ib.candidate_from_report(raw, "ID-BA", "asplenium nidus", "reports/ID-BA/x/abc", "2026-11-18")
+    assert row["status"] == "review"
+    assert row["matched"] == "asplenium nidus"
+    assert row["suggested"] == "Asplenium nidus"
+    assert row["share_location"] == "no"
+    assert "lat" not in row
+    ib.save_candidates("ID-BA", [row])
+    assert ib.fingerprint_jobs("ID-BA") == []
+    reviewed = dict(row, status="reviewed")
+    ib.save_candidates("ID-BA", [reviewed])
+    jobs = ib.fingerprint_jobs("ID-BA")
+    assert len(jobs) == 1 and jobs[0]["matched"] == "asplenium nidus" and jobs[0]["status"] == "reviewed"
+    # a reviewed row with no resolved species is not a fingerprint job
+    ib.save_candidates("ID-BA", [dict(row, status="reviewed", matched="", source="reports/ID-BA/x/other")])
+    assert len(ib.fingerprint_jobs("ID-BA")) == 1
+    ib.save_candidates("ID-BA", [row])
+    assert len(ib.fingerprint_jobs("ID-BA")) == 1
+
+
+def test_feedback_folder_wrong_id_becomes_a_candidate(tmp_path, monkeypatch):
+    monkeypatch.setattr(ib, "COMMUNITY", tmp_path / "community")
+    inbox = tmp_path / "inbox"
+    f = inbox / "feedback" / "ID-BA" / "asplenium_nidus" / "wrong_abc.json"
+    f.parent.mkdir(parents=True)
+    f.write_text(json.dumps({
+        "kind": "wrong", "region": "ID-BA", "species": "Asplenium nidus",
+        "guess": "Asplenium nidus", "predicted": "Microsorum musifolium", "note": "houseplant",
+    }))
+    rows = ib.wrong_id_feedback(inbox, "2026-11-18")
+    assert len(rows) == 1 and rows[0][0] == "ID-BA" and rows[0][1]["status"] == "review"
+    assert ib.save_candidates("ID-BA", [rows[0][1]]) == 1
+    assert ib.save_candidates("ID-BA", [rows[0][1]]) == 0
+
+
 def test_reports_resolve_names_and_confusions(tmp_path, monkeypatch):
     monkeypatch.setattr(ib, "COMMUNITY", tmp_path / "community")
     names = {"calotropis gigantea": 1, "datura metel": 2}

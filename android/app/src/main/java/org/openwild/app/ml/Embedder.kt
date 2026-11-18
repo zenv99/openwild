@@ -2,6 +2,8 @@ package org.openwild.app.ml
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
+import org.openwild.app.core.Fingerprints
 import org.tensorflow.lite.Interpreter
 import java.io.Closeable
 import java.io.FileInputStream
@@ -74,8 +76,22 @@ class Embedder private constructor(private val interpreter: Interpreter) : Close
     private val input: ByteBuffer = ByteBuffer.allocateDirect(4 * INPUT * INPUT * 3).order(ByteOrder.nativeOrder())
     private val pixels = IntArray(INPUT * INPUT)
 
+    /**
+     * One fingerprint. [careful] looks at several crops (centre, flip, upper band, tighter centre)
+     * and averages them. The pack's prototypes stay the same; only the query changes.
+     * Careful is the default because a phone photo often includes wall, pot and floor.
+     */
     @Synchronized
-    fun embed(bitmap: Bitmap): FloatArray {
+    fun embed(bitmap: Bitmap, careful: Boolean = true): FloatArray {
+        if (!careful) return embedOne(bitmap)
+        val crops = queryCrops(bitmap)
+        val vecs = crops.map { embedOne(it) }
+        for (c in crops) if (c !== bitmap) c.recycle()
+        return Fingerprints.meanUnit(vecs)
+    }
+
+    @Synchronized
+    private fun embedOne(bitmap: Bitmap): FloatArray {
         val square = ImageUtils.centerCropSquare(bitmap, INPUT)
         square.getPixels(pixels, 0, INPUT, 0, 0, INPUT, INPUT)
         input.rewind()
@@ -96,9 +112,24 @@ class Embedder private constructor(private val interpreter: Interpreter) : Close
         return v
     }
 
+    /** Crops of the user's photo. The original bitmap is not recycled here. */
+    private fun queryCrops(bitmap: Bitmap): List<Bitmap> {
+        val w = bitmap.width
+        val h = bitmap.height
+        if (w < 2 || h < 2) return listOf(bitmap)
+        val flip = Bitmap.createBitmap(bitmap, 0, 0, w, h, Matrix().apply { postScale(-1f, 1f, w / 2f, h / 2f) }, true)
+        val upperH = (h * 0.72f).toInt().coerceIn(1, h)
+        val upper = Bitmap.createBitmap(bitmap, 0, 0, w, upperH)
+        val side = (minOf(w, h) * 0.72f).toInt().coerceAtLeast(1)
+        val left = ((w - side) / 2).coerceAtLeast(0)
+        val top = ((h - side) / 2).coerceAtLeast(0)
+        val tight = Bitmap.createBitmap(bitmap, left, top, side.coerceAtMost(w - left), side.coerceAtMost(h - top))
+        return listOf(bitmap, flip, upper, tight)
+    }
+
     /** One dummy inference so the first real identification isn't slowed by lazy initialisation. */
     private fun warmUp() {
-        runCatching { embed(Bitmap.createBitmap(INPUT, INPUT, Bitmap.Config.ARGB_8888)) }
+        runCatching { embed(Bitmap.createBitmap(INPUT, INPUT, Bitmap.Config.ARGB_8888), careful = false) }
     }
 
     override fun close() = interpreter.close()
