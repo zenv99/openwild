@@ -23,9 +23,12 @@ android {
         minSdk = 26
         targetSdk = 35
         // CI stamps every build with a rising number so updaters (Obtainium, F-Droid clients) see new versions.
+        // versionCode stays on that run number. v0.7.89 shipped as 189, and later runs are higher,
+        // so a 1.0 build still installs over it. The displayed name is 1.0.N (1.0.0-dev locally).
         val build = (System.getenv("OW_BUILD_NUMBER") ?: "0").toInt()
         versionCode = 100 + build
-        versionName = if (build > 0) "0.7.$build" else "0.7.0-dev"
+        val releaseName = System.getenv("OW_VERSION_NAME")
+        versionName = if (!releaseName.isNullOrBlank()) releaseName else "1.0.0-dev"
         buildConfigField("String", "PACK_INDEX_URL", "\"$packIndexUrl\"")
         buildConfigField("String", "REPO_URL", "\"$repoUrl\"")
         buildConfigField("String", "LIGHTNING_ADDRESS", "\"$lightningAddress\"")
