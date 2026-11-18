@@ -2,10 +2,14 @@ name: Photo model + region photo pack (free, CPU)
 
 # Free on-phone photo ID with no GPU and no training:
 #  1. exports DINOv2-small (Apache-2.0) to android/app/src/main/assets/embedder.tflite
-#  2. downloads openly licensed reference photos for the region from GBIF
+#  2. downloads reference photos already pinned in data/regions/<id>/photo_manifest.csv
+#     (a full GBIF recrawl is only used for regions that do not have a manifest yet)
 #  3. fingerprints them on CPU and builds the region pack (photos + photo ID + safety info)
 #  4. publishes the pack as a download (GitHub release "packs" + index.json the app reads)
 #  5. commits the model if it changed -> the Android workflow builds a new OpenWild.apk
+#
+# Photo-only updates (no new APK): dispatch this workflow with export_model false.
+# New species photos are added first by photo-batch.yml, not by crawling the whole backlog here.
 on:
   workflow_dispatch:
     inputs:
@@ -57,8 +61,8 @@ jobs:
       - name: Export free model (DINOv2-small -> LiteRT)
         if: inputs.export_model == 'true'
         run: python -m openwild_pipeline.cli free-model
-      - name: Reference photos from GBIF
-        run: python -m openwild_pipeline.cli photos "${{ inputs.region }}" --per-species "${{ inputs.per_species }}" --workers 16
+      - name: Reference photos (pinned credits + weekly manifest; not the unfetched backlog)
+        run: python -m openwild_pipeline.cli photos "${{ inputs.region }}" --per-species "${{ inputs.per_species }}" --workers 4
       - name: Fingerprint photos + build region pack
         run: |
           mkdir -p ../work/out
