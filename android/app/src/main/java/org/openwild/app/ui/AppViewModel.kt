@@ -88,6 +88,10 @@ data class UiState(
     val remoteError: Boolean = false,
     /** The list of downloadable regions is being fetched from GitHub. */
     val remoteLoading: Boolean = false,
+    /** Home-screen reminders about newer downloads (switch in Packs). */
+    val updateReminders: Boolean = true,
+    /** "Not now" on a home-screen offer: region -> the version that was dismissed. */
+    val dismissedUpdates: Map<String, Int> = emptyMap(),
     val downloading: Map<String, Float> = emptyMap(),
     val filter: KingdomFilter = KingdomFilter.ANY,
     val photos: List<Photo> = emptyList(),
@@ -151,7 +155,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val missing = withContext(Dispatchers.Default) { ow.embedder == null }
             val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
             val bundled = withContext(Dispatchers.IO) { ow.packs.bundledCatalog() }
-            _state.update { it.copy(modelMissing = missing, regions = regions, bundled = bundled) }
+            val ui = getApplication<Application>().getSharedPreferences("ui", android.content.Context.MODE_PRIVATE)
+            val dismissed = ui.all.filterKeys { it.startsWith("dismissed_") }
+                .mapNotNull { (k, v) -> (v as? Int)?.let { k.removePrefix("dismissed_") to it } }.toMap()
+            _state.update { it.copy(modelMissing = missing, regions = regions, bundled = bundled,
+                updateReminders = ui.getBoolean("update_reminders", true), dismissedUpdates = dismissed) }
             // First-run suggestion without asking for location: the phone's time zone and region setting.
             if (_state.value.suggestedRegionId == null) {
                 val tz = java.util.TimeZone.getDefault().id
@@ -340,6 +348,31 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setBetterRecognition(on: Boolean) = viewModelScope.launch {
         ow.packs.betterRecognition = on
         loadActivePack()
+    }
+
+    private val uiPrefs get() = getApplication<Application>().getSharedPreferences("ui", android.content.Context.MODE_PRIVATE)
+
+    fun setUpdateReminders(on: Boolean) {
+        uiPrefs.edit().putBoolean("update_reminders", on).apply()
+        _state.update { it.copy(updateReminders = on) }
+    }
+
+    /** Hide the home-screen offer for this version; a newer version is offered again. */
+    fun dismissUpdate(regionId: String, version: Int) {
+        uiPrefs.edit().putInt("dismissed_$regionId", version).apply()
+        _state.update { it.copy(dismissedUpdates = it.dismissedUpdates + (regionId to version)) }
+    }
+
+    /** Better recognition files on this phone: (label, file). */
+    fun upgradeFiles(): List<java.io.File> = ow.packs.upgradeDir.listFiles()?.filter { it.isFile }?.sortedBy { it.name } ?: emptyList()
+
+    /** Delete one Better recognition file (the model deletes everything that depends on it). */
+    fun deleteUpgradeFile(f: java.io.File) {
+        if (f.name.endsWith(".tflite")) { removeUpgrade(); return }
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { f.delete() }
+            loadActivePack()
+        }
     }
 
     fun removeUpgrade() = viewModelScope.launch {

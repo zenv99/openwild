@@ -130,6 +130,14 @@ class RegionPack(file: File) : Closeable {
 
     /** The built-in copy is cut from the full pack (same species, version one lower), so its boost fits too. */
     val isLight: Boolean = meta["light"] == "1"
+
+    /** Plants with at least one real photo of their own (not a relative or museum specimen). */
+    val photoSpeciesCount: Int by lazy {
+        synchronized(dbLock) {
+            db.rawQuery("SELECT COUNT(DISTINCT species_id) FROM photo WHERE stage NOT IN ('related','specimen','exact_specimen')", null)
+                .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+        }
+    }
     fun boostFits(boostVersion: Int): Boolean = boostVersion == version || (isLight && boostVersion == version + 1)
 
     /** Other names for this plant: (language code, name), local languages first, the shown name left out. */

@@ -128,22 +128,49 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
             // The copy inside the app is cut down to fit; the full photo set (every stage of every plant) is one
             // download away from GitHub. Offered here, not only in the Packs tab.
             LaunchedEffect(Unit) { if (org.openwild.app.BuildConfig.ALLOW_NETWORK && state.remote.isEmpty()) vm.refreshRemote() }
-            val fullSet = state.remote.firstOrNull { it.regionId == state.activeRegionId && it.version > state.activePackVersion }
-            if (fullSet != null && bundledUpdate == null) {
-                val pct = state.downloading[fullSet.regionId]
+            // Offer only what this phone doesn't have yet: the full photo set when the smaller "essentials"
+            // download is installed, or a newer version with what's new in it. "Not now" is remembered.
+            val active = vm.pack
+            val remoteForActive = state.remote.firstOrNull { it.regionId == state.activeRegionId }
+            val offer = remoteForActive?.takeIf { r ->
+                r.version > state.activePackVersion &&
+                    (state.dismissedUpdates[r.regionId] ?: 0) < r.version &&
+                    (active?.isLight == true || state.updateReminders)
+            }
+            if (offer != null && bundledUpdate == null && active != null) {
+                val pct = state.downloading[offer.regionId]
+                val light = active.isLight
+                val newPhotos = (offer.photoSpecies - active.photoSpeciesCount).coerceAtLeast(0)
                 Card(
                     Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.full_photos_title, fullSet.name), style = MaterialTheme.typography.titleMedium)
-                        Text(stringResource(R.string.full_photos_body), style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            if (light) stringResource(R.string.full_photos_title, offer.name)
+                            else stringResource(R.string.update_ready_title, offer.name),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            if (light) stringResource(R.string.full_photos_body)
+                            else if (newPhotos > 0) stringResource(R.string.update_ready_body, newPhotos)
+                            else stringResource(R.string.update_ready_body_small),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                         if (pct != null) {
-                            Text(stringResource(R.string.status_downloading_named, fullSet.name, (pct * 100).toInt()), style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.status_downloading_named, offer.name, (pct * 100).toInt()), style = MaterialTheme.typography.bodySmall)
                             LinearProgressIndicator(progress = { pct }, modifier = Modifier.fillMaxWidth())
                         } else {
-                            Button(onClick = { vm.download(fullSet) }) {
-                                Text(stringResource(R.string.full_photos_action, fullSet.name, (fullSet.size / 1_000_000).toInt()))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Button(onClick = { vm.download(offer) }) {
+                                    Text(
+                                        if (light) stringResource(R.string.full_photos_action, offer.name, (offer.size / 1_000_000).toInt())
+                                        else stringResource(R.string.update_ready_action, (offer.size / 1_000_000).toInt())
+                                    )
+                                }
+                                TextButton(onClick = { vm.dismissUpdate(offer.regionId, offer.version) }) {
+                                    Text(stringResource(R.string.not_now))
+                                }
                             }
                         }
                     }
