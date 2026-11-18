@@ -14,7 +14,6 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Zehneria backeri* | 0 |
 | *Tilletia opaca* | 0 |
 | *Meteorium polytrichum* | 0 |
-| *Sphaerostephanos heterocarpus* | 0 |
 | *Lindera polyantha* | 0 |
 | *Adinandra javanica* | 0 |
 | *Gracilaria debilis* | 0 |
@@ -23,9 +22,6 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Drypetes ovalis* | 0 |
 | *Oleandra cumingii* | 0 |
 | *Halicoryne spicata* | 0 |
-| *Neonauclea calycina* | 0 |
-| *Gracilaria longissima* | 0 |
-| *Oreocnide rubescens* | 0 |
 | *Elatostema strigosum* | 0 |
 | *Tetrastigma papillosum* | 0 |
 | *Procris ruhlandii* | 0 |
@@ -57,14 +53,12 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Myrsine porteriana* | 0 |
 | *Acrolejeunea fertilis* | 0 |
 | *Syzygium lineatum* | 0 |
-| *Mallotus rufidulus* | 0 |
 | *Marsypopetalum littorale* | 0 |
 | *Amphiroa crassa* | 0 |
 | *Betaphycus gelatinus* | 0 |
 | *Taxotrophis spinosa* | 0 |
 | *Laurencia mariannensis* | 0 |
 | *Gracilaria corniculata* | 0 |
-| Fan-shaped Jelly Fungus (*Dacrymyces spathularius*) | 0 |
 | *Gymnopus vitellinipes* | 0 |
 | *Trachyspora wurthii* | 0 |
 | *Farysia javanica* | 0 |
@@ -79,7 +73,6 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Microcampylopus khasianus* | 0 |
 | *Floribundaria pseudofloribunda* | 0 |
 | *Diaphanodon blandus* | 0 |
-| *Heliconia nickeriensis* | 0 |
 | *Goodyera bifida* | 0 |
 | *Mussaenda teysmanniana* | 0 |
 | *Pavetta balinensis* | 0 |
@@ -105,7 +98,6 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Laurencia translucida* | 0 |
 | *Laurencia tropica* | 0 |
 | Naat (*Palaquium obtusifolium*) | 0 |
-| *Piper majusculum* | 0 |
 | *Caulerpa occidentalis* | 0 |
 | *Gracilaria hauckii* | 0 |
 | *Nemastoma dichotomum* | 0 |
@@ -132,10 +124,8 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Hypnea cenomyce* | 0 |
 | *Vincetoxicum kerrii* | 0 |
 | *Sohmaea teres* | 0 |
-| *Dibridsonia conferta* | 0 |
 | *Clastobryellina merrillii* | 0 |
 | *Coelogyne pallidiflavens* | 0 |
-| Pink Queen (*Tarenaya houtteana*) | 0 |
 | *Coelogyne sulawesiensis* | 0 |
 | *Halimeda fragilis* | 0 |
 | *Tolypiocladia condensata* | 0 |
@@ -161,7 +151,6 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Acroporium lamprophyllum* | 0 |
 | *Acroporium rufum* | 0 |
 | *Ectropothecium ichnotocladum* | 0 |
-| *Heliconia rauliniana* | 0 |
 | *Coelogyne carnea* | 0 |
 | *Robiquetia dentifera* | 0 |
 | *Habenaria baliensis* | 0 |
@@ -181,7 +170,6 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Hymenophyllum junghuhnii* | 0 |
 | *Melodinus orientalis* | 0 |
 | *Uvaria schizocalyx* | 0 |
-| *Melanococca tomentosa* | 0 |
 | *Garcinia balica* | 0 |
 | *Strobilanthes backeri* | 0 |
 | *Elattostachys verrucosa* | 0 |
@@ -232,14 +220,10 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Strobilanthes timorensis* | 0 |
 | *Ventilago papuana* | 0 |
 | *Diospyros javanica* | 0 |
-| *Beilschmiedia gemmiflora* | 0 |
 | *Gracilaria eucheumatoides* | 0 |
 | *Endiandra macrophylla* | 0 |
-| *Heterostemma acuminatum* | 0 |
-| *Leucodermia leucomelos* | 0 |
 | *Achaetomiella gracilis* | 0 |
 | *Theleporus calcicolor* | 0 |
-| *Tinctoporellus epimiltinus* | 0 |
 | *Penicillium javanicum* | 0 |
 | *Parmotrema pseudonilgherrense* | 0 |
 | *Letrouitia leprolyta* | 0 |
@@ -304,3 +288,19 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Clethra sumbawaensis* | 0 |
 | *Clethra javanica* | 0 |
 | *Begonia semongkatensis* | 0 |
+| *Chloothamnus schmutzii* | 0 |
+| *Chloothamnus reholttumianus* | 0 |
+| *Polytoca hubbardiana* | 0 |
+| *Ridsdalea sundaensis* | 0 |
+| *Coelogyne camelostalix* | 0 |
+| *Marsdenia laurifolia* | 0 |
+| *Schizostachyum purpureum* | 0 |
+| *Aglaia leptantha* | 0 |
+| *Afrohybanthus enneaspermus* | 0 |
+| *Pinalia sumbawensis* | 0 |
+| *Corybas insulifloris* | 0 |
+| *Afrohybanthus verbi-divini* | 0 |
+| *Polyscias paucidens* | 0 |
+| *Achilleanthus schmutzii* | 0 |
+| *Alatiliparis hirundo* | 0 |
+| *Coelogyne cornuta* | 0 |

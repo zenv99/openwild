@@ -1,53 +1,138 @@
 {
- "photos_tested": 25929,
- "species_tested": 3176,
- "species_total": 3283,
+ "photos_tested": 38433,
+ "species_tested": 3195,
+ "species_total": 3301,
  "top_k": {
-  "top1": 0.4954,
-  "top3": 0.6144,
-  "top5": 0.6613,
-  "top10": 0.7206
+  "top1": 0.5241,
+  "top3": 0.6457,
+  "top5": 0.692,
+  "top10": 0.754
  },
- "median_rank": 2.0,
+ "median_rank": 1.0,
  "most_confused": [
-  {
-   "true": "Thelypteris callosa",
-   "shown_first": "Pneumatopteris callosa",
-   "times": 6
-  },
   {
    "true": "Thelypteris heterocarpos",
    "shown_first": "Sphaerostephanos heterocarpos",
-   "times": 6
+   "times": 12
   },
   {
    "true": "Sphaerostephanos heterocarpos",
    "shown_first": "Thelypteris heterocarpos",
-   "times": 6
+   "times": 12
   },
   {
    "true": "Glochidion obscurum",
    "shown_first": "Phyllanthus obscurus",
-   "times": 6
+   "times": 10
   },
   {
    "true": "Microsorum membranifolium",
    "shown_first": "Phymatosorus membranifolius",
-   "times": 6
+   "times": 10
   },
   {
    "true": "Phymatosorus membranifolius",
    "shown_first": "Microsorum membranifolium",
-   "times": 6
+   "times": 10
   },
   {
-   "true": "Vanda tricolor",
-   "shown_first": "Vanda suavis",
-   "times": 6
+   "true": "Thelypteris callosa",
+   "shown_first": "Pneumatopteris callosa",
+   "times": 9
   },
   {
    "true": "Pneumatopteris callosa",
    "shown_first": "Thelypteris callosa",
+   "times": 9
+  },
+  {
+   "true": "Hymenocallis caribaea",
+   "shown_first": "Hymenocallis littoralis",
+   "times": 8
+  },
+  {
+   "true": "Jasminum multiflorum",
+   "shown_first": "Jasminum elongatum",
+   "times": 7
+  },
+  {
+   "true": "Phyllanthus obscurus",
+   "shown_first": "Glochidion obscurum",
+   "times": 7
+  },
+  {
+   "true": "Centrosema pubescens",
+   "shown_first": "Centrosema molle",
+   "times": 7
+  },
+  {
+   "true": "Thelypteris immersa",
+   "shown_first": "Amblovenatum immersum",
+   "times": 7
+  },
+  {
+   "true": "Sieruela rutidosperma",
+   "shown_first": "Cleome rutidosperma",
+   "times": 6
+  },
+  {
+   "true": "Pachystachys spicata",
+   "shown_first": "Pachystachys coccinea",
+   "times": 6
+  },
+  {
+   "true": "Myrica javanica",
+   "shown_first": "Morella javanica",
+   "times": 6
+  },
+  {
+   "true": "Clematis javana",
+   "shown_first": "Clematis gouriana",
+   "times": 6
+  },
+  {
+   "true": "Araucaria heterophylla",
+   "shown_first": "Araucaria columnaris",
+   "times": 6
+  },
+  {
+   "true": "Amblovenatum immersum",
+   "shown_first": "Thelypteris immersa",
+   "times": 6
+  },
+  {
+   "true": "Talipariti tiliaceum",
+   "shown_first": "Hibiscus tiliaceus",
+   "times": 6
+  },
+  {
+   "true": "Hymenocallis littoralis",
+   "shown_first": "Hymenocallis caribaea",
+   "times": 6
+  },
+  {
+   "true": "Marsilea minuta",
+   "shown_first": "Marsilea crenata",
+   "times": 6
+  },
+  {
+   "true": "Cleome rutidosperma",
+   "shown_first": "Sieruela rutidosperma",
+   "times": 6
+  },
+  {
+   "true": "Stachytarpheta cayennensis",
+   "shown_first": "Stachytarpheta urticifolia",
+   "times": 6
+  },
+  {
+   "true": "Morella javanica",
+   "shown_first": "Myrica javanica",
+   "times": 6
+  },
+  {
+   "true": "Cenchrus setaceus",
+   "shown_first": "Cenchrus setosus",
    "times": 6
   },
   {
@@ -56,53 +141,43 @@
    "times": 5
   },
   {
-   "true": "Hymenocallis caribaea",
-   "shown_first": "Hymenocallis littoralis",
+   "true": "Nymphaea nouchali",
+   "shown_first": "Nymphaea rubra",
    "times": 5
   },
   {
-   "true": "Medinilla speciosa",
-   "shown_first": "Medinilla cumingii",
+   "true": "Pachystachys coccinea",
+   "shown_first": "Pachystachys spicata",
    "times": 5
   },
   {
-   "true": "Pachystachys spicata",
-   "shown_first": "Pachystachys coccinea",
+   "true": "Musa \u00d7 paradisiaca",
+   "shown_first": "Musa acuminata",
    "times": 5
   },
   {
-   "true": "Myrica javanica",
-   "shown_first": "Morella javanica",
+   "true": "Stachytarpheta jamaicensis",
+   "shown_first": "Stachytarpheta urticifolia",
    "times": 5
   },
   {
-   "true": "Jasminum multiflorum",
-   "shown_first": "Jasminum elongatum",
+   "true": "Spinifex littoreus",
+   "shown_first": "Spinifex longifolius",
    "times": 5
   },
   {
-   "true": "Vanda suavis",
-   "shown_first": "Vanda tricolor",
+   "true": "Ageratum houstonianum",
+   "shown_first": "Ageratum conyzoides",
    "times": 5
   },
   {
-   "true": "Hymenocallis littoralis",
-   "shown_first": "Hymenocallis caribaea",
+   "true": "Marsilea crenata",
+   "shown_first": "Marsilea minuta",
    "times": 5
   },
   {
-   "true": "Marsilea minuta",
-   "shown_first": "Marsilea crenata",
-   "times": 5
-  },
-  {
-   "true": "Phyllanthus obscurus",
-   "shown_first": "Glochidion obscurum",
-   "times": 5
-  },
-  {
-   "true": "Potamogeton nodosus",
-   "shown_first": "Potamogeton distinctus",
+   "true": "Platycerium grande",
+   "shown_first": "Platycerium wandae",
    "times": 5
   },
   {
@@ -116,300 +191,225 @@
    "times": 5
   },
   {
-   "true": "Passiflora vesicaria",
-   "shown_first": "Passiflora foetida",
+   "true": "Acmella paniculata",
+   "shown_first": "Acmella ciliata",
    "times": 5
   },
   {
-   "true": "Musa acuminata",
-   "shown_first": "Musa \u00d7 paradisiaca",
+   "true": "Parmotrema cristiferum",
+   "shown_first": "Parmotrema tinctorum",
    "times": 5
   },
   {
-   "true": "Morella javanica",
-   "shown_first": "Myrica javanica",
+   "true": "Thunbergia grandiflora",
+   "shown_first": "Thunbergia laurifolia",
    "times": 5
   },
   {
-   "true": "Centrosema pubescens",
-   "shown_first": "Centrosema molle",
+   "true": "Torenia fournieri",
+   "shown_first": "Torenia violacea",
    "times": 5
-  },
-  {
-   "true": "Adiantum raddianum",
-   "shown_first": "Adiantum capillus-veneris",
-   "times": 5
-  },
-  {
-   "true": "Cenchrus setaceus",
-   "shown_first": "Cenchrus setosus",
-   "times": 5
-  },
-  {
-   "true": "Pogostemon auricularius",
-   "shown_first": "Elsholtzia pubescens",
-   "times": 5
-  },
-  {
-   "true": "Nymphaea nouchali",
-   "shown_first": "Nymphaea rubra",
-   "times": 4
-  },
-  {
-   "true": "Pachystachys coccinea",
-   "shown_first": "Pachystachys spicata",
-   "times": 4
-  },
-  {
-   "true": "Ixora finlaysoniana",
-   "shown_first": "Ixora timorensis",
-   "times": 4
-  },
-  {
-   "true": "Musa \u00d7 paradisiaca",
-   "shown_first": "Musa acuminata",
-   "times": 4
-  },
-  {
-   "true": "Saribus rotundifolius",
-   "shown_first": "Borassus flabellifer",
-   "times": 4
-  },
-  {
-   "true": "Laportea interrupta",
-   "shown_first": "Laportea aestuans",
-   "times": 4
-  },
-  {
-   "true": "Vigna radiata",
-   "shown_first": "Vigna reflexopilosa",
-   "times": 4
-  },
-  {
-   "true": "Crotalaria spectabilis",
-   "shown_first": "Crotalaria quinquefolia",
-   "times": 4
-  },
-  {
-   "true": "Anisomeles indica",
-   "shown_first": "Mesosphaerum suaveolens",
-   "times": 4
-  },
-  {
-   "true": "Deeringia amaranthoides",
-   "shown_first": "Rivina humilis",
-   "times": 4
-  },
-  {
-   "true": "Artemisia scoparia",
-   "shown_first": "Artemisia capillaris",
-   "times": 4
-  },
-  {
-   "true": "Gmelina asiatica",
-   "shown_first": "Gmelina elliptica",
-   "times": 4
   }
  ],
  "hardest_species": [
   {
-   "species": "Syzygium cumini",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Phyllanthus reticulatus",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Syzygium paniculatum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Ficus caulocarpa",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Didymocheton gaudichaudianus",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
    "species": "Pipturus argenteus",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Bischofia javanica",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Flacourtia indica",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Vigna radiata",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Oxyceros longiflorus",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Leea nova-guineensis",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Syzygium aromaticum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Lygodium japonicum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Panicum repens",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Flagellaria indica",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Amydrium zippelianum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Paspalum conjugatum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Solanum tuberosum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Adenia heterophylla",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Capparis tomentosa",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Terminalia microcarpa",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Secamone elliptica",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Angiopteris evecta",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Melastoma malabathricum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Excoecaria agallocha",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Cerbera odollam",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Sandoricum koetjape",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Olea paniculata",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Syzygium antisepticum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Dichanthium annulatum",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Ganophyllum falcatum",
-   "photos": 10,
+   "photos": 16,
    "top1": 0.0
   },
   {
    "species": "Ceiba pentandra",
-   "photos": 10,
+   "photos": 16,
    "top1": 0.0
   },
   {
-   "species": "Schleichera oleosa",
-   "photos": 10,
+   "species": "Sandoricum koetjape",
+   "photos": 15,
    "top1": 0.0
   },
   {
-   "species": "Cordia dichotoma",
-   "photos": 10,
+   "species": "Bischofia javanica",
+   "photos": 14,
    "top1": 0.0
   },
   {
-   "species": "Bambusa multiplex",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Hiptage benghalensis",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Ipomoea batatas",
-   "photos": 10,
-   "top1": 0.0
-  },
-  {
-   "species": "Nephrolepis biserrata",
-   "photos": 10,
+   "species": "Angiopteris evecta",
+   "photos": 14,
    "top1": 0.0
   },
   {
    "species": "Diplazium esculentum",
-   "photos": 10,
+   "photos": 13,
    "top1": 0.0
   },
   {
-   "species": "Kalanchoe integra",
-   "photos": 10,
+   "species": "Cinnamomum iners",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Phyllanthus reticulatus",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Thelypteris heterocarpos",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Syzygium paniculatum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus caulocarpa",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Zanthoxylum avicennae",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Vigna radiata",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Deparia japonica",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Sphaerostephanos heterocarpos",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Leea nova-guineensis",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Panicum repens",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Paspalum conjugatum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Adenia heterophylla",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Capparis tomentosa",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Terminalia microcarpa",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Secamone elliptica",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Meniscium macrophyllum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Cleistanthus oblongifolius",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Diplazium bantamense",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Melastoma malabathricum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Dichanthium annulatum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Ganophyllum falcatum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Diplazium dilatatum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Anogramma leptophylla",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Microstegium biaristatum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Schleichera oleosa",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Cordia dichotoma",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Artabotrys suaveolens",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Vincetoxicum flexuosum",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Pleocnemia irregularis",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Reholttumia truncata",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Thelypteris immersa",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Harpullia cupanioides",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Amydrium zippelianum",
+   "photos": 11,
    "top1": 0.0
   }
  ]
