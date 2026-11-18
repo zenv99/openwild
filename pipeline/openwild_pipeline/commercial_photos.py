@@ -719,7 +719,7 @@ MAX_PER_SPECIES = 12
 
 
 MORE_REFS = bool(__import__("os").environ.get("OW_MORE_REFS"))
-MORE_TARGET, MORE_TARGET_RARE = 20, 10   # reference photos per plant in the "more references" pass
+MORE_TARGET, MORE_TARGET_RARE = 30, 12   # pass 2 (Nov 2026): + Pl@ntNet photos   # reference photos per plant in the "more references" pass
 GARDEN_CAP = 6                           # of which garden / potted at most
 
 
@@ -1068,7 +1068,7 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
         for r0 in csv.DictReader(open(csv_path, encoding="utf-8")):
             have[r0["scientific_name"]] = have.get(r0["scientific_name"], 0) + 1
             seen_pages.add(r0.get("page") or "")
-        tdone_path = out_dir / ("morerefs_done.txt" if MORE_REFS else "topup_done.txt")
+        tdone_path = out_dir / ("morerefs2_done.txt" if MORE_REFS else "topup_done.txt")
         tdone = set(tdone_path.read_text(encoding="utf-8").splitlines()) if tdone_path.exists() else set()
         if __import__("os").environ.get("OW_TOPUP_FRESH"):  # monthly refresh: look again for new open photos
             tdone = set()
@@ -1096,7 +1096,7 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
                 for p in photos:
                     w.writerow({k: p.get(k, "") for k in fields})
             if topup:
-                with open(out_dir / ("morerefs_done.txt" if MORE_REFS else "topup_done.txt"), "a", encoding="utf-8") as f:
+                with open(out_dir / ("morerefs2_done.txt" if MORE_REFS else "topup_done.txt"), "a", encoding="utf-8") as f:
                     f.write(name + "\n")
             elif photos:  # species with nothing yet are retried on the next run
                 with open(done_path, "a", encoding="utf-8") as f:
@@ -1343,7 +1343,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     return dest
 
 
-REF_PAGES = 24   # reference photos per plant that Better recognition fingerprints (only 12 are shipped as pictures)
+REF_PAGES = 30   # reference photos per plant that Better recognition fingerprints (only 12 are shipped as pictures)
 
 
 def _write_refpages(pack: Path, by: dict) -> None:
