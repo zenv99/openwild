@@ -221,7 +221,13 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
     }
     var viewerAt by remember(i) { mutableStateOf<Int?>(null) }
     if (photos.isEmpty()) {
-        NeedPhotoBox(Modifier.fillMaxWidth().height(220.dp), big = true, onClick = onAdd?.let { { it(null) } })
+        val flags = pack.safety[i]
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (flags?.isDeadly == true || flags?.toxicity == "serious") {
+                DangerBadge(flags, fungus = pack.species.isFungus[i])
+            }
+            NeedPhotoBox(Modifier.fillMaxWidth().height(220.dp), big = true, onClick = onAdd?.let { { it(null) } })
+        }
         return
     }
     val pager = rememberPagerState { photos.size }
@@ -239,6 +245,12 @@ fun SpeciesPhotoHeader(pack: RegionPack, i: Int, name: String, onAdd: ((String?)
                 }
             }
             PagerDots(photos.size, pager.currentPage, Modifier.align(Alignment.BottomCenter).padding(bottom = 14.dp))
+            val flags = pack.safety[i]
+            if (flags?.isDeadly == true || flags?.toxicity == "serious") {
+                Box(Modifier.align(Alignment.TopEnd).padding(10.dp)) {
+                    DangerBadge(flags, fungus = pack.species.isFungus[i])
+                }
+            }
             if (onAdd != null) {
                 AddPhotoPill(Modifier.align(Alignment.BottomEnd).padding(10.dp)) { onAdd(null) }
             }
