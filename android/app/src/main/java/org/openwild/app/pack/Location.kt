@@ -35,6 +35,7 @@ object Location {
                     DoubleArray(4) { k -> b.getDouble(k) }
                 },
                 continent = r.optString("continent", ""),
+                parentId = r.optString("parent", "").ifBlank { null },
             )
         }
     } catch (e: Exception) {

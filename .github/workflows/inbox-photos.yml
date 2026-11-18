@@ -116,8 +116,9 @@ jobs:
           fi
           # 2. Inbox: remove accepted and rejected submissions, move review ones to review/.
           cd ../inbox
+          # Feedback JSON stays in the inbox bucket. Votes are copied into the app repo and de-duplicated
+          # there; deleting them here would throw away the only copy of a user's report.
           for f in $(jq -r '.accept[].folder, .reject[].folder' /tmp/result.json); do git rm -rq "$f" || true; done
-          [ -f /tmp/feedback.json ] && for f in $(jq -r '.files[]' /tmp/feedback.json); do git rm -q "$f" || true; done
           for f in $(jq -r '.review[].folder' /tmp/result.json); do
             case "$f" in review/*) ;; *) mkdir -p "review/$(dirname "${f#inbox/}")"; git mv "$f" "review/${f#inbox/}";; esac
           done

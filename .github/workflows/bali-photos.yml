@@ -168,6 +168,7 @@ jobs:
           path: |
             work/photos_commercial/${{ inputs.region }}/photos-shard${{ matrix.shard }}.csv
             work/photos_commercial/${{ inputs.region }}/status-shard${{ matrix.shard }}.txt
+            work/photos_commercial/${{ inputs.region }}/walk-shard${{ matrix.shard }}.txt
             work/photos_commercial/${{ inputs.region }}/img
           retention-days: 3
 
@@ -347,7 +348,8 @@ jobs:
               pass
           prog = json.load(open("work/idx/photo-progress.json"))
           e = prog.get(r, {})
-          e.update({"mode": mode, "budget_hit": "budget" in st or not st, "top1": acc, "updated": time.strftime("%Y-%m-%dT%H:%MZ", time.gmtime()),
+          more = any(open(f).read().strip() == "1" for f in glob.glob(f"work/photos_commercial/{r}/walk-shard*.txt"))
+          e.update({"mode": mode, "budget_hit": "budget" in st or not st, "more": more, "top1": acc, "updated": time.strftime("%Y-%m-%dT%H:%MZ", time.gmtime()),
                     "passes": e.get("passes", 0) + 1, "topups": e.get("topups", 0) + (mode == "topup"),
                     # level 2 = built with the Bali treatment: specimen/relative fill, sheet filter, essentials
                     "level": 2})
