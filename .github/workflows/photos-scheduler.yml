@@ -37,8 +37,10 @@ jobs:
           MAX_ACTIVE, CAP, PHOTOS, MAX_TOPUPS = 1, "5000", "12", 4   # 12 photos/plant, as Bali
           # Nearest to Bali first, then the rest smallest first (quick wins).
           FIRST = ["ID", "TL", "MY", "SG", "BN", "PH", "TH", "VN", "KH", "LA", "MM", "PG", "AU", "FJ", "NZ",
-                   "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US-HI"]
-          SKIP = {"WORLD"}
+                   "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US"]
+          # Sub-country packs are not built or offered on their own. Their data is folded into the
+          # country pack (Bali into Indonesia, California / Hawaii / Alaska into the United States).
+          SKIP = {"WORLD", "ID-BA", "US-CA", "US-HI", "US-AK"}
           REFRESH_DAYS = 30
           idx = json.load(open("/tmp/s/index.json"))["packs"]
           try:
@@ -46,6 +48,7 @@ jobs:
           except Exception:
               prog = {}
           size = {p["region_id"]: p["species_count"] for p in idx}
+          photo = {p["region_id"]: p.get("photo_species") or 0 for p in idx}
           order = [r for r in FIRST if r in size] + sorted((r for r in size if r not in FIRST and r not in SKIP), key=size.get)
           runs = json.load(open("/tmp/s/runs.json"))
           # Don't start a region while a BioCLIP 2 file is still being built (keeps load low).
@@ -68,16 +71,18 @@ jobs:
           for r in order:
               if slots <= 0:
                   break
-              if r in active or r in broken:
+              if r in active or r in broken or r in SKIP:
                   continue
               e = prog.get(r)
               fresh = False
-              if r == "ID-BA":
-                  continue  # Bali is maintained by its own runs
+              if r in SKIP:
+                  continue
               if e is None:
                   topup = False
               elif e["mode"] == "full" and e.get("budget_hit"):
                   topup = False
+              elif e["mode"] == "full" and e.get("more"):
+                  topup = False  # this batch finished; more species are still untried
               elif e["mode"] == "full":
                   topup = True
               elif e.get("budget_hit") and e.get("topups", 0) < MAX_TOPUPS:

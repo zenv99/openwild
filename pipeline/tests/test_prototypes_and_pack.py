@@ -111,15 +111,39 @@ def test_load_curated_strict_raises(tmp_path):
 
 
 def test_regions_locate():
+    from openwild_pipeline.regions import names_not_in_parent, suggest
+
     regions = load_regions()
     assert locate(regions, 121.0, 14.6).id == "PH"         # Manila
-    assert locate(regions, 115.2, -8.65).id == "ID-BA"     # Bali
+    assert locate(regions, 115.2, -8.65).id == "ID-BA"     # Bali, the finer pack, is still found
     assert locate(regions, 106.8, -6.2).id == "ID"         # Jakarta
     assert locate(regions, -122.4, 37.8).id == "US-CA"     # San Francisco
     assert locate(regions, -30.0, 0.0).id == "WORLD"       # mid-Atlantic -> world pack
     assert locate(regions, -74.0, 40.7).id == "US"         # New York
     assert locate(regions, -157.8, 21.3).id == "US-HI"     # Honolulu
     assert len(regions) >= 60
+    # Downloads are countries. Bali, California and Hawaii stay in the file but are not offered.
+    country, finer = suggest(regions, 115.2, -8.65)
+    assert country.id == "ID" and finer is None
+    country, finer = suggest(regions, -122.4, 37.8)
+    assert country.id == "US" and finer is None
+    country, finer = suggest(regions, -157.8, 21.3)
+    assert country.id == "US" and finer is None
+    country, finer = suggest(regions, 121.0, 14.6)
+    assert country.id == "PH" and finer is None
+    assert names_not_in_parent({"A", "b"}, {"a"}) == {"b"}
+    from openwild_pipeline.regions import merged_donors, union_photo_rows, union_species_rows
+    assert "ID-BA" in merged_donors("ID", regions)
+    assert "US-HI" in merged_donors("US", regions)
+    assert merged_donors("PH", regions) == []
+    assert [r["scientific_name"] for r in union_species_rows(
+        [{"scientific_name": "A"}], [{"scientific_name": "a"}, {"scientific_name": "B"}],
+    )] == ["A", "B"]
+    assert len(union_photo_rows([
+        {"scientific_name": "A", "page": "http://x"},
+        {"scientific_name": "A", "page": "http://x"},
+        {"scientific_name": "A", "page": "http://y"},
+    ])) == 2
 
 
 def test_build_pack_stores_display_photos(tmp_path):

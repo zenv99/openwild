@@ -522,14 +522,15 @@ def from_inaturalist_garden(scientific: str, want: int = 30) -> list[dict]:
 
 
 def from_inaturalist(scientific: str, want: int = 30) -> list[dict]:
-    """Open-licence photos straight from iNaturalist observations (research grade and needs-ID), most-voted
-    first, with growth stage from the observers' phenology annotations. Only used when the app is non-commercial."""
+    """Open-licence photos from iNaturalist research-grade observations, most-voted first, with growth
+    stage from the observers' phenology annotations. Needs-ID observations are not used as a photo of
+    this species (a Bali report flagged one). Only used when the app is non-commercial."""
     if not config.ALLOW_INATURALIST:
         return []
     try:
         data = get_json(INAT_API, {
             "taxon_name": scientific, "photos": "true", "photo_license": INAT_LICENSES,
-            "quality_grade": "research,needs_id", "per_page": str(want), "order_by": "votes",
+            "quality_grade": "research", "per_page": str(want), "order_by": "votes",
         }, retries=2, timeout=40)
     except Exception as e:  # noqa: BLE001
         print(f"inat {scientific} failed: {e!r}", flush=True)
@@ -1029,6 +1030,25 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, cr
 TIMING = bool(__import__("os").environ.get("OW_TIMING"))
 
 
+def select_photo_batch(
+    rows: list[dict], tried: set[str], max_species: int | None, spread: bool = False,
+) -> tuple[list[dict], bool]:
+    """Next species to photograph.
+
+    Names already attempted (`tried`) are skipped, then at most `max_species` are taken. The second
+    value is true when more untried species remain, so the next run continues down the list instead
+    of photographing the same head of the list again. Spread samples across the whole list for tests
+    and does not resume.
+    """
+    if max_species and spread:
+        step = max(1, len(rows) // max_species)
+        return rows[::step][:max_species], False
+    pending = [r for r in rows if r["scientific_name"] not in tried]
+    if max_species:
+        return pending[:max_species], len(pending) > max_species
+    return pending, False
+
+
 def _take_preview(cands: list[dict]) -> set[str]:
     return {c["stage"] for c in cands if c["stage"] in STAGES or c["stage"] == "field"}
 
@@ -1043,10 +1063,6 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     if shard:
         i, n = shard
         rows = rows[i::n]  # interleaved, so every shard gets common and rare species alike
-    if max_species:
-        # OW_SPREAD=1 samples across the whole list (rare species too), for realistic test runs.
-        step = max(1, len(rows) // max_species) if __import__("os").environ.get("OW_SPREAD") else 1
-        rows = rows[::step][:max_species]
     descriptions = {}
     if (d / "descriptions.csv").exists():
         descriptions = {r["scientific_name"].lower(): r for r in csv.DictReader(open(d / "descriptions.csv", encoding="utf-8"))}
@@ -1054,6 +1070,20 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     out_dir = config.WORK / "photos_commercial" / region
     img_dir = out_dir / "img"
     out_dir.mkdir(parents=True, exist_ok=True)
+    import os as _os
+    topup = bool(_os.environ.get("OW_TOPUP"))
+    tried_path = out_dir / "tried.txt"
+    # A capped run used to repeat the same most-observed species forever. Skip names already attempted
+    # and take the next batch; walk-shardN.txt tells the scheduler whether the list continues.
+    if not topup:
+        tried = set(tried_path.read_text(encoding="utf-8").splitlines()) if tried_path.exists() else set()
+        rows, more = select_photo_batch(rows, tried, max_species, spread=bool(_os.environ.get("OW_SPREAD")))
+    else:
+        more = False
+        if max_species and _os.environ.get("OW_SPREAD"):
+            rows, _ = select_photo_batch(rows, set(), max_species, spread=True)
+    shard_i = shard[0] if shard else 0
+    (out_dir / f"walk-shard{shard_i}.txt").write_text("1\n" if more else "0\n")
     done_path = out_dir / "done.txt"
     done = set(done_path.read_text(encoding="utf-8").splitlines()) if done_path.exists() else set()
     csv_path = out_dir / "photos.csv"
@@ -1061,7 +1091,6 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
     if not csv_path.exists():
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             csv.DictWriter(f, fieldnames=fields).writeheader()
-    topup = bool(__import__("os").environ.get("OW_TOPUP"))
     have: dict[str, int] = {}
     seen_pages: set[str] = set()
     if topup:
@@ -1098,9 +1127,14 @@ def fetch_commercial_photos(region: str, max_species: int | None = None, shard: 
             if topup:
                 with open(out_dir / ("morerefs2_done.txt" if MORE_REFS else "topup_done.txt"), "a", encoding="utf-8") as f:
                     f.write(name + "\n")
-            elif photos:  # species with nothing yet are retried on the next run
-                with open(done_path, "a", encoding="utf-8") as f:
+            else:
+                # Attempted, even with no usable photo, so the next capped batch moves on.
+                # Species that did get photos stay in done.txt and are not collected twice.
+                with open(tried_path, "a", encoding="utf-8") as f:
                     f.write(name + "\n")
+                if photos:
+                    with open(done_path, "a", encoding="utf-8") as f:
+                        f.write(name + "\n")
             finished["n"] += 1
             if finished["n"] % 25 == 0:
                 print(f"{finished['n']}/{len(rows)} species", flush=True)
@@ -1143,13 +1177,24 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     photos = list(csv.DictReader(open(photos_path, encoding="utf-8"))) if photos_path.exists() else []
     # Community photos (users' own, CC BY 4.0) go first, so they become each plant's cover and lead the gallery.
     from .community import load as load_community
+    from .inbox import hidden_photos
+    from .regions import merged_donors, union_photo_rows
+
     community = load_community(region_id)
+    hidden = hidden_photos(region_id)
+    donors = merged_donors(region_id)
+    for donor in donors:
+        extra = config.WORK / "photos_commercial" / donor / "photos.csv"
+        if extra.exists():
+            photos.extend(csv.DictReader(open(extra, encoding="utf-8")))
+        community.extend(load_community(donor))
+        hidden |= hidden_photos(donor)
     if community:
         print(f"COMMUNITY {len(community)} photos for {len({r['scientific_name'].lower() for r in community})} species", flush=True)
-    photos = community + photos
+    if donors:
+        print(f"MERGED photos from {', '.join(donors)} into {region_id}", flush=True)
+    photos = union_photo_rows(community + photos)
     # Photos people in the app said show the wrong plant (weekly feedback) are left out.
-    from .inbox import hidden_photos
-    hidden = hidden_photos(region_id)
     if hidden:
         before = len(photos)
         photos = [p for p in photos if (p.get("page") or "") not in hidden and (p.get("url") or "") not in hidden]
@@ -1211,6 +1256,15 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     # A poisonous or edible plant with no photo of its own gets display-only photos of its closest relative
     # (same genus, most photos), clearly labelled "related species". Never used for photo ID.
     species_rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
+    from .regions import merged_donors, union_species_rows
+    for donor in merged_donors(region_id):
+        extra = config.DATA_REGIONS / donor / "species.csv"
+        if extra.exists():
+            species_rows = union_species_rows(species_rows, list(csv.DictReader(open(extra, encoding="utf-8"))))
+        ddesc = config.DATA_REGIONS / donor / "descriptions.csv"
+        if ddesc.exists():
+            for row in csv.DictReader(open(ddesc, encoding="utf-8")):
+                descs.setdefault((row.get("scientific_name") or "").lower(), row)
     critical = safety_species(species_rows)
     by_genus: dict[str, list[str]] = defaultdict(list)
     for k, v in by.items():

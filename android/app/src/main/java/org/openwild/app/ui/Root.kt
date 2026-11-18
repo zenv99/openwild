@@ -43,6 +43,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -73,6 +76,7 @@ fun OpenWildRoot(vm: AppViewModel = viewModel()) {
 
 @Composable
 private fun RootBody(state: UiState, vm: AppViewModel) {
+    var opened by rememberSaveable { mutableStateOf(false) }
 
     // Location is never requested automatically: only when the user taps "Use my location".
 
@@ -92,6 +96,10 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
 
     if (!state.bootstrapped) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        return
+    }
+    if (!opened) {
+        MushroomOpening(onContinue = { opened = true })
         return
     }
     if (state.activeRegionName == null) {

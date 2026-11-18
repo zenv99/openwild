@@ -5,8 +5,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.foundation.layout.aspectRatio
-import org.openwild.app.ui.PhotoMorph
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.platform.LocalContext
+import org.openwild.app.ui.ForestBackdrop
+import org.openwild.app.ui.GlassPanel
+import org.openwild.app.ui.motionAllowed
 import org.openwild.app.core.Tier
 import org.openwild.app.ui.SpeciesTile
 import androidx.compose.runtime.remember
@@ -35,7 +40,13 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -68,51 +79,63 @@ import org.openwild.app.ui.theme.Lime
 
 @Composable
 fun HomeScreen(state: UiState, vm: AppViewModel) {
-    val canIdentify = state.activeRegionName != null && !state.modelMissing && state.photoIdReady
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        // ---------- Hero ----------
-        Box(
-            Modifier.fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                .background(HeroGradient)
-                .padding(horizontal = 20.dp, vertical = 24.dp),
+    val regionOn = state.activeRegionName != null
+    val canPhoto = regionOn && state.brainOn && !state.modelMissing && state.photoIdReady
+    val scroll = rememberScrollState()
+    val motion = motionAllowed(LocalContext.current)
+    Box(Modifier.fillMaxSize().background(Color(0xFF04140F))) {
+        ForestBackdrop(scroll.value.toFloat(), motion, Modifier.fillMaxSize())
+        Column(
+            Modifier.fillMaxSize().verticalScroll(scroll)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall, color = Color.White)
-                Text(stringResource(R.string.tagline), style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.85f))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Pill(
-                        text = state.activeRegionName?.let { stringResource(R.string.region_pill, it, state.activeSpeciesCount) }
-                            ?: stringResource(R.string.no_region_pill),
-                        fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
-                    )
-                }
-                // Landing art (Zen V's vision): a real fly agaric whose flecks lift off and become leaves and fruit
-                PhotoMorph(Modifier.fillMaxWidth().aspectRatio(1.25f).clip(RoundedCornerShape(24.dp)))
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall, color = Color.White)
+            Text(stringResource(R.string.tagline), style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.85f))
+            Pill(
+                text = state.activeRegionName?.let { stringResource(R.string.region_pill, it, state.activeSpeciesCount) }
+                    ?: stringResource(R.string.no_region_pill),
+                fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
+            )
+            Text(
+                stringResource(R.string.landing_art_credit),
+                color = Color.White.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Spacer(Modifier.height(168.dp))
+            GlassPanel {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(
                         Modifier.clip(CircleShape)
-                            .background(if (canIdentify) Lime else Color.White.copy(alpha = 0.3f))
-                            .clickable(enabled = canIdentify) { vm.startCapture() }
+                            .background(
+                                when {
+                                    canPhoto -> Lime
+                                    regionOn -> Lime.copy(alpha = 0.75f)
+                                    else -> Color.White.copy(alpha = 0.3f)
+                                },
+                            )
+                            .clickable(enabled = regionOn) { vm.startCapture() }
                             .padding(horizontal = 28.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = ForestDeep, modifier = Modifier.size(28.dp))
                         Spacer(Modifier.width(10.dp))
-                        Text(stringResource(R.string.identify), color = ForestDeep, fontWeight = FontWeight.ExtraBold, style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            stringResource(R.string.identify),
+                            color = ForestDeep,
+                            fontWeight = FontWeight.ExtraBold,
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
-                Text(
-                    stringResource(R.string.works_offline),
-                    color = Color.White.copy(alpha = 0.75f),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Text(stringResource(R.string.works_offline), color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
+                LegacyPackOffer(state, vm)
+                OnThisPhone(state, vm)
             }
-        }
-
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            if (state.activeRegionName != null && (state.modelMissing || !state.photoIdReady)) {
+            GlassPanel {
+                Text(stringResource(R.string.explore), color = Color.White, style = MaterialTheme.typography.titleMedium)
+            if (state.activeRegionName != null && state.brainOn && (state.modelMissing || !state.photoIdReady)) {
                 WarningBox(stringResource(R.string.model_missing), danger = false)
             }
             if (state.activeRegionName == null) {
@@ -177,7 +200,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 }
             }
             state.suggestedRegion?.let {
-                Text(stringResource(R.string.suggested_region, it), style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.suggested_region, it), color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodySmall)
             }
 
             // ---------- Quick tiles ----------
@@ -192,6 +215,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                     Modifier.weight(1f), Icons.Filled.HealthAndSafety, Leaf, stringResource(R.string.survival_guide),
                     stringResource(R.string.tile_survival_sub), enabled = state.activeRegionName != null,
                 ) { vm.go(Screen.Survival) }
+            }
             }
 
             // ---------- Photo rows: food and deadly species of this region ----------
@@ -266,6 +290,152 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
             }
             Footer()
         }
+    }
+}
+
+@Composable
+private fun LegacyPackOffer(state: UiState, vm: AppViewModel) {
+    state.installed.forEach { installed ->
+        val info = state.regions.firstOrNull { it.id == installed.regionId && it.hidden } ?: return@forEach
+        val parent = state.regions.firstOrNull { it.id == info.parentId && !it.hidden } ?: return@forEach
+        val haveParent = state.installed.any { it.regionId == parent.id }
+        if (haveParent) return@forEach
+        val remote = state.remote.firstOrNull { it.regionId == parent.id }
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                stringResource(R.string.legacy_pack_offer, installed.name, parent.name),
+                color = Color.White,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            if (remote != null) {
+                Button(onClick = { vm.download(remote) }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
+            } else {
+                TextButton(onClick = { vm.tab(Screen.Packs) }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OnThisPhone(state: UiState, vm: AppViewModel) {
+    var deleteRegion by remember { mutableStateOf<String?>(null) }
+    var deleteBrain by remember { mutableStateOf(false) }
+    val mb = { bytes: Long -> if (bytes <= 0L) "—" else "%.0f MB".format(bytes / 1_000_000.0) }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(stringResource(R.string.on_this_phone), color = Color.White, style = MaterialTheme.typography.titleMedium)
+        Card(
+            Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        ) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.brain_title), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            stringResource(R.string.brain_body, state.modelId.ifBlank { "ow-dinov2s-384-v1" }),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            if (state.brainBytes > 0) stringResource(R.string.brain_built_in, (state.brainBytes / 1_000_000L).toString())
+                            else stringResource(R.string.brain_missing_size),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = state.brainOn,
+                        onCheckedChange = vm::setBrainOn,
+                        colors = SwitchDefaults.colors(checkedTrackColor = Leaf),
+                    )
+                }
+                TextButton(onClick = { deleteBrain = true }, enabled = state.brainOn) {
+                    Text(stringResource(R.string.brain_delete))
+                }
+            }
+        }
+        if (state.installed.isEmpty()) {
+            Text(stringResource(R.string.no_region_on_phone), style = MaterialTheme.typography.bodySmall)
+        }
+        state.installed.forEach { installed ->
+            val on = installed.regionId in state.enabledRegionIds
+            val explore = on && installed.regionId == state.activeRegionId
+            Card(
+                Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            ) {
+                Row(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(installed.name, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            stringResource(R.string.region_row_meta, installed.version, mb(installed.file.length()), installed.speciesCount),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            stringResource(if (installed.photoId) R.string.region_has_photos else R.string.region_names_only),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        if (on) {
+                            Text(
+                                stringResource(if (explore) R.string.region_explore_focus else R.string.region_also_on),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Leaf,
+                            )
+                        }
+                        val info = state.regions.firstOrNull { it.id == installed.regionId && it.hidden }
+                        val parent = info?.parentId?.let { id -> state.regions.firstOrNull { it.id == id } }
+                        if (parent != null && state.installed.any { it.regionId == parent.id }) {
+                            Text(
+                                stringResource(R.string.legacy_pack_remove, parent.name, installed.name),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Lime,
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = on,
+                        onCheckedChange = { vm.setRegionEnabled(installed.regionId, it) },
+                        colors = SwitchDefaults.colors(checkedTrackColor = Leaf),
+                    )
+                    IconButton(onClick = { deleteRegion = installed.regionId }) {
+                        Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.region_delete))
+                    }
+                }
+            }
+        }
+    }
+    deleteRegion?.let { id ->
+        val pack = state.installed.firstOrNull { it.regionId == id }
+        AlertDialog(
+            onDismissRequest = { deleteRegion = null },
+            title = { Text(stringResource(R.string.region_delete_title, pack?.name ?: id)) },
+            text = { Text(stringResource(R.string.region_delete_body, mb(pack?.file?.length() ?: 0L))) },
+            confirmButton = {
+                TextButton(onClick = {
+                    deleteRegion = null
+                    vm.deletePack(id)
+                }) { Text(stringResource(R.string.region_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteRegion = null }) { Text(stringResource(R.string.not_now)) }
+            },
+        )
+    }
+    if (deleteBrain) {
+        AlertDialog(
+            onDismissRequest = { deleteBrain = false },
+            title = { Text(stringResource(R.string.brain_delete_title)) },
+            text = { Text(stringResource(R.string.brain_delete_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    deleteBrain = false
+                    vm.deleteBrain()
+                }) { Text(stringResource(R.string.brain_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteBrain = false }) { Text(stringResource(R.string.not_now)) }
+            },
+        )
     }
 }
 

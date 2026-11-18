@@ -38,7 +38,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.openwild.app.R
@@ -81,22 +84,42 @@ fun WarningBox(text: String, danger: Boolean = true) {
 }
 
 @Composable
-fun Pill(text: String, fg: Color, bg: Color, icon: ImageVector? = null) {
+fun Pill(
+    text: String,
+    fg: Color,
+    bg: Color,
+    icon: ImageVector? = null,
+    contentDescription: String? = null,
+    singleLine: Boolean = false,
+) {
+    val description = if (contentDescription != null) {
+        Modifier.clearAndSetSemantics { this.contentDescription = contentDescription }
+    } else {
+        Modifier
+    }
     Row(
-        Modifier.clip(CircleShape).background(bg).padding(horizontal = 10.dp, vertical = 4.dp),
+        Modifier.clip(CircleShape).background(bg).then(description).padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
             Icon(icon, contentDescription = null, tint = fg, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
         }
-        Text(text, color = fg, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+        Text(
+            text,
+            color = fg,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+            softWrap = !singleLine,
+            overflow = if (singleLine) TextOverflow.Ellipsis else TextOverflow.Clip,
+        )
     }
 }
 
 /**
- * Safety badge for lists. A reported food use is not a verdict that the plant is safe to eat,
- * and mushrooms never get that badge.
+ * Safety badge for lists and photos. A reported food use is not a verdict that the plant is safe to eat,
+ * and mushrooms never get that badge. The on-photo word is "Food"; the spoken description stays the full phrase.
  */
 @Composable
 fun DangerBadge(flags: RegionPack.SafetyFlags?, fungus: Boolean = false) {
@@ -106,7 +129,13 @@ fun DangerBadge(flags: RegionPack.SafetyFlags?, fungus: Boolean = false) {
         flags.psychoactive -> Pill(stringResource(R.string.badge_psychoactive), Psychedelic, PsychedelicBg)
         flags.toxicity == "serious" -> Pill(stringResource(R.string.badge_toxic), Danger, DangerBg)
         flags.toxicity == "mild" -> Pill(stringResource(R.string.badge_caution), Caution, CautionBg)
-        !fungus && flags.edibility.startsWith("edible") -> Pill(stringResource(R.string.badge_food_reported), Safe, SafeBg)
+        !fungus && flags.edibility.startsWith("edible") -> Pill(
+            stringResource(R.string.badge_food_reported),
+            Safe,
+            SafeBg,
+            contentDescription = stringResource(R.string.badge_food_reported_cd),
+            singleLine = true,
+        )
         else -> Unit
     }
 }

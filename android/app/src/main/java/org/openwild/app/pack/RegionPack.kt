@@ -397,6 +397,14 @@ class RegionPack(file: File) : Closeable {
             0
         }
 
+        fun speciesCount(file: File): Int = try {
+            SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                db.rawQuery("SELECT count(*) FROM species", null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+            }
+        } catch (e: Exception) {
+            0
+        }
+
         /** Read just the meta table (for listing installed packs without loading them). */
         fun readMeta(file: File): Map<String, String>? = try {
             SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->

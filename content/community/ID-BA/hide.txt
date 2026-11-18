@@ -1,0 +1,4 @@
+# Needs-ID iNaturalist observation (not research grade), photographed in Panama.
+# A phone on Bali (app 0.6.63) answered "wrong plant" for this photo of Dieffenbachia seguine.
+# One vote is not enough to hide a photo by itself. This line is the maintainer decision for this report.
+https://www.inaturalist.org/observations/252981438

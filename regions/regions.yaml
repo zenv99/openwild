@@ -4,6 +4,10 @@
 #            (country = ISO 3166-1 alpha-2; gadmGid = GADM level-1 id for subdivisions)
 # - bbox:    one or more [min_lon, min_lat, max_lon, max_lat] boxes used by the app's
 #            offline region locator (smallest containing box wins; user can override).
+# - parent:    optional coarser pack this region sits inside (Bali inside Indonesia,
+#              California inside the United States).
+# - hidden:    true = keep the entry and its data, but do not offer it as a download.
+#              The next build of `parent` absorbs its photos, names, and votes.
 # - max_species: cap on species in the pack (most-observed first)
 #
 # Seed list. Add every country (and subdivisions for very large countries) over time:
@@ -26,6 +30,8 @@ regions:
     max_species: 6000
 
   - id: ID-BA
+    parent: ID
+    hidden: true
     wgsrpd: [LSI]
     continent: "Asia"
     name: "Bali, Indonesia"
@@ -81,6 +87,8 @@ regions:
     max_species: 5000
 
   - id: US-CA
+    parent: US
+    hidden: true
     wgsrpd: [CAL]
     continent: "North & Central America"
     name: California, USA
@@ -113,8 +121,8 @@ regions:
 
   # ---------- Americas ----------
   - {id: US, continent: "North & Central America", name: United States, gbif: {country: US}, bbox: [[-124.8, 24.5, -66.9, 49.4]], max_species: 8000}
-  - {id: US-HI, continent: "Oceania", name: "Hawaii, USA", wgsrpd: [HAW], gbif: {country: US, gadmGid: USA.12_1}, bbox: [[-160.3, 18.9, -154.8, 22.3]], max_species: 4000}
-  - {id: US-AK, continent: "North & Central America", name: "Alaska, USA", gbif: {country: US, gadmGid: USA.2_1}, bbox: [[-170.0, 51.2, -130.0, 71.5]], max_species: 3000}
+  - {id: US-HI, parent: US, hidden: true, continent: "Oceania", name: "Hawaii, USA", wgsrpd: [HAW], gbif: {country: US, gadmGid: USA.12_1}, bbox: [[-160.3, 18.9, -154.8, 22.3]], max_species: 4000}
+  - {id: US-AK, parent: US, hidden: true, continent: "North & Central America", name: "Alaska, USA", gbif: {country: US, gadmGid: USA.2_1}, bbox: [[-170.0, 51.2, -130.0, 71.5]], max_species: 3000}
   - {id: CA, continent: "North & Central America", name: Canada, gbif: {country: CA}, bbox: [[-141.0, 41.7, -52.6, 83.1]], max_species: 6000}
   - {id: MX, continent: "North & Central America", name: Mexico, gbif: {country: MX}, bbox: [[-117.1, 14.5, -86.7, 32.7]], max_species: 8000}
   - {id: GT, continent: "North & Central America", name: Guatemala, wgsrpd: [GUA], gbif: {country: GT}, bbox: [[-92.3, 13.7, -88.2, 17.8]], max_species: 5000}

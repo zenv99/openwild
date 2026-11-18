@@ -109,10 +109,22 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
                         )
                     }
                     Spacer(Modifier.width(12.dp))
-                    ConfidenceRing(res.result.score, tierColor(tier))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        ConfidenceRing(res.result.score, tierColor(tier))
+                        Text(
+                            stringResource(R.string.match_confidence_label),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
+        Text(
+            stringResource(R.string.results_safety_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         if (tier == Tier.LOW) WarningBox(stringResource(R.string.notice_not_confident))
 
         // Opt-in: a slower, more careful check in the cloud against thousands of real photos.

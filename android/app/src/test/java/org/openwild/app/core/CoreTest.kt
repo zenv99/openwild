@@ -141,6 +141,27 @@ class RegionLocatorTest {
         assertEquals("PH", RegionLocator.locate(listOf(world, ph), 121.0, 14.6)?.id)
         assertEquals("WORLD", RegionLocator.locate(listOf(world, ph), -30.0, 0.0)?.id)
     }
+
+    @Test
+    fun countryDownloadSkipsHiddenFinerPacks() {
+        val world = RegionInfo("WORLD", "World", listOf(doubleArrayOf(-180.0, -90.0, 180.0, 90.0)))
+        val indonesia = RegionInfo("ID", "Indonesia", listOf(doubleArrayOf(94.9, -11.1, 141.1, 6.1)))
+        val bali = RegionInfo("ID-BA", "Bali, Indonesia", listOf(doubleArrayOf(114.4, -8.86, 115.72, -8.06)), parentId = "ID", hidden = true)
+        val us = RegionInfo("US", "United States", listOf(doubleArrayOf(-124.8, 24.5, -66.9, 49.4)))
+        val hawaii = RegionInfo("US-HI", "Hawaii, USA", listOf(doubleArrayOf(-160.3, 18.9, -154.8, 22.3)), parentId = "US", hidden = true)
+        val regions = listOf(world, indonesia, bali, us, hawaii)
+        assertEquals("ID-BA", RegionLocator.locate(regions, 115.2, -8.65)?.id)
+        val (baliCountry, baliFiner) = RegionLocator.suggest(regions, 115.2, -8.65)!!
+        assertEquals("ID", baliCountry.id)
+        assertEquals(null, baliFiner)
+        val (hi, hiFiner) = RegionLocator.suggest(regions, -157.8, 21.3)!!
+        assertEquals("US", hi.id)
+        assertEquals(null, hiFiner)
+        val manila = RegionInfo("PH", "Philippines", listOf(doubleArrayOf(116.9, 4.5, 126.7, 21.2)))
+        val (ph, none) = RegionLocator.suggest(listOf(world, manila), 121.0, 14.6)!!
+        assertEquals("PH", ph.id)
+        assertEquals(null, none)
+    }
 }
 
 class PrototypeBatchTest {
@@ -184,5 +205,64 @@ class ProjectionAndGroupTest {
         val v = SafetyPolicy.visibility(Tier.HIGH, genusOnly, isFungus = false, photoCount = 3, hasUndersidePhoto = true)
         assertFalse(v.showBenefits || v.showFeeling)
         assertTrue(Notice.GROUP_LEVEL_ONLY in v.notices)
+    }
+}
+
+class RegionFusionTest {
+    private fun library(regionId: String, names: Array<String>, vectors: ByteArray, owners: IntArray): RegionLibrary {
+        val n = names.size
+        val index = PrototypeIndex(
+            dim = 4,
+            vectors = vectors,
+            scales = FloatArray(owners.size) { 1f / 127f },
+            speciesOf = owners,
+            isText = BooleanArray(owners.size),
+            speciesCount = n,
+        )
+        val species = SpeciesTable(
+            ids = LongArray(n) { it.toLong() },
+            scientificNames = names,
+            commonNames = arrayOfNulls(n),
+            isFungus = BooleanArray(n),
+            obsCounts = IntArray(n) { 10 },
+            months = Array(12) { IntArray(n) { 128 } },
+        )
+        return RegionLibrary(regionId, species, index, ConfidenceParams(temperature = 0.2))
+    }
+
+    @Test
+    fun onePackMatchesIdentifier() {
+        val vecs = byteArrayOf(127, 0, 0, 0, 0, 127, 0, 0)
+        val lib = library("ID", arrayOf("Cocos nucifera", "Rafflesia arnoldii"), vecs, intArrayOf(0, 1))
+        val photo = listOf(floatArrayOf(1f, 0f, 0f, 0f))
+        val direct = Identifier(lib.index, lib.species, lib.params, null).identify(photo, KingdomFilter.ANY, 6)
+        val fused = RegionFusion.identify(listOf(lib), photo, KingdomFilter.ANY, 6, "ID")!!
+        assertEquals(direct.top, fused.result.top)
+        assertEquals(direct.tier, fused.result.tier)
+        assertEquals(direct.score, fused.result.score)
+        assertEquals(direct.probs[direct.top], fused.result.probs[fused.result.top], 1e-9)
+    }
+
+    @Test
+    fun sameSpeciesInTwoPacksIsNotSplit() {
+        val vec = byteArrayOf(127, 0, 0, 0)
+        val bali = library("ID-BA", arrayOf("Cocos nucifera"), vec, intArrayOf(0))
+        val indonesia = library(
+            "ID",
+            arrayOf("Cocos nucifera", "Rafflesia arnoldii"),
+            byteArrayOf(127, 0, 0, 0, 0, 127, 0, 0),
+            intArrayOf(0, 1),
+        )
+        val photo = listOf(floatArrayOf(1f, 0f, 0f, 0f))
+        val split = Confidence.score(
+            arrayOf(doubleArrayOf(1.0, 1.0, 0.0)),
+            doubleArrayOf(kotlin.math.ln(1.0 / 3), kotlin.math.ln(1.0 / 3), kotlin.math.ln(1.0 / 3)),
+            ConfidenceParams(temperature = 0.2),
+        )
+        val fused = RegionFusion.identify(listOf(bali, indonesia), photo, KingdomFilter.ANY, 6, "ID-BA")!!
+        assertEquals("ID-BA", fused.displayRegionId)
+        assertEquals(0, fused.result.top)
+        assertTrue(fused.result.probs[0] > split.probs[0])
+        println("FUSE splitTop=${"%.3f".format(split.probs[0])} fusedTop=${"%.3f".format(fused.result.probs[0])}")
     }
 }

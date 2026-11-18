@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -156,7 +157,13 @@ fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick
                 )
             }
         }
-        Box(Modifier.align(Alignment.TopStart).padding(8.dp)) { DangerBadge(flags, fungus = pack.species.isFungus[i]) }
+        // Inset from the corner. The food chip is one short line so it stays off the plant.
+        Box(
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+                .wrapContentWidth(align = Alignment.Start, unbounded = false),
+        ) { DangerBadge(flags, fungus = pack.species.isFungus[i]) }
         if (pack.photosWanted(i)) PhotosWantedBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
         // Cover borrowed from a related species: say so on the card itself.
         val borrowed = remember(key) { pack.photoCount(i) == 0 }

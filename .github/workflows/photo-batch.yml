@@ -1,0 +1,73 @@
+name: Bali photo batch (weekly, small)
+
+# Adds openly licensed photos for the next slice of Bali species that still lack one.
+# Writes data/regions/ID-BA/photo_manifest.csv and photo_status.csv. Does not build an APK and
+# does not publish a pack — dispatch "Photo model + region photo pack" with export_model false
+# when phones should pick up a new ID-BA.owpack (see REGION_QUEUE.md).
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "Region id. The weekly schedule is Bali only."
+        required: true
+        default: "ID-BA"
+      limit:
+        description: "Species to look up this run"
+        required: true
+        default: "160"
+      max_tier:
+        description: "Optional priority cap (0 = deadly only). Empty means every tier."
+        required: false
+        default: ""
+  schedule:
+    - cron: "23 6 * * 1"   # Mondays 14:23 Bali time
+
+permissions:
+  contents: write
+
+concurrency:
+  group: photo-batch
+  cancel-in-progress: false
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml pillow
+      - name: Next photo batch
+        run: |
+          REGION="${{ inputs.region }}"
+          LIMIT="${{ inputs.limit }}"
+          # Schedule events do not apply workflow_dispatch defaults.
+          if [ -z "$REGION" ]; then REGION=ID-BA; fi
+          if [ -z "$LIMIT" ]; then LIMIT=160; fi
+          EXTRA=""
+          TIER="${{ inputs.max_tier }}"
+          case "$TIER" in
+            "" ) ;;
+            [0-9]|[0-9][0-9]) EXTRA="--max-tier $TIER" ;;
+            *) echo "max_tier must be a number"; exit 1 ;;
+          esac
+          echo "photo-batch $REGION limit $LIMIT $EXTRA"
+          python -m openwild_pipeline.cli photo-batch "$REGION" --limit "$LIMIT" $EXTRA
+      - name: Commit the batch
+        working-directory: .
+        run: |
+          REGION="${{ inputs.region }}"
+          if [ -z "$REGION" ]; then REGION=ID-BA; fi
+          git config user.name "openwild-data-bot"
+          git config user.email "openwild-data-bot@users.noreply.github.com"
+          git add "data/regions/${REGION}/photo_manifest.csv" "data/regions/${REGION}/photo_status.csv"
+          git diff --cached --stat
+          git commit -m "Bali photos: weekly batch for ${REGION}" || echo "No changes"
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
