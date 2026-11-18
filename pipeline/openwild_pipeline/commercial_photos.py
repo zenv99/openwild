@@ -441,6 +441,43 @@ def from_gbif(taxon_key: int, want: int = 15, pages: int = 3) -> list[dict]:
     return out
 
 
+PLANTNET_ORG = "da86174a-a605-43a4-a5e8-53d484152cd3"   # Pl@ntNet (INRIA / UMR AMAP) publisher on GBIF
+
+
+def from_plantnet(taxon_key: int, want: int = 20) -> list[dict]:
+    """Pl@ntNet's own user photos, published openly on GBIF (confirmed by Pl@ntNet, Nov 2026). Asked for
+    directly by publisher: in a plain GBIF search they sit behind millions of iNaturalist records. Many are
+    garden plants, houseplants and close-ups of leaves, flowers and fruit, which is what people photograph."""
+    out: list[dict] = []
+    try:
+        data = get_json(f"{config.GBIF_API}/occurrence/search", {
+            "taxonKey": str(taxon_key), "mediaType": "StillImage", "publishingOrg": PLANTNET_ORG,
+            "limit": str(min(100, want * 2)),
+        }, retries=2)
+    except Exception as e:  # noqa: BLE001
+        print(f"plantnet {taxon_key} failed: {e!r}", flush=True)
+        return out
+    for occ in data.get("results") or []:
+        stage = stage_from_gbif(occ)
+        for media in (occ.get("media") or [])[:2]:
+            ident = media.get("identifier") or ""
+            if (media.get("type") or "StillImage") != "StillImage" or not ident:
+                continue
+            lic = config.photo_license(media.get("license")) or config.photo_license(occ.get("license"))
+            if lic is None:
+                continue
+            out.append({
+                "stage": stage, "license": lic,
+                "observer": ((media.get("rightsHolder") or media.get("creator") or occ.get("recordedBy") or "Pl@ntNet user")[:180]
+                             + " (Pl@ntNet)"),
+                "page": media.get("references") or f"https://www.gbif.org/occurrence/{occ.get('key')}",
+                "url": ident, "source": "plantnet",
+            })
+        if len(out) >= want:
+            break
+    return out
+
+
 INAT_API = "https://api.inaturalist.org/v1/observations"
 INAT_LICENSES = "cc0,cc-by,cc-by-sa,cc-by-nc,cc-by-nc-sa"
 # iNaturalist "Plant Phenology" annotation (attribute 12) -> our growth stages.
@@ -955,6 +992,7 @@ def collect_species(row: dict, wiki: dict, descriptions: dict, img_dir: Path, cr
     key = row.get("gbif_key") or ""
     if key.isdigit():
         step("gbif", lambda: from_gbif(int(key)))
+        step("plantnet", lambda: from_plantnet(int(key), want=20 if MORE_REFS else 8))
     # iNaturalist directly: huge, staged by observers; for species GBIF left short.
     inat_ok = critical or living() == 0 or __import__("os").environ.get("OW_INAT_FULL", "all") == "all" or \
         bool(__import__("os").environ.get("OW_TOPUP"))

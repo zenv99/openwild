@@ -347,6 +347,33 @@ def genus_species_online(genus: str, have: set[str], limit: int = 3) -> list[dic
     return out
 
 
+PLANTNET_ORG = "da86174a-a605-43a4-a5e8-53d484152cd3"
+
+
+def plantnet_photos(scientific: str, want: int = 10) -> list[dict]:
+    """Pl@ntNet users' photos (published openly on GBIF): many garden plants, houseplants and close-ups."""
+    try:
+        m = json.loads(_get("https://api.gbif.org/v1/species/match", {"name": scientific, "strict": "true"}, pace=0.3))
+        if not m.get("usageKey"):
+            return []
+        data = json.loads(_get("https://api.gbif.org/v1/occurrence/search", {
+            "taxonKey": str(m["usageKey"]), "mediaType": "StillImage", "publishingOrg": PLANTNET_ORG,
+            "limit": str(want * 2)}, pace=0.3))
+    except Exception:  # noqa: BLE001
+        return []
+    out = []
+    for occ in data.get("results") or []:
+        med = next((x for x in occ.get("media") or [] if x.get("identifier")), None)
+        lic = (med or {}).get("license") or occ.get("license") or ""
+        if not med or not any(k in lic.lower() for k in ("cc0", "publicdomain", "by/", "by-nc", "by-sa", "cc_by", "cc-by")):
+            continue
+        out.append({"url": med["identifier"], "garden": True, "obs": None,
+                    "credit": f"{med.get('creator') or med.get('rightsHolder') or 'Pl@ntNet user'} (Pl@ntNet, GBIF)"})
+        if len(out) >= want:
+            break
+    return out
+
+
 def _load(url: str):
     from PIL import Image
 
@@ -410,7 +437,8 @@ def identify(model: Model, index: Index, pil_images: list, exclude_obs: set[int]
     ranked = sorted(cands, key=lambda i: -(r1[i]["score"] if r1[i]["score"] is not None else cands[i] - 0.1))
     best5 = ranked[:5]
     for i in best5:
-        more = inat_photos(index.names[i]["scientific_name"], exclude_obs)
+        more = inat_photos(index.names[i]["scientific_name"], exclude_obs) + \
+            plantnet_photos(index.names[i]["scientific_name"])
         seen = {r["url"] for r in refs[i]}
         refs[i] += [r for r in more if r["url"] not in seen]
     r2 = _verify(model, q, {i: refs[i] for i in best5}, cache)
