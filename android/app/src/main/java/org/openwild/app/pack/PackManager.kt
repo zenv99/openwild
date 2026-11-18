@@ -23,6 +23,9 @@ class PackManager(private val context: Context) {
         private const val ENABLED = "enabled_regions"
         private const val BRAIN = "brain_on"
         private const val BRAIN_CHOICE = "brain_choice"
+        private const val BRAIN_MODEL = "brain_model"
+        private const val SCAN_DETAIL = "scan_detail"
+        const val BRAIN_STANDARD = "standard"
         const val BRAIN_CAREFUL = "careful"
         const val BRAIN_FAST = "fast"
         const val BRAIN_BIOCLIP = "bioclip"
@@ -88,20 +91,32 @@ class PackManager(private val context: Context) {
         set(v) = prefs.edit().putBoolean(BRAIN, v).apply()
 
     /**
-     * Which brain Identify uses. "careful" and "fast" are the built-in DINOv2 small model
-     * (several crops, or one). "bioclip" is the optional download and only runs when that
-     * file and a matching region boost are on the phone.
-     * A phone that already turned on better recognition keeps it until the person picks another brain.
+     * Which model Identify uses. "standard" is the model built into the app.
+     * "bioclip" is the optional download, and only runs when that file and a matching
+     * boost for the open pack are on the phone.
      */
-    var brainChoice: String
+    var brainModel: String
         get() {
-            val raw = prefs.getString(BRAIN_CHOICE, null)
-            if (raw == BRAIN_CAREFUL || raw == BRAIN_FAST || raw == BRAIN_BIOCLIP) return raw
-            return if (betterRecognition) BRAIN_BIOCLIP else BRAIN_CAREFUL
+            val raw = prefs.getString(BRAIN_MODEL, null)
+            if (raw == BRAIN_STANDARD || raw == BRAIN_BIOCLIP) return raw
+            val old = prefs.getString(BRAIN_CHOICE, null)
+            return if (old == BRAIN_BIOCLIP || betterRecognition) BRAIN_BIOCLIP else BRAIN_STANDARD
         }
         set(v) {
-            val choice = if (v == BRAIN_FAST || v == BRAIN_BIOCLIP) v else BRAIN_CAREFUL
-            prefs.edit().putString(BRAIN_CHOICE, choice).apply()
+            val model = if (v == BRAIN_BIOCLIP) BRAIN_BIOCLIP else BRAIN_STANDARD
+            prefs.edit().putString(BRAIN_MODEL, model).apply()
+        }
+
+    /** Several looks at the photo, or one. Independent of which model is selected. */
+    var scanCareful: Boolean
+        get() {
+            val raw = prefs.getString(SCAN_DETAIL, null)
+            if (raw == BRAIN_FAST) return false
+            if (raw == BRAIN_CAREFUL) return true
+            return prefs.getString(BRAIN_CHOICE, null) != BRAIN_FAST
+        }
+        set(v) {
+            prefs.edit().putString(SCAN_DETAIL, if (v) BRAIN_CAREFUL else BRAIN_FAST).apply()
         }
 
     /** Bytes of the model shipped inside the app. Zero when this build has no model file. */
@@ -337,7 +352,7 @@ class PackManager(private val context: Context) {
     fun removeUpgrade() {
         upgradeDir.listFiles()?.forEach { it.delete() }
         betterRecognition = false
-        if (brainChoice == BRAIN_BIOCLIP) brainChoice = BRAIN_CAREFUL
+        if (brainModel == BRAIN_BIOCLIP) brainModel = BRAIN_STANDARD
     }
 
     fun delete(regionId: String) {

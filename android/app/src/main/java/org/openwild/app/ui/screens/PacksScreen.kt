@@ -136,7 +136,6 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
             }
         }
         item { InstalledCard(state, vm) }
-        if (BuildConfig.ALLOW_NETWORK) item { BetterRecognitionCard(state, vm) }
         if (BuildConfig.ALLOW_NETWORK && state.remoteError && state.remote.isEmpty()) {
             item { WarningBox(stringResource(R.string.offline_list), danger = false) }
         }
@@ -327,62 +326,3 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
 }
 
 
-/**
- * Optional "Better recognition" (BioCLIP 2): much more accurate, but a large download. Recommended, with the
- * space it needs stated up front. Everything comes from GitHub; nothing is sent.
- */
-@Composable
-private fun BetterRecognitionCard(state: UiState, vm: AppViewModel) {
-    val u = state.upgrade
-    androidx.compose.runtime.LaunchedEffect(state.activeRegionId, state.activePackVersion) { vm.refreshUpgrade() }
-    Card(
-        Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.upgrade_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Text(
-                    stringResource(if (u.active) R.string.upgrade_badge_on else R.string.upgrade_badge_recommended),
-                    color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.clip(androidx.compose.foundation.shape.RoundedCornerShape(50))
-                        .background(MaterialTheme.colorScheme.primary).padding(horizontal = 8.dp, vertical = 3.dp),
-                )
-            }
-            Text(stringResource(R.string.upgrade_body), style = MaterialTheme.typography.bodyMedium)
-            if (!u.modelInstalled) {
-                Text(
-                    stringResource(R.string.upgrade_space, (u.modelMb.takeIf { it > 0 } ?: 350) + u.regionMb),
-                    style = MaterialTheme.typography.bodySmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    color = org.openwild.app.ui.theme.Caution,
-                )
-            }
-            u.error?.let { Text(stringResource(R.string.upgrade_failed, it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
-            val p = u.progress
-            when {
-                p != null -> {
-                    Text(stringResource(R.string.upgrade_downloading, state.activeRegionName ?: "", (p * 100).toInt()), style = MaterialTheme.typography.bodySmall)
-                    LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxWidth())
-                }
-                !u.modelInstalled -> Button(onClick = vm::installUpgrade) {
-                    Text(state.activeRegionName?.let { stringResource(R.string.upgrade_install, it) } ?: stringResource(R.string.upgrade_install_plain))
-                }
-                else -> {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.upgrade_switch), modifier = Modifier.weight(1f))
-                        androidx.compose.material3.Switch(checked = u.on, onCheckedChange = { vm.setBetterRecognition(it) })
-                    }
-                    if (u.on && !u.active) {
-                        if (u.regionAvailable) {
-                            Text(stringResource(R.string.upgrade_region_needed), style = MaterialTheme.typography.bodySmall)
-                            Button(onClick = vm::installUpgrade) { Text(stringResource(R.string.upgrade_region_get, state.activeRegionName ?: "", u.regionMb.coerceAtLeast(1))) }
-                        } else {
-                            Text(stringResource(R.string.upgrade_region_soon), style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                    TextButton(onClick = vm::removeUpgrade) { Text(stringResource(R.string.upgrade_remove)) }
-                }
-            }
-        }
-    }
-}
