@@ -1194,6 +1194,14 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     if donors:
         print(f"MERGED photos from {', '.join(donors)} into {region_id}", flush=True)
     photos = union_photo_rows(community + photos)
+    from .danger_photos import load_pinned
+
+    pinned = load_pinned(region_id)
+    for donor in donors:
+        pinned.extend(load_pinned(donor))
+    if pinned:
+        print(f"DANGER {len(pinned)} pinned deadly/toxic photos", flush=True)
+        photos = union_photo_rows(pinned + photos)
     # Photos people in the app said show the wrong plant (weekly feedback) are left out.
     if hidden:
         before = len(photos)
@@ -1547,6 +1555,23 @@ def _cached_embeddings(paths: list[Path], model: Path, cache: Path) -> np.ndarra
     return np.stack([known[k] for k in keys]).astype(np.float32)
 
 
+def starter_tier(content: dict) -> str:
+    """How many photos the in-app starter pack keeps. Deadly keeps every photo. Toxic is next.
+
+    Pack content uses toxicity serious (and edibility toxic) for a poisonous species. Those used to
+    fall through to the smallest cap, so a toxic plant could lose the picture that identifies it.
+    """
+    tox = (content.get("toxicity") or "").lower()
+    edi = (content.get("edibility") or "").lower()
+    if tox == "deadly" or edi == "deadly":
+        return "deadly"
+    if tox in ("serious", "poisonous", "toxic") or edi == "toxic":
+        return "poison"
+    if edi.startswith("edible"):
+        return "food"
+    return ""
+
+
 def light_pack(full: Path, out: Path, max_bytes: int = 90_000_000) -> dict:
     """The copy bundled inside the app, cut from the full pack so it fits in git (GitHub refuses files over
     100 MB). Every photo of every deadly plant, as many as fit for poisonous plants, then for plants with
@@ -1563,9 +1588,7 @@ def light_pack(full: Path, out: Path, max_bytes: int = 90_000_000) -> dict:
             d = json.loads(js)
         except json.JSONDecodeError:
             continue
-        tox, edi = d.get("toxicity") or "", d.get("edibility") or ""
-        tier[sid] = ("deadly" if tox == "deadly" or edi == "deadly"
-                     else "poison" if tox in ("poisonous", "toxic") else "food" if edi.startswith("edible") else "")
+        tier[sid] = starter_tier(d)
     by = _group(src.execute("SELECT species_id, id FROM photo ORDER BY species_id, rank, id"))
     src.close()
     out.parent.mkdir(parents=True, exist_ok=True)
