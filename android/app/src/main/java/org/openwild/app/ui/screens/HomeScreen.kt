@@ -2,13 +2,8 @@ package org.openwild.app.ui.screens
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.foundation.layout.WindowInsets
@@ -136,11 +131,6 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                     }
                 }
                 Text(stringResource(R.string.works_offline), color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
-            }
-            // Packs and the brain stay in their own block, directly under Identify, on every screen size.
-            GlassPanel {
-                LegacyPackOffer(state, vm)
-                OnThisPhone(state, vm)
             }
             GlassPanel {
                 Text(stringResource(R.string.explore), color = Color.White, style = MaterialTheme.typography.titleMedium)
@@ -287,6 +277,11 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 }
             }
 
+            GlassPanel {
+                LegacyPackOffer(state, vm)
+                OnThisPhone(state, vm)
+            }
+
             Row(
                 Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
                     .clickable(enabled = state.activeRegionName != null) { vm.go(Screen.Credits) }
@@ -325,61 +320,15 @@ private fun LegacyPackOffer(state: UiState, vm: AppViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OnThisPhone(state: UiState, vm: AppViewModel) {
     var deleteRegion by remember { mutableStateOf<String?>(null) }
-    var deleteBrain by remember { mutableStateOf(false) }
+    var removeDownload by remember { mutableStateOf(false) }
+    LaunchedEffect(state.activeRegionId) { vm.refreshUpgrade() }
     val mb = { bytes: Long -> if (bytes <= 0L) "—" else "%.0f MB".format(bytes / 1_000_000.0) }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(stringResource(R.string.on_this_phone), color = Color.White, style = MaterialTheme.typography.titleMedium)
-        Card(
-            Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.brain_title), style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            stringResource(R.string.brain_body, state.modelId.ifBlank { "ow-dinov2s-384-v1" }),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            if (state.brainBytes > 0) stringResource(R.string.brain_built_in, (state.brainBytes / 1_000_000L).toString())
-                            else stringResource(R.string.brain_missing_size),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    Switch(
-                        checked = state.brainOn,
-                        onCheckedChange = vm::setBrainOn,
-                        colors = SwitchDefaults.colors(checkedTrackColor = Leaf),
-                    )
-                }
-                BrainMenu(state, vm)
-                if (state.brainChoice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP && !state.upgrade.active) {
-                    val pct = state.upgrade.progress
-                    if (pct != null) {
-                        Text(stringResource(R.string.upgrade_downloading, state.activeRegionName ?: "", (pct * 100).toInt()), style = MaterialTheme.typography.bodySmall)
-                        LinearProgressIndicator(progress = { pct }, modifier = Modifier.fillMaxWidth())
-                    } else if (state.upgrade.regionAvailable) {
-                        Button(onClick = { vm.installUpgrade() }) {
-                            Text(stringResource(R.string.brain_bioclip_get))
-                        }
-                    } else if (state.upgrade.modelMb > 0) {
-                        Text(stringResource(R.string.upgrade_region_soon), style = MaterialTheme.typography.bodySmall)
-                    }
-                    state.upgrade.error?.let {
-                        Text(stringResource(R.string.upgrade_failed, it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-                TextButton(onClick = { deleteBrain = true }, enabled = state.brainOn) {
-                    Text(stringResource(R.string.brain_delete))
-                }
-            }
-        }
+        BrainCard(state, vm, onRemoveDownload = { removeDownload = true })
         if (state.installed.isEmpty()) {
             Text(stringResource(R.string.no_region_on_phone), style = MaterialTheme.typography.bodySmall)
         }
@@ -448,67 +397,122 @@ private fun OnThisPhone(state: UiState, vm: AppViewModel) {
             },
         )
     }
-    if (deleteBrain) {
+    if (removeDownload) {
         AlertDialog(
-            onDismissRequest = { deleteBrain = false },
-            title = { Text(stringResource(R.string.brain_delete_title)) },
-            text = { Text(stringResource(R.string.brain_delete_body)) },
+            onDismissRequest = { removeDownload = false },
+            title = { Text(stringResource(R.string.brain_remove_download_title)) },
+            text = { Text(stringResource(R.string.brain_remove_download_body)) },
             confirmButton = {
                 TextButton(onClick = {
-                    deleteBrain = false
-                    vm.deleteBrain()
-                }) { Text(stringResource(R.string.brain_delete)) }
+                    removeDownload = false
+                    vm.removeDownloadedModel()
+                }) { Text(stringResource(R.string.brain_remove_download)) }
             },
             dismissButton = {
-                TextButton(onClick = { deleteBrain = false }) { Text(stringResource(R.string.not_now)) }
+                TextButton(onClick = { removeDownload = false }) { Text(stringResource(R.string.not_now)) }
             },
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BrainMenu(state: UiState, vm: AppViewModel) {
-    LaunchedEffect(state.activeRegionId) { vm.refreshUpgrade() }
-    var open by remember { mutableStateOf(false) }
-    val careful = stringResource(R.string.brain_careful)
-    val fast = stringResource(R.string.brain_fast)
-    val bioclip = stringResource(R.string.brain_bioclip)
-    val selected = when (state.brainChoice) {
-        org.openwild.app.pack.PackManager.BRAIN_FAST -> fast
-        org.openwild.app.pack.PackManager.BRAIN_BIOCLIP -> bioclip
-        else -> careful
-    }
-    val options = listOf(
-        org.openwild.app.pack.PackManager.BRAIN_CAREFUL to (careful to stringResource(R.string.brain_careful_meta)),
-        org.openwild.app.pack.PackManager.BRAIN_FAST to (fast to stringResource(R.string.brain_fast_meta)),
-        org.openwild.app.pack.PackManager.BRAIN_BIOCLIP to (bioclip to stringResource(R.string.brain_bioclip_meta)),
-    )
-    ExposedDropdownMenuBox(expanded = open, onExpandedChange = { open = it }) {
-        OutlinedTextField(
-            value = selected,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(R.string.brain_choose)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = open) },
-            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-        )
-        ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            options.forEach { (id, texts) ->
-                DropdownMenuItem(
-                    text = {
-                        Column {
-                            Text(texts.first, style = MaterialTheme.typography.titleSmall)
-                            Text(texts.second, style = MaterialTheme.typography.bodySmall)
-                        }
-                    },
-                    onClick = {
-                        open = false
-                        vm.setBrainChoice(id)
-                    },
+private fun BrainCard(state: UiState, vm: AppViewModel, onRemoveDownload: () -> Unit) {
+    val u = state.upgrade
+    val downloading = u.progress != null
+    val models = org.openwild.app.core.BrainList.offered(u.regionAvailable, u.boostInstalled, downloading)
+    val bioclipOn = downloading || (state.brainModel == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP && (u.active || (u.modelInstalled && u.boostInstalled)))
+    val standardMb = (state.brainBytes / 1_000_000L).toInt().coerceAtLeast(1)
+    val bioclipMb = ((u.modelMb.takeIf { it > 0 } ?: 309) + u.regionMb).coerceAtLeast(1)
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.photo_id_switch), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Switch(
+                    checked = state.brainOn,
+                    onCheckedChange = vm::setBrainOn,
+                    colors = SwitchDefaults.colors(checkedTrackColor = Leaf),
                 )
             }
+            Text(stringResource(R.string.brain_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            models.forEach { id ->
+                val bioclip = id == org.openwild.app.core.BrainList.BIOCLIP
+                val selected = if (bioclip) bioclipOn else !bioclipOn
+                val status = when {
+                    bioclip && downloading -> stringResource(R.string.brain_status_downloading, ((u.progress ?: 0f) * 100).toInt())
+                    bioclip && u.modelInstalled && u.boostInstalled -> stringResource(R.string.brain_status_installed)
+                    bioclip -> stringResource(R.string.brain_status_download)
+                    else -> stringResource(R.string.brain_status_installed)
+                }
+                ModelRow(
+                    selected = selected,
+                    title = stringResource(if (bioclip) R.string.brain_bioclip else R.string.brain_standard),
+                    detail = stringResource(if (bioclip) R.string.brain_bioclip_detail else R.string.brain_standard_detail),
+                    size = stringResource(R.string.brain_size_mb, if (bioclip) bioclipMb else standardMb),
+                    status = status,
+                    onClick = { if (bioclip) vm.selectBioclip() else vm.selectStandardBrain() },
+                )
+            }
+            if (downloading) {
+                LinearProgressIndicator(progress = { u.progress ?: 0f }, modifier = Modifier.fillMaxWidth())
+            }
+            if (u.error != null) {
+                Text(stringResource(R.string.brain_download_failed), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+            Text(stringResource(R.string.scan_detail), style = MaterialTheme.typography.titleSmall)
+            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surface), horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                ScanChip(stringResource(R.string.scan_fast), selected = !state.scanCareful, Modifier.weight(1f)) { vm.setScanCareful(false) }
+                ScanChip(stringResource(R.string.scan_careful), selected = state.scanCareful, Modifier.weight(1f)) { vm.setScanCareful(true) }
+            }
+            Text(
+                stringResource(if (state.scanCareful) R.string.scan_careful_detail else R.string.scan_fast_detail),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (u.modelInstalled) {
+                TextButton(onClick = onRemoveDownload) { Text(stringResource(R.string.brain_remove_download)) }
+            }
         }
+    }
+}
+
+@Composable
+private fun ModelRow(selected: Boolean, title: String, detail: String, size: String, status: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) Leaf.copy(alpha = 0.18f) else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = onClick, colors = androidx.compose.material3.RadioButtonDefaults.colors(selectedColor = Leaf))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(size, style = MaterialTheme.typography.labelMedium)
+        }
+        Text(
+            status,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = if (selected) Leaf else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ScanChip(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier.clip(RoundedCornerShape(12.dp))
+            .background(if (selected) Leaf else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, fontWeight = FontWeight.Bold, color = if (selected) ForestDeep else MaterialTheme.colorScheme.onSurface)
     }
 }
 

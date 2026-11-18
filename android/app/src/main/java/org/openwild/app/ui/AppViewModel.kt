@@ -117,8 +117,10 @@ data class UiState(
     /** Size of the model file inside the app. The install keeps this even when the brain is off. */
     val brainBytes: Long = 0,
     val modelId: String = "",
-    /** careful, fast, or bioclip. Careful is the built-in model with several crops. */
-    val brainChoice: String = org.openwild.app.pack.PackManager.BRAIN_CAREFUL,
+    /** standard or bioclip. Scan detail is separate. */
+    val brainModel: String = org.openwild.app.pack.PackManager.BRAIN_STANDARD,
+    /** Several looks at each photo. Off is one look. */
+    val scanCareful: Boolean = true,
     /** Region packs included in Identify. Explore shows [activeRegionId] among these. */
     val enabledRegionIds: Set<String> = emptySet(),
     val finerRegionId: String? = null,
@@ -136,6 +138,8 @@ data class UpgradeState(
     val regionMb: Int = 0,
     /** A boost file exists on GitHub for the active region. */
     val regionAvailable: Boolean = false,
+    /** The boost file for the open pack is already on the phone. */
+    val boostInstalled: Boolean = false,
     val progress: Float? = null,
     val error: String? = null,
 )
@@ -185,7 +189,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     dismissedUpdates = dismissed,
                     brainOn = ow.packs.brainOn,
                     brainBytes = brainBytes,
-                    brainChoice = ow.packs.brainChoice,
+                    brainModel = ow.packs.brainModel,
+                    scanCareful = ow.packs.scanCareful,
                     modelId = org.openwild.app.ml.Embedder.modelId(getApplication()),
                 )
             }
@@ -351,9 +356,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val shownModel = if (usingUpgrade) "bioclip2-vitl14-224-v1" else org.openwild.app.ml.Embedder.modelId(getApplication())
         _state.update { s ->
             s.copy(
-                upgrade = s.upgrade.copy(on = ow.packs.betterRecognition, modelInstalled = ow.packs.upgradeModel.exists(), active = usingUpgrade),
-                brainChoice = ow.packs.brainChoice,
+                brainModel = ow.packs.brainModel,
+                scanCareful = ow.packs.scanCareful,
                 modelId = shownModel,
+                upgrade = s.upgrade.copy(
+                    on = ow.packs.betterRecognition,
+                    modelInstalled = ow.packs.upgradeModel.exists(),
+                    active = usingUpgrade,
+                    boostInstalled = focus != null && ow.packs.boostFile(focus.regionId).exists(),
+                ),
             )
         }
         if (focus != null) ow.packs.activeRegionId = focus.regionId
@@ -403,19 +414,45 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                         _state.update { s -> s.copy(upgrade = s.upgrade.copy(progress = 0.9f + f * 0.1f)) }
                     }
                 }
-                ow.packs.brainChoice = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
+                ow.packs.brainModel = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
                 ow.packs.betterRecognition = true
             }
+        }
+        if (r.isFailure) {
+            ow.packs.brainModel = org.openwild.app.pack.PackManager.BRAIN_STANDARD
+            ow.packs.betterRecognition = false
         }
         _state.update { it.copy(upgrade = it.upgrade.copy(progress = null, error = r.exceptionOrNull()?.message)) }
         loadActivePack()
     }
 
-    fun setBrainChoice(choice: String) = viewModelScope.launch {
-        ow.packs.brainChoice = choice
-        ow.packs.betterRecognition = choice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
+    fun selectStandardBrain() = viewModelScope.launch {
+        ow.packs.brainModel = org.openwild.app.pack.PackManager.BRAIN_STANDARD
+        ow.packs.betterRecognition = false
+        _state.update { it.copy(brainModel = org.openwild.app.pack.PackManager.BRAIN_STANDARD) }
         loadActivePack()
-        if (choice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP) refreshUpgrade()
+    }
+
+    /** Select BioCLIP 2 when this pack can use it. Starts the download if the files are not here yet. */
+    fun selectBioclip() {
+        val offered = _state.value.upgrade.regionAvailable || _state.value.upgrade.boostInstalled || _state.value.upgrade.progress != null
+        if (!offered) return
+        val ready = _state.value.upgrade.modelInstalled && _state.value.upgrade.boostInstalled
+        ow.packs.brainModel = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
+        _state.update { it.copy(brainModel = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP) }
+        if (ready) {
+            viewModelScope.launch {
+                ow.packs.betterRecognition = true
+                loadActivePack()
+            }
+        } else {
+            installUpgrade()
+        }
+    }
+
+    fun setScanCareful(careful: Boolean) {
+        ow.packs.scanCareful = careful
+        _state.update { it.copy(scanCareful = careful) }
     }
 
     /** Names from every installed pack, for the wrong-ID sheet. Offline. */
@@ -431,13 +468,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         return out
     }
 
-    fun setBetterRecognition(on: Boolean) = viewModelScope.launch {
-        ow.packs.betterRecognition = on
-        if (on) ow.packs.brainChoice = org.openwild.app.pack.PackManager.BRAIN_BIOCLIP
-        else if (ow.packs.brainChoice == org.openwild.app.pack.PackManager.BRAIN_BIOCLIP) {
-            ow.packs.brainChoice = org.openwild.app.pack.PackManager.BRAIN_CAREFUL
-        }
-        loadActivePack()
+    fun setBetterRecognition(on: Boolean) {
+        if (on) selectBioclip() else selectStandardBrain()
     }
 
     private val uiPrefs get() = getApplication<Application>().getSharedPreferences("ui", android.content.Context.MODE_PRIVATE)
@@ -553,6 +585,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      * Turn the photo model off and delete a downloaded "Better recognition" model if one is stored.
      * The model built into the app cannot be removed from the install; turning it back on uses that copy.
      */
+    /** Delete BioCLIP 2 from this phone. The built-in model stays, and photo identification stays on. */
+    fun removeDownloadedModel() = viewModelScope.launch {
+        upgradeEmbedder?.close()
+        upgradeEmbedder = null
+        activeEmbedder = null
+        withContext(Dispatchers.IO) { ow.packs.removeUpgrade() }
+        loadActivePack()
+    }
+
     fun deleteBrain() = viewModelScope.launch {
         ow.packs.brainOn = false
         upgradeEmbedder?.close()
@@ -634,7 +675,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return@launch
         }
         _state.update { it.copy(busy = true) }
-        val careful = s.brainChoice != org.openwild.app.pack.PackManager.BRAIN_FAST
+        val careful = s.scanCareful
         val res = withContext(Dispatchers.Default) {
             val embeddings = s.photos.map { emb.embed(it.bitmap, careful) }
             val month = Calendar.getInstance().get(Calendar.MONTH) + 1
