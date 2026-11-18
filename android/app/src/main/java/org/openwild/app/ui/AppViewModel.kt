@@ -155,6 +155,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val missing = withContext(Dispatchers.Default) { ow.embedder == null }
             val regions = withContext(Dispatchers.IO) { Location.bundledRegions(getApplication<Application>()) }
             val bundled = withContext(Dispatchers.IO) { ow.packs.bundledCatalog() }
+            withContext(Dispatchers.IO) { runCatching { ow.packs.cleanLeftovers() } }
             val ui = getApplication<Application>().getSharedPreferences("ui", android.content.Context.MODE_PRIVATE)
             val dismissed = ui.all.filterKeys { it.startsWith("dismissed_") }
                 .mapNotNull { (k, v) -> (v as? Int)?.let { k.removePrefix("dismissed_") to it } }.toMap()

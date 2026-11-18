@@ -64,6 +64,15 @@ class PackManager(private val context: Context) {
         get() = prefs.getString("active_region", null)
         set(v) = prefs.edit().putString("active_region", v).apply()
 
+    /** Half-finished downloads left behind if the app was closed mid-download (never shown, only take space). */
+    fun cleanLeftovers() {
+        if (activeDownloads.get() > 0) return
+        dir.listFiles { f -> f.name.endsWith(".download") }?.forEach { it.delete() }
+        upgradeDir.listFiles { f -> f.name.endsWith(".download") }?.forEach { it.delete() }
+    }
+
+    private val activeDownloads = java.util.concurrent.atomic.AtomicInteger(0)
+
     fun installed(): List<InstalledPack> =
         dir.listFiles { f -> f.extension == "owpack" }.orEmpty().mapNotNull { f ->
             val meta = RegionPack.readMeta(f) ?: return@mapNotNull null
