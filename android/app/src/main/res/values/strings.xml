@@ -63,6 +63,30 @@
     <string name="notice_not_reviewed">Not yet expert reviewed.</string>
     <string name="legal_warning">Psychoactive. Contains substances controlled in many countries. Possession or use may be illegal where you are. Toxic and deadly lookalikes exist.</string>
     <string name="footer">Never eat anything based only on this app.</string>
+    <string name="on_this_phone">On this phone</string>
+    <string name="brain_title">Our brain</string>
+    <string name="brain_body">On-device photo model %1$s. It stays on the phone. Turning it off stops photo identification. Search and browse still work.</string>
+    <string name="brain_built_in">%1$s MB, built into the app. Turning it off does not shrink the install. Turn it on again to use it.</string>
+    <string name="brain_missing_size">Built into the app. Turning it off does not shrink the install.</string>
+    <string name="brain_delete">Turn off</string>
+    <string name="brain_delete_title">Turn off our brain?</string>
+    <string name="brain_delete_body">Photo identification will stop. You can still search and browse every species in your region. The model file is part of the app, so this does not free space. A downloaded extra model, if you added one, is removed. Turn the switch on to use the built-in model again.</string>
+    <string name="brain_off_search">Photo identification is off. Search the field guide by name, or turn our brain back on from the home screen.</string>
+    <string name="brain_disabled_note">Photo identification is off. Search still works. Turn our brain on again from the home screen. The built-in model is still in the app.</string>
+    <string name="brain_off_banner">Our brain is off, so a photo will not be identified. You can still take pictures, or search by name.</string>
+    <string name="brain_search_names">Search by name</string>
+    <string name="region_switch">Use for Identify and Explore</string>
+    <string name="region_row_meta">v%1$d · %2$s · %3$d species</string>
+    <string name="region_has_photos">Photo identification</string>
+    <string name="region_names_only">Names and safety, no photo identification yet</string>
+    <string name="region_delete">Delete</string>
+    <string name="region_delete_title">Delete %1$s?</string>
+    <string name="region_delete_body">This removes the downloaded pack from the phone (%1$s). You can download it again. Nothing on the OpenWild servers is deleted.</string>
+    <string name="region_explore_focus">Showing in Explore</string>
+    <string name="region_also_on">Also used when identifying</string>
+    <string name="finer_pack_offer">%1$s is a finer pack you can add. The country pack stays.</string>
+    <string name="finer_pack_open">See packs</string>
+    <string name="no_region_on_phone">No region pack on this phone yet. Choose one under Packs. A country pack is the one to start with. Finer areas, such as Bali, can be added as well.</string>
 
     <!-- Species page -->
     <string name="lookalikes">Lookalikes</string>

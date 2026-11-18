@@ -73,6 +73,7 @@ import androidx.core.view.doOnAttach
 import org.openwild.app.R
 import org.openwild.app.core.KingdomFilter
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.Screen
 import org.openwild.app.ui.Photo
 import org.openwild.app.ui.PhotoPart
 import org.openwild.app.ui.UiState
@@ -119,6 +120,10 @@ fun CaptureScreen(state: UiState, vm: AppViewModel) {
     }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (!state.brainOn) {
+            org.openwild.app.ui.WarningBox(stringResource(R.string.brain_off_banner), danger = false)
+            TextButton(onClick = { vm.tab(Screen.Explore) }) { Text(stringResource(R.string.brain_search_names)) }
+        }
         val kinds = listOf(
             KingdomFilter.ANY to R.string.kind_any,
             KingdomFilter.PLANTS to R.string.kind_plant,

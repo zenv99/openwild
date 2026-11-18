@@ -22,6 +22,16 @@ Each region pack contains an `attributions` table listing every reference photo 
 
 We welcome additional data from iNaturalist, Pl@ntNet, herbaria, mycological societies and universities. Partner data is tracked in `regions/partners.yaml` with its license terms.
 
+## Region packs and where photos come from
+
+Country packs are the default for everyone. A finer pack (Bali inside Indonesia, a US state inside the United States) is optional and is not a replacement. The same scientific name is scored once on the phone when both packs are switched on. Pack files stay separate so either one can be deleted on its own. Region data is never deleted from the project because a finer pack exists.
+
+Photos for a region are collected in resumable batches (`select_photo_batch` in `commercial_photos.py`). A run that is capped at a few thousand species records what it already tried and the next run continues down the list. The scheduler keeps walking while `photo-progress.json` says `more`, and it waits to photograph a state or Bali-sized area until the country pack already has photos. Reference photos that claim to show a named species come from research-grade iNaturalist observations, Wikimedia Commons, and GBIF media. Needs-ID observations are not used as a photo of that species. Every packed photo keeps an open licence and a credit. No-derivatives licences, Plants For A Future images, and tropical.theferns.info are never used.
+
+Plants For A Future facts already in `content/evidence/pfaf_facts.csv` were ingested with permission, as text facts rather than pages. They are left in place for the owner to keep or remove. This pass did not add any PFAF material and did not fetch pfaf.org or tropical.theferns.info.
+
+Fungi are included from GBIF alongside plants. In the published names-only packs checked for this audit, fungi are a small share in dry regions (69 of 1,265 species in the UAE) and a large share in temperate Europe (4,951 of 13,790 in Germany). Edibility for most of those fungi is still unknown.
+
 ## Not legal advice
 
 License interpretation (for example, whether model fingerprints are derivative works of photos) should be confirmed by counsel before a public release.

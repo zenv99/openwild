@@ -188,3 +188,17 @@ def test_white_paper_sheets_are_rejected(tmp_path):
     assert looks_like_sheet(None, "Herbarium specimen of Ficus")
     assert not looks_like_sheet(None, "https://www.inaturalist.org/observations/1")
     assert not looks_like_sheet(None, "File:Bromo_plateau_grass.jpg")
+
+
+def test_photo_batches_move_past_species_already_tried():
+    from openwild_pipeline.commercial_photos import select_photo_batch
+
+    rows = [{"scientific_name": n} for n in ["A", "B", "C", "D", "E"]]
+    first, more = select_photo_batch(rows, set(), 2)
+    assert [r["scientific_name"] for r in first] == ["A", "B"] and more
+    second, more = select_photo_batch(rows, {"A", "B"}, 2)
+    assert [r["scientific_name"] for r in second] == ["C", "D"] and more
+    last, more = select_photo_batch(rows, {"A", "B", "C", "D"}, 2)
+    assert [r["scientific_name"] for r in last] == ["E"] and not more
+    spread, more = select_photo_batch(rows, {"A"}, 2, spread=True)
+    assert more is False and len(spread) == 2

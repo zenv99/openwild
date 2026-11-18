@@ -38,6 +38,9 @@ jobs:
           # Nearest to Bali first, then the rest smallest first (quick wins).
           FIRST = ["ID", "TL", "MY", "SG", "BN", "PH", "TH", "VN", "KH", "LA", "MM", "PG", "AU", "FJ", "NZ",
                    "LK", "IN", "NP", "BD", "TW", "JP", "KR", "CN", "US-HI"]
+          # Finer packs wait until their country pack has photos, so a phone is not asked to download
+          # the same species twice before the country pack exists. Bali is maintained on its own.
+          CHILDREN = {"ID-BA": "ID", "US-CA": "US", "US-HI": "US", "US-AK": "US"}
           SKIP = {"WORLD"}
           REFRESH_DAYS = 30
           idx = json.load(open("/tmp/s/index.json"))["packs"]
@@ -46,6 +49,7 @@ jobs:
           except Exception:
               prog = {}
           size = {p["region_id"]: p["species_count"] for p in idx}
+          photo = {p["region_id"]: p.get("photo_species") or 0 for p in idx}
           order = [r for r in FIRST if r in size] + sorted((r for r in size if r not in FIRST and r not in SKIP), key=size.get)
           runs = json.load(open("/tmp/s/runs.json"))
           # Don't start a region while a BioCLIP 2 file is still being built (keeps load low).
@@ -70,6 +74,9 @@ jobs:
                   break
               if r in active or r in broken:
                   continue
+              parent = CHILDREN.get(r)
+              if parent and parent in size and photo.get(parent, 0) == 0 and parent not in broken and parent not in active:
+                  continue
               e = prog.get(r)
               fresh = False
               if r == "ID-BA":
@@ -78,6 +85,8 @@ jobs:
                   topup = False
               elif e["mode"] == "full" and e.get("budget_hit"):
                   topup = False
+              elif e["mode"] == "full" and e.get("more"):
+                  topup = False  # this batch finished; more species are still untried
               elif e["mode"] == "full":
                   topup = True
               elif e.get("budget_hit") and e.get("topups", 0) < MAX_TOPUPS:
