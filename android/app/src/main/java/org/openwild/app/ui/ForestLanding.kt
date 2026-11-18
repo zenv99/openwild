@@ -3,6 +3,8 @@ package org.openwild.app.ui
 import android.content.Context
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -15,6 +17,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,10 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -60,35 +65,152 @@ fun motionAllowed(context: Context): Boolean {
 private val Night = Color(0xFF04140F)
 private val SporeGlow = Color(0xFFD6FFE8)
 
+/** The whole fly agaric photograph, 1440 by 1152, then a short push toward the cap. */
+const val SPLASH_MS = 2800
+
+/** Where the cap sits in the photograph, as fractions of width and height. */
+const val CAP_X = 0.50f
+const val CAP_Y = 0.36f
+
+data class FitFrame(val left: Float, val top: Float, val width: Float, val height: Float)
+
+object SplashLayout {
+    const val IMAGE_W = 1440f
+    const val IMAGE_H = 1152f
+
+    /** The whole photograph, fitted inside the screen. Nothing is cropped. */
+    fun fit(viewW: Float, viewH: Float): FitFrame {
+        if (viewW <= 0f || viewH <= 0f) return FitFrame(0f, 0f, 0f, 0f)
+        val imageAspect = IMAGE_W / IMAGE_H
+        val viewAspect = viewW / viewH
+        return if (viewAspect > imageAspect) {
+            val h = viewH
+            val w = h * imageAspect
+            FitFrame((viewW - w) / 2f, 0f, w, h)
+        } else {
+            val w = viewW
+            val h = w / imageAspect
+            FitFrame(0f, (viewH - h) / 2f, w, h)
+        }
+    }
+
+    /** Cap position as fractions of the screen, used as the zoom origin. */
+    fun capOrigin(frame: FitFrame, viewW: Float, viewH: Float): Pair<Float, Float> {
+        if (viewW <= 0f || viewH <= 0f || frame.width <= 0f) return 0.5f to 0.5f
+        val x = frame.left + CAP_X * frame.width
+        val y = frame.top + CAP_Y * frame.height
+        return (x / viewW) to (y / viewH)
+    }
+}
+
 /**
- * Opening screen. The fly agaric photograph and its morph stay as they are.
- * A tap, or a few seconds, continues into the home screen.
+ * Opening screen. The whole fly agaric photograph is shown first, then the view eases in
+ * toward the cap. A tap skips it. The wait is the same length as before.
  */
 @Composable
 fun MushroomOpening(onContinue: () -> Unit) {
     val context = LocalContext.current
     val motion = remember { motionAllowed(context) }
     LaunchedEffect(motion) {
-        delay(if (motion) 2800 else 900)
+        delay(if (motion) SPLASH_MS.toLong() else 700)
         onContinue()
     }
     Box(Modifier.fillMaxSize().background(Night).clickable(onClick = onContinue)) {
-        if (motion) {
-            PhotoMorph(Modifier.fillMaxSize())
-        } else {
-            Image(
-                painterResource(R.drawable.hero_mushroom),
-                contentDescription = stringResource(R.string.hero_mushroom_cd),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+        MushroomSplash(motion)
+        Column(
+            Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp, start = 20.dp, end = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                stringResource(R.string.hero_photo_credit),
+                color = Color.White.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.labelSmall,
+            )
+            Text(
+                stringResource(R.string.enter_openwild),
+                color = Color.White.copy(alpha = 0.85f),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = 6.dp),
             )
         }
-        Text(
-            stringResource(R.string.enter_openwild),
-            color = Color.White.copy(alpha = 0.85f),
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 28.dp),
+    }
+}
+
+@Composable
+private fun MushroomSplash(motion: Boolean) {
+    val zoom = remember { Animatable(0f) }
+    LaunchedEffect(motion) {
+        if (motion) zoom.animateTo(1f, tween(SPLASH_MS, easing = FastOutSlowInEasing))
+    }
+    val drift = if (motion) {
+        val loop = rememberInfiniteTransition(label = "splash")
+        val t by loop.animateFloat(
+            0f, 1f,
+            infiniteRepeatable(tween(4200, easing = LinearEasing), RepeatMode.Restart),
+            label = "spark",
         )
+        t
+    } else {
+        0f
+    }
+    val sparkles = remember { splashSparkles() }
+    val push = if (motion) zoom.value else 0f
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val frame = SplashLayout.fit(maxWidth.value, maxHeight.value)
+        val (ox, oy) = SplashLayout.capOrigin(frame, maxWidth.value, maxHeight.value)
+        Image(
+            painterResource(R.drawable.hero_mushroom),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize().blur(28.dp).graphicsLayer { alpha = 0.55f },
+        )
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(listOf(Night.copy(alpha = 0.62f), Night.copy(alpha = 0.28f), Night.copy(alpha = 0.66f))),
+            ),
+        )
+        Image(
+            painterResource(R.drawable.hero_mushroom),
+            contentDescription = stringResource(R.string.hero_mushroom_cd),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxSize().graphicsLayer {
+                val scale = 1f + 0.14f * push
+                scaleX = scale
+                scaleY = scale
+                transformOrigin = TransformOrigin(ox, oy)
+            },
+        )
+        Canvas(Modifier.fillMaxSize()) {
+            drawSplashSparkles(sparkles, drift, animate = motion)
+        }
+    }
+}
+
+private class Spark(val x: Float, val y: Float, val r: Float, val speed: Float, val phase: Float, val color: Color)
+
+private fun splashSparkles(): List<Spark> {
+    val rnd = Random(4)
+    val colors = listOf(Color(0xFF7CFFF0), Color(0xFFC9A6FF), Color(0xFFFFD56A))
+    return List(42) {
+        Spark(
+            x = rnd.nextFloat(),
+            y = rnd.nextFloat(),
+            r = 1.2f + rnd.nextFloat() * 2.6f,
+            speed = 0.08f + rnd.nextFloat() * 0.18f,
+            phase = rnd.nextFloat(),
+            color = colors[it % colors.size],
+        )
+    }
+}
+
+private fun DrawScope.drawSplashSparkles(sparkles: List<Spark>, drift: Float, animate: Boolean) {
+    sparkles.forEach { s ->
+        val rise = if (animate) ((s.y - drift * s.speed) % 1f + 1f) % 1f else s.y
+        val twinkle = if (animate) 0.35f + 0.65f * ((sin((drift * 6f + s.phase) * 2f * PI.toFloat()) + 1f) / 2f) else 0.7f
+        val x = s.x * size.width + if (animate) sin((drift + s.phase) * 2f * PI.toFloat()) * 8f else 0f
+        val y = rise * size.height
+        drawCircle(s.color.copy(alpha = 0.85f * twinkle), s.r, Offset(x, y))
+        drawCircle(Color.White.copy(alpha = 0.45f * twinkle), s.r * 0.35f, Offset(x, y))
     }
 }
 
