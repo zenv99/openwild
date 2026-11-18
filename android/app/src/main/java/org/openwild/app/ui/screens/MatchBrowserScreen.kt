@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -55,7 +54,6 @@ import org.openwild.app.core.Tier
 import org.openwild.app.data.ReviewStore
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.CandidatePhotos
-import org.openwild.app.ui.Contribute
 import org.openwild.app.ui.DangerBadge
 import org.openwild.app.ui.Screen
 import org.openwild.app.ui.SpeciesThumb
@@ -77,7 +75,6 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
     val res = state.result ?: return
     val pack = vm.pack ?: return
     val sp = pack.species
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val cands = res.candidates
     val pages = cands.size + 1 // last page: "Not in the list? Search"
@@ -138,18 +135,16 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stringResource(R.string.correction_saved_detail, c.chosen), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                val reports = rememberReportSender { vm.markCorrectionSent(c.id) }
+                val reports = rememberReportSender(onSent = { vm.markCorrectionSent(c.id) }, suggestions = vm::suggestNames)
                 TextButton(onClick = {
-                    if (reports.enabled) {
-                        reports.send(ReportSender.Request(
-                            regionId = c.regionId, predicted = c.predicted, chosen = c.chosen,
-                            fields = org.json.JSONObject().put("kind", "correction").put("chosen_rank", c.chosenRank)
-                                .put("top_matches", c.topMatches).put("pack_version", c.packVersion).put("model", c.modelId),
-                            photos = state.photos,
-                        ))
-                    } else {
-                        Contribute.sendCorrection(context, c); vm.markCorrectionSent(c.id)
-                    }
+                    val fields = org.openwild.app.ui.wrongIdFields(
+                        res, pack.species.scientificNames, c.packVersion, c.modelId, "correction",
+                    ).put("chosen_rank", c.chosenRank)
+                    reports.send(ReportSender.Request(
+                        regionId = c.regionId, predicted = c.predicted, chosen = c.chosen,
+                        fields = fields,
+                        photos = state.photos,
+                    ))
                 }) {
                     Icon(Icons.AutoMirrored.Filled.Send, null, Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))

@@ -77,6 +77,14 @@
     <string name="brain_disabled_note">Photo identification is off. Search still works. Turn our brain on again from the home screen. The built-in model is still in the app.</string>
     <string name="brain_off_banner">Our brain is off, so a photo will not be identified. You can still take pictures, or search by name.</string>
     <string name="brain_search_names">Search by name</string>
+    <string name="brain_choose">Brain</string>
+    <string name="brain_careful">Careful</string>
+    <string name="brain_careful_meta">DINOv2 small · 22 MB · Apache-2.0. Several looks at each photo. Default. Same region packs.</string>
+    <string name="brain_fast">Fast</string>
+    <string name="brain_fast_meta">DINOv2 small · 22 MB · Apache-2.0. One look per photo. Same region packs.</string>
+    <string name="brain_bioclip">BioCLIP 2</string>
+    <string name="brain_bioclip_meta">About 309 MB plus a region file · MIT. Download. Needs a published boost for this region.</string>
+    <string name="brain_bioclip_get">Download BioCLIP 2</string>
     <string name="region_switch">Use for Identify and Explore</string>
     <string name="region_row_meta">v%1$d · %2$s · %3$d species</string>
     <string name="region_has_photos">Photo identification</string>
@@ -366,14 +374,18 @@
     <string name="status_online">Download · %1$d species · %2$d MB</string>
     <string name="parts_title">Parts identified</string>
     <string name="also_called">Also called: %1$s</string>
-    <string name="report_ask_title">Send this report to OpenWild?</string>
-    <string name="report_ask_body">The app said %1$s. You say: %2$s. Reports with photos teach the app: our bot checks them weekly and good photos join the library for the right plant.</string>
+    <string name="report_ask_title">Wrong identification</string>
+    <string name="report_optimize">Send data to Open Wild to optimize.</string>
+    <string name="report_ask_body">The app said %1$s.</string>
     <string name="report_unknown">not sure what it is</string>
-    <string name="report_guess">What do you think it is? (optional)</string>
+    <string name="report_guess">What do you think it is?</string>
+    <string name="report_note">Note (optional)</string>
     <string name="report_with_photos">Include my %1$d photos (location and camera details removed), shared under CC BY 4.0</string>
+    <string name="report_location_opt_in">Include approximate location. Off unless you tick this. The region is always included.</string>
     <string name="report_credit">Name to credit (optional, blank = anonymous)</string>
-    <string name="report_ask_not_sent">Never sent: your location, account, contacts or phone ID. Nothing goes unless you tap Send.</string>
+    <string name="report_ask_not_sent">Never sent unless you tap Send: account, contacts, or phone ID. Location stays off unless you tick it.</string>
     <string name="report_sent">Report sent. Thank you, this makes the app better for everyone.</string>
+    <string name="report_queued">Saved on this phone. It will send when OpenWild can reach the inbox.</string>
     <string name="pp_all">All parts</string>
     <string name="pp_seeds">Seeds / nuts</string>
     <string name="pp_fruit">Fruit</string>

@@ -266,3 +266,56 @@ class RegionFusionTest {
         println("FUSE splitTop=${"%.3f".format(split.probs[0])} fusedTop=${"%.3f".format(fused.result.probs[0])}")
     }
 }
+
+class CultivatedPriorTest {
+    @Test
+    fun floorOnlyLiftsListedHouseplants() {
+        val names = arrayOf("Erigeron sumatrensis", "Asplenium nidus", "Cocos nucifera")
+        val out = Cultivated.floorCounts(names, intArrayOf(8000, 22, 4000))
+        assertEquals(8000, out[0])
+        assertEquals(Cultivated.OBS_FLOOR, out[1])
+        assertEquals(4000, out[2])
+        assertEquals(22, intArrayOf(8000, 22, 4000)[1])
+    }
+
+    @Test
+    fun closeCallMovesTowardTheHouseplantAndAClearVisualMatchDoesNot() {
+        val params = ConfidenceParams(temperature = 0.022, priorBeta = 0.5, photoAlpha = 0.6)
+        val raw = intArrayOf(8000, 22)
+        val floored = Cultivated.floorCounts(arrayOf("Erigeron sumatrensis", "Asplenium nidus"), raw)
+        fun logPrior(obs: IntArray) = DoubleArray(obs.size) { ln(Confidence.prior(obs, null)[it]) }
+        val close = arrayOf(doubleArrayOf(0.62, 0.67))
+        val before = Confidence.score(close, logPrior(raw), params)
+        val after = Confidence.score(close, logPrior(floored), params)
+        assertEquals(0, before.top)
+        assertEquals(1, after.top)
+        val clear = arrayOf(doubleArrayOf(0.80, 0.62))
+        val stillWeed = Confidence.score(clear, logPrior(floored), params)
+        assertEquals(0, stillWeed.top)
+    }
+}
+
+class FingerprintAverageTest {
+    @Test
+    fun meanOfUnitVectorsIsUnit() {
+        val v = Fingerprints.meanUnit(listOf(floatArrayOf(1f, 0f), floatArrayOf(0f, 1f)))
+        val n = sqrt((v[0] * v[0] + v[1] * v[1]).toDouble())
+        assertEquals(1.0, n, 1e-5)
+        assertEquals(v[0].toDouble(), v[1].toDouble(), 1e-5)
+    }
+}
+
+class NameSuggestTest {
+    @Test
+    fun matchesScientificAndCommonNamesOffline() {
+        val sci = arrayOf("Asplenium nidus", "Cocos nucifera")
+        val common = arrayOf<String?>("Hawai'I Birdnest Fern", "Coconut")
+        assertTrue(NameSuggest.matches("", sci, common).isEmpty())
+        assertTrue(NameSuggest.matches("a", sci, common).isEmpty())
+        val hit = NameSuggest.matches("bird", sci, common)
+        assertEquals(1, hit.size)
+        assertEquals("Asplenium nidus", hit[0].scientific)
+        assertTrue(hit[0].label.contains("Birdnest"))
+        assertEquals("Cocos nucifera", NameSuggest.matches("coco", sci, common)[0].scientific)
+    }
+}
