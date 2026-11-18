@@ -5,7 +5,7 @@ on:
   push:
     paths: ["android/**", ".github/workflows/android.yml"]
   pull_request:
-    paths: ["android/**"]
+    paths: ["android/**", ".github/workflows/android.yml"]
 
 jobs:
   build:
@@ -21,6 +21,8 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      # Caches ~/.gradle (dependencies and wrappers) and restores it on the next run.
+      # setup-java's cache: gradle writes the same directory, so it is not enabled here.
       - uses: gradle/actions/setup-gradle@v4
       - name: Private release key (from GitHub secrets; absent on forks and pull requests)
         env:
@@ -40,7 +42,33 @@ jobs:
           OW_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           OW_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           OW_INBOX_TOKEN: ${{ secrets.INBOX_TOKEN }}
-        run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
+        run: |
+          # GitHub already runs this step with pipefail. A 429 from Maven Central fails the
+          # download; wait and try again. A test or compile failure still stops immediately.
+          log="${RUNNER_TEMP}/gradle-attempt.log"
+          attempt=1
+          max=4
+          while true; do
+            set +e
+            ./gradlew --no-daemon testDebugUnitTest assembleRelease 2>&1 | tee "$log"
+            code=${PIPESTATUS[0]}
+            set -e
+            if [ "$code" -eq 0 ]; then
+              exit 0
+            fi
+            if ! grep -qE '429|Too Many Requests|Could not resolve|Could not GET|Read timed out|Connection reset' "$log"; then
+              echo "Gradle failed for a reason other than a dependency download."
+              exit "$code"
+            fi
+            if [ "$attempt" -ge "$max" ]; then
+              echo "Dependency download still failing after $max attempts."
+              exit "$code"
+            fi
+            wait=$((attempt * 45))
+            echo "Maven Central rate-limited or dropped the download. Waiting ${wait}s, then attempt $((attempt + 1)) of $max."
+            sleep "$wait"
+            attempt=$((attempt + 1))
+          done
       - name: Signing certificate
         run: |
           SIGNER=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)apksigner
