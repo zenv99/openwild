@@ -44,6 +44,11 @@ class SplashLayoutTest {
     }
 
     @Test
+    fun openingIsShortEnoughToSkipPast() {
+        assertTrue(SPLASH_MS in 1500..2000)
+    }
+
+    @Test
     fun landscapePhonePillarsTheTallArtwork() {
         val frame = SplashLayout.fit(1280f, 800f)
         assertEquals(800f, frame.height, 0.01f)

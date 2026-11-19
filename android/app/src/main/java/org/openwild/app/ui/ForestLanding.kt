@@ -65,8 +65,8 @@ fun motionAllowed(context: Context): Boolean {
 private val Night = Color(0xFF04140F)
 private val SporeGlow = Color(0xFFD6FFE8)
 
-/** The whole forest artwork, 720 by 1280, then a short push toward the mushroom. */
-const val SPLASH_MS = 2800
+/** The whole forest artwork, then the push toward the mushroom. The opening, including that move, lasts under two seconds. */
+const val SPLASH_MS = 1600
 
 /** Where the foreground mushroom cap sits in the artwork, as fractions of width and height. */
 const val CAP_X = 0.52f

@@ -18,7 +18,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import androidx.compose.ui.res.stringResource
 import org.openwild.app.pack.RegionPack
 import org.openwild.app.ui.AppViewModel
 
@@ -37,15 +36,10 @@ fun CreditsScreen(vm: AppViewModel) {
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         item {
             Text(
-                stringResource(org.openwild.app.R.string.landing_art_credit),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 12.dp),
-            )
-            Text(
                 "${pack.regionName}: $total reference photos from the iNaturalist community and other open sources. " +
                     "Teacher model: BioCLIP 2 (Imageomics, MIT). Species lists: GBIF.org.",
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = 12.dp),
+                modifier = Modifier.padding(top = 12.dp, bottom = 12.dp),
             )
         }
         items(credits) { c ->

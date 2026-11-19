@@ -100,11 +100,6 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                     ?: stringResource(R.string.no_region_pill),
                 fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
             )
-            Text(
-                stringResource(R.string.landing_art_credit),
-                color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.labelSmall,
-            )
             Spacer(Modifier.height(168.dp))
             GlassPanel {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
