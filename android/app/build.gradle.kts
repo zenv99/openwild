@@ -43,6 +43,11 @@ android {
         val inboxToken = System.getenv("OW_INBOX_TOKEN") ?: ""
         buildConfigField("String", "INBOX_REPO", "\"$inboxRepo\"")
         buildConfigField("String", "INBOX_TOKEN", "\"$inboxToken\"")
+        // Optional Pl@ntNet key for a private build. Empty in source and in CI.
+        // A key typed in the app replaces this. Never commit a real key.
+        val plantnetKey = (System.getenv("OW_PLANTNET_API_KEY") ?: (findProperty("plantnetApiKey") as String?) ?: "")
+            .replace(Regex("[^A-Za-z0-9-]"), "")
+        buildConfigField("String", "PLANTNET_API_KEY", "\"$plantnetKey\"")
     }
 
     signingConfigs {

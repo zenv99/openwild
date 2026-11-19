@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import org.openwild.app.R
 import org.openwild.app.pack.RegionPack
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.PlantNetToggle
 import org.openwild.app.ui.Footer
 import org.openwild.app.ui.Pill
 import org.openwild.app.ui.Screen
@@ -98,11 +99,6 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                 text = state.activeRegionName?.let { stringResource(R.string.region_pill, it, state.activeSpeciesCount) }
                     ?: stringResource(R.string.no_region_pill),
                 fg = ForestDeep, bg = Lime, icon = Icons.Filled.LocationOn,
-            )
-            Text(
-                stringResource(R.string.landing_art_credit),
-                color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.labelSmall,
             )
             Spacer(Modifier.height(168.dp))
             GlassPanel {
@@ -448,6 +444,7 @@ private fun BrainCard(state: UiState, vm: AppViewModel, onRemoveDownload: () -> 
                 }
                 ModelRow(
                     selected = selected,
+                    recommended = org.openwild.app.core.BrainList.isRecommended(id),
                     title = stringResource(if (bioclip) R.string.brain_bioclip else R.string.brain_standard),
                     detail = stringResource(if (bioclip) R.string.brain_bioclip_detail else R.string.brain_standard_detail),
                     size = stringResource(R.string.brain_size_mb, if (bioclip) bioclipMb else standardMb),
@@ -474,12 +471,21 @@ private fun BrainCard(state: UiState, vm: AppViewModel, onRemoveDownload: () -> 
             if (u.modelInstalled) {
                 TextButton(onClick = onRemoveDownload) { Text(stringResource(R.string.brain_remove_download)) }
             }
+            PlantNetToggle(vm.plantNet)
         }
     }
 }
 
 @Composable
-private fun ModelRow(selected: Boolean, title: String, detail: String, size: String, status: String, onClick: () -> Unit) {
+private fun ModelRow(
+    selected: Boolean,
+    recommended: Boolean,
+    title: String,
+    detail: String,
+    size: String,
+    status: String,
+    onClick: () -> Unit,
+) {
     Row(
         Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
@@ -491,6 +497,14 @@ private fun ModelRow(selected: Boolean, title: String, detail: String, size: Str
         RadioButton(selected = selected, onClick = onClick, colors = androidx.compose.material3.RadioButtonDefaults.colors(selectedColor = Leaf))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            if (recommended) {
+                Text(
+                    stringResource(R.string.brain_recommended),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Leaf,
+                )
+            }
             Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(size, style = MaterialTheme.typography.labelMedium)
         }

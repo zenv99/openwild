@@ -47,6 +47,7 @@ import org.openwild.app.ui.ReportSender
 import org.openwild.app.ui.rememberReportSender
 import org.openwild.app.core.Tier
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.PlantNetCard
 import org.openwild.app.ui.Candidate
 import org.openwild.app.ui.ConfidenceRing
 import org.openwild.app.ui.Contribute
@@ -129,6 +130,8 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
 
         // Opt-in: a slower, more careful check in the cloud against thousands of real photos.
         org.openwild.app.ui.OnlineCheckCard(state, vm)
+        // Opt-in Pl@ntNet. Sends a photo only when the person taps the button.
+        PlantNetCard(state, vm)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (tier != Tier.HIGH && state.photos.size < AppViewModel.MAX_PHOTOS) {
