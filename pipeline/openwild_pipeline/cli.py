@@ -621,6 +621,18 @@ def main(argv=None):
     sp.add_argument("--max-tier", type=int, default=None, help="only species at this priority tier or higher (0 = deadly)")
     sp.add_argument("--per-species", type=int, default=2)
     sp.add_argument("--batch", default=None, help="batch id recorded on new rows (default UTC date)")
+    def cmd_reference_pack(a):
+        from .references import build_reference_pack
+
+        build_reference_pack(a.region, base=Path(a.base), out=Path(a.out) if a.out else None,
+                             version=a.version or None)
+
+    sp = add("reference-pack", cmd_reference_pack,
+             "add houseplant, garden and fungus reference photos to a country pack (does not upload)")
+    sp.add_argument("region")
+    sp.add_argument("--base", required=True, help="published .owpack to copy; it is not modified")
+    sp.add_argument("--out", default=None)
+    sp.add_argument("--version", type=int, default=0, help="pack version (default: current UTC hour, or published+1)")
     sp = add("photo-pack", cmd_photo_pack, "build a region pack with photo fingerprints (free model, CPU)")
     sp.add_argument("region")
     sp.add_argument("--version", type=int, default=2)

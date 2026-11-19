@@ -1,0 +1,148 @@
+category,query_name,accepted_name,gbif_key,status,basis,citation,existing_photos,new_references,heldout
+houseplant,Asplenium nidus,Asplenium nidus,,topped_up,,,12,8,5
+houseplant,Monstera deliciosa,Monstera deliciosa,,topped_up,,,16,8,5
+houseplant,Monstera adansonii,Monstera adansonii,2868136,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/236704328. GBIF taxon: https://www.gbif.org/species/2868136,0,18,4
+houseplant,Dieffenbachia seguine,Dieffenbachia seguine,,topped_up,,,16,8,5
+houseplant,Epipremnum aureum,Epipremnum aureum,,topped_up,,,13,8,4
+houseplant,Epipremnum pinnatum,Epipremnum pinnatum,,topped_up,,,15,8,0
+houseplant,Philodendron hederaceum,Philodendron hederaceum,,topped_up,,,12,8,0
+houseplant,Philodendron bipinnatifidum,Philodendron bipinnatifidum,10965694,added,cultivated,Philodendron bipinnatifidum is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/10965694,0,14,0
+houseplant,Dracaena trifasciata,Dracaena trifasciata,,topped_up,,,14,8,0
+houseplant,Sansevieria trifasciata,Dracaena trifasciata,11041822,synonym,,Accepted name Dracaena trifasciata is already listed.,,0,0
+houseplant,Dracaena fragrans,Dracaena fragrans,,topped_up,,,14,8,0
+houseplant,Dracaena angolensis,Dracaena angolensis,10961470,added,introduced,GBIF marks Dracaena angolensis introduced in Southeast Asia (INTRODUCED (Thailand  tdwg:THA; Catalogue of Life); INTRODUCED (Thailand  TDWG:THA; The World Checklist of Vascular Plants (WCVP))). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=10961470&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/10961470,0,11,3
+houseplant,Sansevieria cylindrica,Dracaena angolensis,10961470,synonym,,Accepted name Dracaena angolensis is already listed.,,0,0
+houseplant,Dracaena reflexa,Dracaena reflexa,,topped_up,,,6,18,0
+houseplant,Spathiphyllum wallisii,Spathiphyllum wallisii,,topped_up,,,14,8,0
+houseplant,Spathiphyllum cochlearispathum,Spathiphyllum cochlearispathum,2869661,added,cultivated,Spathiphyllum cochlearispathum is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/2869661,0,9,4
+houseplant,Zamioculcas zamiifolia,Zamioculcas zamiifolia,2869014,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/22055502. GBIF taxon: https://www.gbif.org/species/2869014,0,18,4
+houseplant,Ficus elastica,Ficus elastica,,topped_up,,,17,8,0
+houseplant,Ficus lyrata,Ficus lyrata,,topped_up,,,11,8,0
+houseplant,Ficus benjamina,Ficus benjamina,,topped_up,,,17,8,0
+houseplant,Ficus microcarpa,Ficus microcarpa,,topped_up,,,15,8,0
+houseplant,Goeppertia ornata,Goeppertia ornata,7977204,added,cultivated,Goeppertia ornata is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/7977204,0,4,0
+houseplant,Calathea ornata,Goeppertia ornata,7977204,synonym,,Accepted name Goeppertia ornata is already listed.,,0,0
+houseplant,Goeppertia roseopicta,Goeppertia roseopicta,8023661,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/86342303. GBIF taxon: https://www.gbif.org/species/8023661,0,18,4
+houseplant,Goeppertia makoyana,Goeppertia makoyana,7708211,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/126218178. GBIF taxon: https://www.gbif.org/species/7708211,0,18,4
+houseplant,Anthurium andraeanum,Anthurium andraeanum,,topped_up,,,17,8,0
+houseplant,Anthurium crystallinum,Anthurium crystallinum,2872232,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/486993766. GBIF taxon: https://www.gbif.org/species/2872232,0,17,4
+houseplant,Aglaonema commutatum,Aglaonema commutatum,,topped_up,,,5,18,0
+houseplant,Aglaonema modestum,Aglaonema modestum,2866488,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/60110859. GBIF taxon: https://www.gbif.org/species/2866488,0,12,2
+houseplant,Syngonium podophyllum,Syngonium podophyllum,,topped_up,,,14,8,0
+houseplant,Nephrolepis exaltata,Nephrolepis exaltata,2650927,added,cultivated,Nephrolepis exaltata is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/2650927,0,18,4
+houseplant,Nephrolepis cordifolia,Nephrolepis cordifolia,,topped_up,,,14,8,0
+houseplant,Chlorophytum comosum,Chlorophytum comosum,2774846,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/27194297. GBIF taxon: https://www.gbif.org/species/2774846,0,18,4
+houseplant,Begonia maculata,Begonia maculata,7303475,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/14006734. GBIF taxon: https://www.gbif.org/species/7303475,0,11,4
+houseplant,Begonia cucullata,Begonia cucullata,,topped_up,,,12,8,0
+houseplant,Phalaenopsis amabilis,Phalaenopsis amabilis,,topped_up,,,17,8,0
+houseplant,Dendrobium bigibbum,Dendrobium bigibbum,,topped_up,,,8,18,0
+houseplant,Aloe vera,Aloe vera,,topped_up,,,17,8,0
+houseplant,Crassula ovata,Crassula ovata,5362063,added,cultivated,Crassula ovata is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/5362063,0,18,4
+houseplant,Echeveria elegans,Echeveria elegans,8315197,added,cultivated,Echeveria elegans is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/8315197,0,18,4
+houseplant,Haworthiopsis attenuata,Haworthiopsis attenuata,9388529,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/104441914. GBIF taxon: https://www.gbif.org/species/9388529,0,18,4
+houseplant,Schlumbergera truncata,Schlumbergera truncata,5383983,added,introduced,GBIF marks Schlumbergera truncata introduced in Southeast Asia (INTRODUCED (Vietnam  TDWG:VIE; The World Checklist of Vascular Plants (WCVP))). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=5383983&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/5383983,0,18,4
+houseplant,Opuntia microdasys,Opuntia microdasys,7283961,added,cultivated,Opuntia microdasys is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/7283961,0,18,4
+houseplant,Peperomia obtusifolia,Peperomia obtusifolia,3086423,added,cultivated,Peperomia obtusifolia is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/3086423,0,18,4
+houseplant,Peperomia argyreia,Peperomia argyreia,4189296,added,introduced,GBIF marks Peperomia argyreia introduced in Southeast Asia (INTRODUCED (PH Philippines; Global Register of Introduced and Invasive Species - Philippines)). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=4189296&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/4189296,0,14,0
+houseplant,Peperomia caperata,Peperomia caperata,4186167,added,cultivated,Peperomia caperata is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/4186167,0,16,2
+houseplant,Pilea peperomioides,Pilea peperomioides,5669632,added,cultivated,Pilea peperomioides is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/5669632,0,18,4
+houseplant,Tradescantia zebrina,Tradescantia zebrina,,topped_up,,,6,18,0
+houseplant,Maranta leuconeura,Maranta leuconeura,,topped_up,,,12,8,0
+houseplant,Hoya carnosa,Hoya carnosa,8658195,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/26778651. GBIF taxon: https://www.gbif.org/species/8658195,0,18,4
+houseplant,Beaucarnea recurvata,Beaucarnea recurvata,2768035,added,cultivated,Beaucarnea recurvata is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/2768035,0,18,4
+houseplant,Caladium bicolor,Caladium bicolor,,topped_up,,,16,8,0
+houseplant,Scindapsus pictus,Scindapsus pictus,,topped_up,,,0,18,0
+houseplant,Rhaphidophora tetrasperma,Rhaphidophora tetrasperma,5329745,added,cultivated,Rhaphidophora tetrasperma is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/5329745,0,14,4
+houseplant,Adiantum raddianum,Adiantum raddianum,,topped_up,,,17,8,0
+houseplant,Platycerium bifurcatum,Platycerium bifurcatum,,topped_up,,,14,8,0
+houseplant,Kalanchoe blossfeldiana,Kalanchoe blossfeldiana,2985944,added,introduced,GBIF marks Kalanchoe blossfeldiana introduced in Southeast Asia (INTRODUCED (Vietnam  TDWG:VIE; The World Checklist of Vascular Plants (WCVP)); INTRODUCED (Anguilla AI ANGUILLA; Global Register of Introduced and Invasive Species - Anguilla)). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=2985944&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/2985944,0,18,4
+houseplant,Euphorbia milii,Euphorbia milii,,topped_up,,,15,8,0
+houseplant,Curio rowleyanus,Curio rowleyanus,3149649,added,cultivated,Curio rowleyanus is not in the Indonesia pack. Included as a cultivated ornamental. GBIF taxon: https://www.gbif.org/species/3149649,0,9,3
+garden,Plumeria rubra,Plumeria rubra,,topped_up,,,15,0,4
+garden,Plumeria obtusa,Plumeria obtusa,,already_covered,,,12,0,0
+garden,Bougainvillea spectabilis,Bougainvillea spectabilis,,topped_up,,,10,6,4
+garden,Bougainvillea glabra,Bougainvillea glabra,,already_covered,,,12,0,0
+garden,Hibiscus rosa-sinensis,Hibiscus rosa-sinensis,,topped_up,,,12,0,4
+garden,Ixora coccinea,Ixora coccinea,,already_covered,,,17,0,0
+garden,Ixora javanica,Ixora javanica,,topped_up,,,5,6,0
+garden,Heliconia rostrata,Heliconia rostrata,,topped_up,,,18,0,4
+garden,Heliconia psittacorum,Heliconia psittacorum,,topped_up,,,10,6,0
+garden,Canna indica,Canna indica,,already_covered,,,15,0,0
+garden,Cordyline fruticosa,Cordyline fruticosa,,already_covered,,,12,0,0
+garden,Codiaeum variegatum,Codiaeum variegatum,,topped_up,,,12,6,4
+garden,Pandanus amaryllifolius,Pandanus amaryllifolius,,topped_up,,,14,6,0
+garden,Pandanus tectorius,Pandanus tectorius,,already_covered,,,17,0,0
+garden,Alpinia purpurata,Alpinia purpurata,,already_covered,,,17,0,0
+garden,Alpinia zerumbet,Alpinia zerumbet,5301979,added,introduced,GBIF marks Alpinia zerumbet introduced in Southeast Asia (INTRODUCED (Philippines  tdwg:PHI; Catalogue of Life); INTRODUCED (Philippines  TDWG:PHI; The World Checklist of Vascular Plants (WCVP)); INTRODUCED (Anguilla AI ANGUILLA; Global Register of Introduced and Invasive Species - Anguilla)). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=5301979&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/5301979,0,16,4
+garden,Musa acuminata,Musa acuminata,,topped_up,,,10,6,0
+garden,Carica papaya,Carica papaya,,topped_up,,,11,6,0
+garden,Cocos nucifera,Cocos nucifera,,topped_up,,,11,6,0
+garden,Dypsis lutescens,Dypsis lutescens,,already_covered,,,12,0,0
+garden,Roystonea regia,Roystonea regia,2733755,added,introduced,GBIF marks Roystonea regia introduced in Southeast Asia (INTRODUCED (Anguilla AI ANGUILLA; Global Register of Introduced and Invasive Species - Anguilla)). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=2733755&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/2733755,0,16,4
+garden,Wodyetia bifurcata,Wodyetia bifurcata,,topped_up,,,11,6,0
+garden,Bambusa vulgaris,Bambusa vulgaris,,topped_up,,,11,6,0
+garden,Dendrocalamus asper,Dendrocalamus asper,,already_covered,,,14,0,0
+garden,Lantana camara,Lantana camara,,already_covered,,,12,0,0
+garden,Allamanda cathartica,Allamanda cathartica,,already_covered,,,18,0,0
+garden,Mussaenda philippica,Mussaenda philippica,,already_covered,,,18,0,0
+garden,Gardenia jasminoides,Gardenia jasminoides,,topped_up,,,6,6,0
+garden,Jasminum sambac,Jasminum sambac,,topped_up,,,6,6,0
+garden,Cananga odorata,Cananga odorata,,already_covered,,,13,0,0
+garden,Delonix regia,Delonix regia,,topped_up,,,11,6,0
+garden,Caesalpinia pulcherrima,Caesalpinia pulcherrima,,topped_up,,,10,6,0
+garden,Nerium oleander,Nerium oleander,,topped_up,,,10,6,0
+garden,Duranta erecta,Duranta erecta,,already_covered,,,18,0,0
+garden,Ruellia simplex,Ruellia simplex,,topped_up,,,10,6,0
+garden,Etlingera elatior,Etlingera elatior,,already_covered,,,14,0,0
+garden,Hellenia speciosa,Hellenia speciosa,,already_covered,,,12,0,0
+garden,Acalypha wilkesiana,Acalypha wilkesiana,,already_covered,,,14,0,0
+garden,Polyscias scutellaria,Polyscias scutellaria,,already_covered,,,16,0,0
+garden,Adenium obesum,Adenium obesum,7155887,added,introduced,GBIF marks Adenium obesum introduced in Southeast Asia (INTRODUCED (Anguilla AI ANGUILLA; Global Register of Introduced and Invasive Species - Anguilla)). Indonesia INTRODUCED occurrences: 0. https://www.gbif.org/occurrence/search?taxon_key=7155887&country=ID&establishment_means=INTRODUCED Species: https://www.gbif.org/species/7155887,0,16,4
+garden,Pachira aquatica,Pachira aquatica,3152235,added,cultivated,Community-confirmed cultivated iNaturalist observation in Southeast Asia: https://www.inaturalist.org/photos/119961376. GBIF taxon: https://www.gbif.org/species/3152235,0,16,4
+garden,Ravenala madagascariensis,Ravenala madagascariensis,,already_covered,,,15,0,0
+garden,Tabernaemontana divaricata,Tabernaemontana divaricata,,already_covered,,,14,0,0
+garden,Combretum indicum,Combretum indicum,,already_covered,,,15,0,0
+garden,Thunbergia grandiflora,Thunbergia grandiflora,,already_covered,,,12,0,0
+garden,Tecoma stans,Tecoma stans,,already_covered,,,17,0,0
+garden,Spathodea campanulata,Spathodea campanulata,,already_covered,,,12,0,0
+garden,Lagerstroemia speciosa,Lagerstroemia speciosa,,already_covered,,,15,0,0
+garden,Cassia fistula,Cassia fistula,,already_covered,,,16,0,0
+garden,Erythrina variegata,Erythrina variegata,,already_covered,,,15,0,0
+garden,Artocarpus altilis,Artocarpus altilis,,already_covered,,,14,0,0
+fungus,Amanita princeps,Amanita princeps,,topped_up,,,6,1,1
+fungus,Amanita javanica,Amanita javanica,,topped_up,,,6,6,0
+fungus,Amanita hemibapha,Amanita hemibapha,5240264,added,recorded,Included so Amanita hemibapha can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5240264,0,11,4
+fungus,Amanita virginea,Amanita virginea,,topped_up,,,0,0,0
+fungus,Chlorophyllum molybdites,Chlorophyllum molybdites,,topped_up,,,6,16,4
+fungus,Chlorophyllum hortense,Chlorophyllum hortense,,topped_up,,,6,16,0
+fungus,Termitomyces microcarpus,Termitomyces microcarpus,2530625,added,recorded,Included so Termitomyces microcarpus can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/2530625,0,16,4
+fungus,Termitomyces eurrhizus,Termitomyces eurrhizus,8263562,added,recorded,Included so Termitomyces eurrhizus can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/8263562,0,14,2
+fungus,Termitomyces heimii,Termitomyces heimii,2530635,too_few_photos,recorded,Included so Termitomyces heimii can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/2530635,0,1,0
+fungus,Termitomyces clypeatus,Termitomyces clypeatus,2530598,added,recorded,Included so Termitomyces clypeatus can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/2530598,0,9,4
+fungus,Volvariella volvacea,Volvariella volvacea,,topped_up,,,6,16,4
+fungus,Volvariella bombycina,Volvariella bombycina,5241399,added,recorded,Included so Volvariella bombycina can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5241399,0,16,4
+fungus,Auricularia cornea,Auricularia cornea,,topped_up,,,13,8,0
+fungus,Auricularia auricula-judae,Auricularia auricula-judae,5249271,added,recorded,Included so Auricularia auricula-judae can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5249271,0,16,4
+fungus,Auricularia nigricans,Auricularia nigricans,,topped_up,,,6,16,0
+fungus,Schizophyllum commune,Schizophyllum commune,,topped_up,,,17,8,4
+fungus,Pleurotus ostreatus,Pleurotus ostreatus,,topped_up,,,6,16,4
+fungus,Pleurotus djamor,Pleurotus djamor,,topped_up,,,14,8,0
+fungus,Pleurotus cystidiosus,Pleurotus cystidiosus,2526556,added,recorded,Included so Pleurotus cystidiosus can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/2526556,0,16,4
+fungus,Lentinula edodes,Lentinula edodes,2537743,added,recorded,Included so Lentinula edodes can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/2537743,0,16,4
+fungus,Ganoderma lucidum,Ganoderma lucidum,,topped_up,,,17,8,0
+fungus,Ganoderma applanatum,Ganoderma applanatum,,topped_up,,,6,16,0
+fungus,Psilocybe cubensis,Psilocybe cubensis,5242510,added,recorded,Included so Psilocybe cubensis can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5242510,0,16,4
+fungus,Coprinus comatus,Coprinus comatus,,topped_up,,,6,16,0
+fungus,Coprinopsis atramentaria,Coprinopsis atramentaria,5242740,added,recorded,Included so Coprinopsis atramentaria can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5242740,0,16,4
+fungus,Marasmius haematocephalus,Marasmius haematocephalus,,topped_up,,,0,16,0
+fungus,Leucocoprinus birnbaumii,Leucocoprinus birnbaumii,,topped_up,,,12,8,0
+fungus,Macrolepiota dolichaula,Macrolepiota dolichaula,2536755,added,recorded,Included so Macrolepiota dolichaula can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/2536755,0,16,4
+fungus,Lentinus squarrosulus,Lentinus squarrosulus,,topped_up,,,11,8,0
+fungus,Cookeina sulcipes,Cookeina sulcipes,,topped_up,,,6,15,0
+fungus,Oudemansiella canarii,Oudemansiella canarii,5243653,added,recorded,Included so Oudemansiella canarii can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5243653,0,6,4
+fungus,Microporus xanthopus,Microporus xanthopus,,topped_up,,,12,8,0
+fungus,Phallus indusiatus,Phallus indusiatus,,topped_up,,,12,8,0
+fungus,Tremella fuciformis,Tremella fuciformis,,topped_up,,,6,16,0
+fungus,Galerina marginata,Galerina marginata,8118872,added,recorded,Included so Galerina marginata can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/8118872,0,16,4
+fungus,Agaricus bisporus,Agaricus bisporus,5243447,added,recorded,Included so Agaricus bisporus can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/5243447,0,16,4
+fungus,Calocybe indica,Calocybe indica,3347420,too_few_photos,recorded,Included so Calocybe indica can be told apart from similar fungi. No edibility is assessed. https://www.gbif.org/species/3347420,0,1,0

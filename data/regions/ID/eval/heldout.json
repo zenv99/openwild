@@ -1,0 +1,3852 @@
+{
+ "before": {
+  "tested": 56,
+  "missing_species": 157,
+  "top1": 0.4107,
+  "top3": 0.5536,
+  "rows": [
+   {
+    "species": "Asplenium nidus",
+    "rank": 5,
+    "top3": [
+     "Tectaria singaporiana",
+     "Lepisorus mucronatus",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Alpinia haenkei",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Lepisorus mucronatus",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Alpinia haenkei",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Cycas scratchleyana",
+     "Sindora coriacea"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Epipremnum pinnatum",
+     "Thaumatophyllum bipinnatifidum"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Homalomena cordata",
+     "Philodendron gloriosum"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Cyrtostachys loriae",
+     "Citrus maxima"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 531,
+    "top3": [
+     "Pandanus furcatus",
+     "Annona muricata",
+     "Epipremnum pinnatum"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Thaumatophyllum bipinnatifidum",
+     "Artocarpus elasticus"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": null,
+    "top3": [
+     "Monstera deliciosa",
+     "Selaginella intermedia",
+     "Platycerium bifurcatum"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": null,
+    "top3": [
+     "Aralidium pinnatifidum",
+     "Osmoxylon novoguineense",
+     "Zingiber odoriferum"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": null,
+    "top3": [
+     "Anadendrum microstachyum",
+     "Claoxylon indicum",
+     "Alocasia sarawakensis"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": null,
+    "top3": [
+     "Maranta leuconeura",
+     "Monstera deliciosa",
+     "Lasia spinosa"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Aglaonema commutatum",
+     "Aleurites rockinghamensis"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 3,
+    "top3": [
+     "Blumea sylvatica",
+     "Palaquium obovatum",
+     "Dieffenbachia seguine"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Holochlamys beccarii",
+     "Spathiphyllum commutatum"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 10,
+    "top3": [
+     "Aleurites rockinghamensis",
+     "Epipremnum aureum",
+     "Puccinia thaliae"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Pongamia pinnata",
+     "Aglaonema commutatum"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 7,
+    "top3": [
+     "Alocasia wentii",
+     "Schismatoglottis calyptrata",
+     "Alocasia indica"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 3,
+    "top3": [
+     "Hernandia nymphaeifolia",
+     "Piper fragile",
+     "Epipremnum aureum"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 2,
+    "top3": [
+     "Campnosperma coriaceum",
+     "Epipremnum aureum",
+     "Philodendron giganteum"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 13,
+    "top3": [
+     "Melientha suavis",
+     "Syzygium glabratum",
+     "Rhaphidophora spuria"
+    ]
+   },
+   {
+    "species": "Dracaena angolensis",
+    "rank": null,
+    "top3": [
+     "Desmostachya bipinnata",
+     "Cenchrus brownii",
+     "Pinalia rhynchostyloides"
+    ]
+   },
+   {
+    "species": "Dracaena angolensis",
+    "rank": null,
+    "top3": [
+     "Dracaena finlaysonii",
+     "Dracaena trifasciata",
+     "Mikania cordata"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": null,
+    "top3": [
+     "Spathiphyllum wallisii",
+     "Anadendrum microstachyum",
+     "Piper retrofractum"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": null,
+    "top3": [
+     "Spathiphyllum wallisii",
+     "Anadendrum microstachyum",
+     "Piper retrofractum"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": null,
+    "top3": [
+     "Spathiphyllum wallisii",
+     "Anadendrum microstachyum",
+     "Cenchrus americanus"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": null,
+    "top3": [
+     "Spathiphyllum commutatum",
+     "Heliconia indica",
+     "Cyclodictyon blumeanum"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": null,
+    "top3": [
+     "Bridelia tomentosa",
+     "Diospyros buxifolia",
+     "Volkameria inermis"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": null,
+    "top3": [
+     "Cestrum nocturnum",
+     "Gynochthodes rigida",
+     "Embelia viridiflora"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": null,
+    "top3": [
+     "Pseudechinolaena polystachya",
+     "Canarium asperum",
+     "Gynochthodes rigida"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": null,
+    "top3": [
+     "Diospyros buxifolia",
+     "Ilex crenata",
+     "Volkameria inermis"
+    ]
+   },
+   {
+    "species": "Goeppertia roseopicta",
+    "rank": null,
+    "top3": [
+     "Iresine diffusa",
+     "Maranta leuconeura",
+     "Amaranthus tricolor"
+    ]
+   },
+   {
+    "species": "Goeppertia roseopicta",
+    "rank": null,
+    "top3": [
+     "Maranta leuconeura",
+     "Epipremnum aureum",
+     "Iresine diffusa"
+    ]
+   },
+   {
+    "species": "Goeppertia roseopicta",
+    "rank": null,
+    "top3": [
+     "Cyrtandra splendens",
+     "Syngonium wendlandii",
+     "Piper porphyrophyllum"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": null,
+    "top3": [
+     "Aglaonema nitidum",
+     "Maranta leuconeura",
+     "Alocasia baginda"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": null,
+    "top3": [
+     "Stachyphrynium repens",
+     "Dieffenbachia seguine",
+     "Maranta leuconeura"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": null,
+    "top3": [
+     "Aglaonema nitidum",
+     "Maranta leuconeura",
+     "Epipremnum aureum"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": null,
+    "top3": [
+     "Goeppertia zebrina",
+     "Epipremnum aureum",
+     "Donax canniformis"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": null,
+    "top3": [
+     "Alocasia reginula",
+     "Syngonium podophyllum",
+     "Remusatia vivipara"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": null,
+    "top3": [
+     "Piper porphyrophyllum",
+     "Piper ornatum",
+     "Syngonium podophyllum"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": null,
+    "top3": [
+     "Piper ornatum",
+     "Syngonium podophyllum",
+     "Piper kwashoense"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": null,
+    "top3": [
+     "Remusatia vivipara",
+     "Alocasia reginula",
+     "Philodendron gloriosum"
+    ]
+   },
+   {
+    "species": "Aglaonema modestum",
+    "rank": null,
+    "top3": [
+     "Donax canniformis",
+     "Stachyphrynium repens",
+     "Gonocaryum litorale"
+    ]
+   },
+   {
+    "species": "Aglaonema modestum",
+    "rank": null,
+    "top3": [
+     "Cyrtosperma macrotum",
+     "Anadendrum microstachyum",
+     "Spathiphyllum wallisii"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": null,
+    "top3": [
+     "Asplenium caudatum",
+     "Dicksonia blumei",
+     "Cycas rumphii"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": null,
+    "top3": [
+     "Lomagramma lomarioides",
+     "Nephrolepis hirsutula",
+     "Dicranopteris linearis"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": null,
+    "top3": [
+     "Nephrolepis cordifolia",
+     "Dicranopteris pubigera",
+     "Dicranopteris linearis"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": null,
+    "top3": [
+     "Nephrolepis cordifolia",
+     "Dicranopteris pubigera",
+     "Dicranopteris linearis"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": null,
+    "top3": [
+     "Pandanus dubius",
+     "Tradescantia spathacea",
+     "Hypolytrum nemorum"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": null,
+    "top3": [
+     "Gahnia aspera",
+     "Chloris truncata",
+     "Carex indica"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": null,
+    "top3": [
+     "Tradescantia fluminensis",
+     "Coelogyne flexuosa",
+     "Spathoglottis vanvuurenii"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": null,
+    "top3": [
+     "Proiphys amboinensis",
+     "Dianella ensifolia",
+     "Crinum asiaticum"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": null,
+    "top3": [
+     "Begonia stilpnophylla",
+     "Begonia coriacea",
+     "Phaseolus coccineus"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": null,
+    "top3": [
+     "Alpinia javanica",
+     "Begonia obliqua",
+     "Microcos tomentosa"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": null,
+    "top3": [
+     "Begonia baramensis",
+     "Cyrtosperma merkusii",
+     "Cyclea barbata"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": null,
+    "top3": [
+     "Begonia muricata",
+     "Begonia stilpnophylla",
+     "Alpinia haenkei"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": null,
+    "top3": [
+     "Rhaphiolepis indica",
+     "Leptospermum amboinense",
+     "Pisonia aculeata"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": null,
+    "top3": [
+     "Pisonia aculeata",
+     "Pluchea indica",
+     "Scyphiphora hydrophylacea"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": null,
+    "top3": [
+     "Lumnitzera racemosa",
+     "Avicennia marina",
+     "Ceriops australis"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": null,
+    "top3": [
+     "Aegiceras corniculatum",
+     "Apodytes dimidiata",
+     "Portulaca granulatostellulata"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": null,
+    "top3": [
+     "Portulaca quadrifida",
+     "Vaccinium microphyllum",
+     "Kalanchoe laetivirens"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": null,
+    "top3": [
+     "Kalanchoe laetivirens",
+     "Aloe vera",
+     "Opuntia cochenillifera"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": null,
+    "top3": [
+     "Salvinia molesta",
+     "Coleus australis",
+     "Coleus amboinicus"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": null,
+    "top3": [
+     "Cyperus platystylis",
+     "Eria javanica",
+     "Cyperus javanicus"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": null,
+    "top3": [
+     "Euphorbia trigona",
+     "Drosera indica",
+     "Aloe vera"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": null,
+    "top3": [
+     "Elytrophorus spicatus",
+     "Aloe vera",
+     "Huperzia serrata"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": null,
+    "top3": [
+     "Euphorbia trigona",
+     "Hypoestes phyllostachya",
+     "Zingiber longipedunculatum"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": null,
+    "top3": [
+     "Aloe vera",
+     "Pandanus odorifer",
+     "Paphiopedilum javanicum"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": null,
+    "top3": [
+     "Curcuma zedoaria",
+     "Curcuma petiolata",
+     "Dendrobium faciferum"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": null,
+    "top3": [
+     "Opuntia cochenillifera",
+     "Opuntia elatior",
+     "Hornstedtia leonurus"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": null,
+    "top3": [
+     "Antrophyum plantagineum",
+     "Dendrobium macrostachyum",
+     "Pyrrosia mannii"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": null,
+    "top3": [
+     "Dendrobium faciferum",
+     "Curcuma petiolata",
+     "Curcuma zedoaria"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": null,
+    "top3": [
+     "Herissantia crispa",
+     "Potentilla sundaica",
+     "Opuntia elatior"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": null,
+    "top3": [
+     "Opuntia elatior",
+     "Gerbera piloselloides",
+     "Opuntia cochenillifera"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": null,
+    "top3": [
+     "Opuntia cochenillifera",
+     "Opuntia elatior",
+     "Aureobasidium pullulans"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": null,
+    "top3": [
+     "Opuntia elatior",
+     "Opuntia cochenillifera",
+     "Aureobasidium pullulans"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": null,
+    "top3": [
+     "Ficus recurva",
+     "Hoya lacunosa",
+     "Amydrium humile"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": null,
+    "top3": [
+     "Pyrrosia lanceolata",
+     "Hetaeria oblongifolia",
+     "Liparis rheedei"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": null,
+    "top3": [
+     "Huperzia squarrosa",
+     "Amorphophallus paeoniifolius",
+     "Pandanus conoideus"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": null,
+    "top3": [
+     "Ceriops australis",
+     "Lumnitzera racemosa",
+     "Ficus deltoidea"
+    ]
+   },
+   {
+    "species": "Peperomia caperata",
+    "rank": null,
+    "top3": [
+     "Cissus discolor",
+     "Iresine herbstii",
+     "Alocasia baginda"
+    ]
+   },
+   {
+    "species": "Peperomia caperata",
+    "rank": null,
+    "top3": [
+     "Cissus discolor",
+     "Alocasia baginda",
+     "Caladium bicolor"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": null,
+    "top3": [
+     "Centella asiatica",
+     "Ipomoea violacea",
+     "Homalomena pendula"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": null,
+    "top3": [
+     "Anthurium andraeanum",
+     "Eragrostis tenella",
+     "Limnocharis flava"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": null,
+    "top3": [
+     "Stephania japonica",
+     "Centella asiatica",
+     "Hydrocotyle verticillata"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": null,
+    "top3": [
+     "Centella asiatica",
+     "Proiphys amboinensis",
+     "Hydrocotyle leucocephala"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": null,
+    "top3": [
+     "Liparis elliptica",
+     "Peperomia tetraphylla",
+     "Fomitopsis betulina"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": null,
+    "top3": [
+     "Hoya coriacea",
+     "Hoya diversifolia",
+     "Hoya verticillata"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": null,
+    "top3": [
+     "Hoya diversifolia",
+     "Hoya verticillata",
+     "Hoya coriacea"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": null,
+    "top3": [
+     "Ficus disticha",
+     "Adenia cordifolia",
+     "Dracaena elliptica"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": null,
+    "top3": [
+     "Gymnostoma papuanum",
+     "Freycinetia timorensis",
+     "Grammatophyllum speciosum"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": null,
+    "top3": [
+     "Pandanus amaryllifolius",
+     "Carex rafflesiana",
+     "Cymbopogon citratus"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": null,
+    "top3": [
+     "Cassia abbreviata",
+     "Albizia lebbekoides",
+     "Gymnostoma papuanum"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": null,
+    "top3": [
+     "Pandanus krauelianus",
+     "Pandanus dubius",
+     "Pandanus tectorius"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": null,
+    "top3": [
+     "Monstera deliciosa",
+     "Amydrium zippelianum",
+     "Syngonium podophyllum"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": null,
+    "top3": [
+     "Amydrium zippelianum",
+     "Monstera deliciosa",
+     "Artocarpus elasticus"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": null,
+    "top3": [
+     "Amydrium zippelianum",
+     "Hemionitis arifolia",
+     "Passiflora edulis"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": null,
+    "top3": [
+     "Alocasia wentii",
+     "Alocasia baginda",
+     "Alocasia clypeolata"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": null,
+    "top3": [
+     "Puccinia thaliae",
+     "Pentas lanceolata",
+     "Jatropha podagrica"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": null,
+    "top3": [
+     "Ixora coccinea",
+     "Ixora chinensis",
+     "Ixora javanica"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": null,
+    "top3": [
+     "Pentas lanceolata",
+     "Puccinia thaliae",
+     "Jatropha podagrica"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": null,
+    "top3": [
+     "Aeschynanthus radicans",
+     "Rhododendron longiflorum",
+     "Ixora javanica"
+    ]
+   },
+   {
+    "species": "Curio rowleyanus",
+    "rank": null,
+    "top3": [
+     "Hoya lacunosa",
+     "Melicope xanthoxyloides",
+     "Filicium decipiens"
+    ]
+   },
+   {
+    "species": "Curio rowleyanus",
+    "rank": null,
+    "top3": [
+     "Diospyros cauliflora",
+     "Anamirta cocculus",
+     "Dischidia nummularia"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 1,
+    "top3": [
+     "Plumeria rubra",
+     "Plumeria alba",
+     "Plumeria obtusa"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 800,
+    "top3": [
+     "Alstonia beatricis",
+     "Barringtonia macrocarpa",
+     "Neesia altissima"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 3,
+    "top3": [
+     "Kopsia fruticosa",
+     "Ixora chinensis",
+     "Plumeria rubra"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 1,
+    "top3": [
+     "Plumeria rubra",
+     "Plumeria alba",
+     "Plumeria obtusa"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 10,
+    "top3": [
+     "Bougainvillea glabra",
+     "Hibiscus rosa-sinensis",
+     "Pleroma semidecandrum"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 5,
+    "top3": [
+     "Bougainvillea glabra",
+     "Canavalia gladiata",
+     "Clerodendrum thomsoniae"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 1,
+    "top3": [
+     "Bougainvillea spectabilis",
+     "Bougainvillea glabra",
+     "Mussaenda erythrophylla"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 4,
+    "top3": [
+     "Bougainvillea glabra",
+     "Jatropha integerrima",
+     "Mussaenda philippica"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 1,
+    "top3": [
+     "Hibiscus rosa-sinensis",
+     "Hibiscus \u00d7 rosa-sinensis",
+     "Hibiscus archeri"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 2717,
+    "top3": [
+     "Cissus adnata",
+     "Commersonia bartramia",
+     "Malvaviscus penduliflorus"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 1,
+    "top3": [
+     "Hibiscus rosa-sinensis",
+     "Hibiscus \u00d7 rosa-sinensis",
+     "Hibiscus archeri"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 3,
+    "top3": [
+     "Hibiscus \u00d7 rosa-sinensis",
+     "Hibiscus archeri",
+     "Hibiscus rosa-sinensis"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Heliconia rauliniana",
+     "Heliconia collinsiana"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Aechmea gamosepala",
+     "Alpinia purpurata"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Heliconia bihai",
+     "Heliconia collinsiana"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Heliconia bihai",
+     "Heliconia wagneriana"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 130,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Semecarpus longifolius",
+     "Lygodium circinnatum"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 45,
+    "top3": [
+     "Polyscias fruticosa",
+     "Crotalaria paniculata",
+     "Oldenlandia herbacea"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 938,
+    "top3": [
+     "Goniophlebium persicifolium",
+     "Arachniodes carvifolia",
+     "Apostasia nuda"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 15,
+    "top3": [
+     "Oleandra pistillaris",
+     "Oleandra neriiformis",
+     "Monoon longifolium"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": null,
+    "top3": [
+     "Alpinia nutans",
+     "Alpinia mutica",
+     "Alpinia malaccensis"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": null,
+    "top3": [
+     "Alpinia mutica",
+     "Alpinia nieuwenhuizii",
+     "Dendrobium plicatile"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": null,
+    "top3": [
+     "Alpinia nutans",
+     "Alpinia mutica",
+     "Coelogyne multiflora"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": null,
+    "top3": [
+     "Musa balbisiana",
+     "Heliconia indica",
+     "Curcuma longa"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": null,
+    "top3": [
+     "Cyrtostachys renda",
+     "Calamus warburgii",
+     "Elaeis guineensis"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": null,
+    "top3": [
+     "Oncosperma horridum",
+     "Corypha utan",
+     "Oncosperma tigillarium"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": null,
+    "top3": [
+     "Syzygium sayeri",
+     "Tetrameles nudiflora",
+     "Oncosperma tigillarium"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": null,
+    "top3": [
+     "Heterospathe elata",
+     "Wodyetia bifurcata",
+     "Elaeis guineensis"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": null,
+    "top3": [
+     "Scaevola taccada",
+     "Daphniphyllum glaucescens",
+     "Bruguiera exaristata"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": null,
+    "top3": [
+     "Rhododendron lamrialianum",
+     "Aloe vera",
+     "Rhododendron buxifolium"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": null,
+    "top3": [
+     "Rhododendron wentianum",
+     "Rhododendron beyerinckianum",
+     "Ixora coccinea"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": null,
+    "top3": [
+     "Rhododendron praetervisum",
+     "Rhododendron baconii",
+     "Rhododendron buxifolium"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": null,
+    "top3": [
+     "Calliandra surinamensis",
+     "Barringtonia asiatica",
+     "Calliandra haematocephala"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": null,
+    "top3": [
+     "Calliandra surinamensis",
+     "Sonneratia caseolaris",
+     "Capparis tomentosa"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": null,
+    "top3": [
+     "Archidendron ellipticum",
+     "Pentaspadon motleyi",
+     "Alstonia angustiloba"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": null,
+    "top3": [
+     "Teijsmanniodendron pteropodum",
+     "Alstonia beatricis",
+     "Melicope glabra"
+    ]
+   },
+   {
+    "species": "Amanita princeps",
+    "rank": 38,
+    "top3": [
+     "Guettarda speciosa",
+     "Rhizophora mucronata",
+     "Anthracocystis formosana"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": null,
+    "top3": [
+     "Russula amoenolens",
+     "Russula intermedia",
+     "Russula emetica"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": null,
+    "top3": [
+     "Russula amoenolens",
+     "Leucocoprinus birnbaumii",
+     "Amanita javanica"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": null,
+    "top3": [
+     "Lycoperdon pratense",
+     "Clitopilus prunulus",
+     "Calvatia lilacina"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": null,
+    "top3": [
+     "Lithocarpus lauterbachii",
+     "Rafflesia horsfieldii",
+     "Ganoderma lucidum"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 1,
+    "top3": [
+     "Chlorophyllum molybdites",
+     "Calvatia lilacina",
+     "Russula intermedia"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 36,
+    "top3": [
+     "Lactarius fuliginosus",
+     "Russula intermedia",
+     "Pluteus cervinus"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 24,
+    "top3": [
+     "Volvopluteus gloiocephalus",
+     "Phylloporus rhodoxanthus",
+     "Volvariella volvacea"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 5,
+    "top3": [
+     "Lycoperdon pratense",
+     "Russula farinipes",
+     "Russula aeruginea"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": null,
+    "top3": [
+     "Mucidula mucida",
+     "Candolleomyces candolleanus",
+     "Mycena galericulata"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": null,
+    "top3": [
+     "Hydropus nigrita",
+     "Entoloma pleopodium",
+     "Volvariella volvacea"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": null,
+    "top3": [
+     "Conocybe apala",
+     "Panaeolus antillarum",
+     "Collybiopsis confluens"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": null,
+    "top3": [
+     "Caulerpa taxifolia",
+     "Halimeda discoidea",
+     "Dictyosphaeria versluysii"
+    ]
+   },
+   {
+    "species": "Termitomyces eurrhizus",
+    "rank": null,
+    "top3": [
+     "Melanoleuca melaleuca",
+     "Collybiopsis menehune",
+     "Russula amoenolens"
+    ]
+   },
+   {
+    "species": "Termitomyces eurrhizus",
+    "rank": null,
+    "top3": [
+     "Cheirostylis montana",
+     "Bridelia insulana",
+     "Asparagus racemosus"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": null,
+    "top3": [
+     "Pluteus cervinus",
+     "Panaeolus cambodginiensis",
+     "Mycena galericulata"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": null,
+    "top3": [
+     "Sida alnifolia",
+     "Pinalia multiflora",
+     "Cratoxylum cochinchinense"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": null,
+    "top3": [
+     "Russula rosea",
+     "Russula amoenolens",
+     "Pluteus cervinus"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": null,
+    "top3": [
+     "Panaeolus cambodginiensis",
+     "Pluteus cervinus",
+     "Russula amoenolens"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 40,
+    "top3": [
+     "Gymnopilus picreus",
+     "Ficus pumila",
+     "Scleroderma nitidum"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 98,
+    "top3": [
+     "Scleroderma nitidum",
+     "Dioscorea nummularia",
+     "Geastrum triplex"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 12,
+    "top3": [
+     "Collybiopsis menehune",
+     "Collybiopsis confluens",
+     "Pleurotus pulmonarius"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 4,
+    "top3": [
+     "Russula farinipes",
+     "Collybiopsis menehune",
+     "Panus neostrigosus"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": null,
+    "top3": [
+     "Volvariella volvacea",
+     "Mucidula mucida",
+     "Agaricus rotalis"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": null,
+    "top3": [
+     "Mucidula mucida",
+     "Collybiopsis confluens",
+     "Volvopluteus gloiocephalus"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": null,
+    "top3": [
+     "Agaricus trisulphuratus",
+     "Coprinopsis mexicana",
+     "Pseudohydnum gelatinosum"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": null,
+    "top3": [
+     "Suillus granulatus",
+     "Sutorius eximius",
+     "Volvopluteus gloiocephalus"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": null,
+    "top3": [
+     "Auricularia cornea",
+     "Pleurotus pulmonarius",
+     "Stereum ostrea"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": null,
+    "top3": [
+     "Auricularia cornea",
+     "Auricularia delicata",
+     "Hydropus nigrita"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": null,
+    "top3": [
+     "Ganoderma tsugae",
+     "Guepinia helvelloides",
+     "Ganoderma lucidum"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": null,
+    "top3": [
+     "Stereum ostrea",
+     "Auricularia cornea",
+     "Pleurotus pulmonarius"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 2,
+    "top3": [
+     "Pleurotus djamor",
+     "Schizophyllum commune",
+     "Lentinus sajor-caju"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 1,
+    "top3": [
+     "Schizophyllum commune",
+     "Pleurotus djamor",
+     "Parmotrema perlatum"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 13,
+    "top3": [
+     "Parmotrema eurysacum",
+     "Halimeda discoidea",
+     "Coprinopsis variegata"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 1,
+    "top3": [
+     "Schizophyllum commune",
+     "Calathella digitiformis",
+     "Pleurotus djamor"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 2,
+    "top3": [
+     "Pleurotus pulmonarius",
+     "Pleurotus ostreatus",
+     "Phylloporus rhodoxanthus"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 3,
+    "top3": [
+     "Pleurotus pulmonarius",
+     "Pleurotus djamor",
+     "Pleurotus ostreatus"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 9,
+    "top3": [
+     "Pleurotus djamor",
+     "Pleurotus pulmonarius",
+     "Lentinus squarrosulus"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 8,
+    "top3": [
+     "Lentinus sajor-caju",
+     "Favolus grammocephalus",
+     "Pleurotus djamor"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": null,
+    "top3": [
+     "Aspergillus niger",
+     "Hernandia ovigera",
+     "Pluteus aurantiorugosus"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": null,
+    "top3": [
+     "Stereum ostrea",
+     "Coelogyne miniata",
+     "Parmotrema perlatum"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": null,
+    "top3": [
+     "Fusarium proliferatum",
+     "Coprinellus disseminatus",
+     "Lasiodiplodia theobromae"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": null,
+    "top3": [
+     "Sordaria fimicola",
+     "Ascodesmis nigricans",
+     "Fusarium proliferatum"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": null,
+    "top3": [
+     "Pleurotus ostreatus",
+     "Lactarius chichuensis",
+     "Phylloporus rhodoxanthus"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": null,
+    "top3": [
+     "Stereum ostrea",
+     "Schizophyllum commune",
+     "Auricularia delicata"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": null,
+    "top3": [
+     "Ganoderma tsugae",
+     "Ganoderma lucidum",
+     "Lentinus tigrinus"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": null,
+    "top3": [
+     "Pluteus aurantiorugosus",
+     "Amanita mira",
+     "Scleroderma nitidum"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": null,
+    "top3": [
+     "Panaeolus cinctulus",
+     "Laccaria amethystina",
+     "Melanoleuca melaleuca"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": null,
+    "top3": [
+     "Melanoleuca melaleuca",
+     "Russula amoenolens",
+     "Psilocybe subaeruginascens"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": null,
+    "top3": [
+     "Chlorophyllum molybdites",
+     "Melanoleuca melaleuca",
+     "Panaeolus cinctulus"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": null,
+    "top3": [
+     "Psilocybe subaeruginascens",
+     "Coprinopsis mexicana",
+     "Amanita flavipes"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": null,
+    "top3": [
+     "Mycena galericulata",
+     "Entoloma pleopodium",
+     "Collybiopsis confluens"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": null,
+    "top3": [
+     "Coprinopsis lagopus",
+     "Russula farinipes",
+     "Agaricus rotalis"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": null,
+    "top3": [
+     "Agaricus rotalis",
+     "Coprinopsis mexicana",
+     "Coprinellus disseminatus"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": null,
+    "top3": [
+     "Russula aeruginea",
+     "Russula anthracina",
+     "Suillus granulatus"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": null,
+    "top3": [
+     "Chlorophyllum hortense",
+     "Panaeolus antillarum",
+     "Conocybe apala"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": null,
+    "top3": [
+     "Chlorophyllum hortense",
+     "Panaeolus antillarum",
+     "Chlorophyllum molybdites"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": null,
+    "top3": [
+     "Eriocaulon brownianum",
+     "Panaeolus antillarum",
+     "Chlorophyllum molybdites"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": null,
+    "top3": [
+     "Chlorophyllum hortense",
+     "Panaeolus antillarum",
+     "Chlorophyllum molybdites"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": null,
+    "top3": [
+     "Pseudohydnum gelatinosum",
+     "Lentinus squarrosulus",
+     "Collybiopsis confluens"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": null,
+    "top3": [
+     "Candolleomyces candolleanus",
+     "Lentinus squarrosulus",
+     "Lentinus sajor-caju"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": null,
+    "top3": [
+     "Hydropus nigrita",
+     "Entoloma pleopodium",
+     "Entoloma serrulatum"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": null,
+    "top3": [
+     "Hydropus nigrita",
+     "Mucidula mucida",
+     "Pleurotus djamor"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": null,
+    "top3": [
+     "Russula emetica",
+     "Candolleomyces candolleanus",
+     "Mucidula mucida"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": null,
+    "top3": [
+     "Hydropus nigrita",
+     "Russula amoenolens",
+     "Entoloma pleopodium"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": null,
+    "top3": [
+     "Collybiopsis confluens",
+     "Russula emetica",
+     "Amanita flavipes"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": null,
+    "top3": [
+     "Collybiopsis confluens",
+     "Inocybe cincinnata",
+     "Hydropus nigrita"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": null,
+    "top3": [
+     "Russula adusta",
+     "Pleurotus eryngii",
+     "Russula melliolens"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": null,
+    "top3": [
+     "Russula farinipes",
+     "Russula melliolens",
+     "Russula rosea"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": null,
+    "top3": [
+     "Earliella scabrosa",
+     "Pangium edule",
+     "Manihot esculenta"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": null,
+    "top3": [
+     "Candolleomyces candolleanus",
+     "Phallus indusiatus",
+     "Lycoperdon pratense"
+    ]
+   }
+  ]
+ },
+ "after": {
+  "tested": 213,
+  "missing_species": 0,
+  "top1": 0.5915,
+  "top3": 0.7418,
+  "rows": [
+   {
+    "species": "Asplenium nidus",
+    "rank": 2,
+    "top3": [
+     "Tectaria singaporiana",
+     "Asplenium nidus",
+     "Lepisorus mucronatus"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Alpinia haenkei",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Lepisorus mucronatus",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Alpinia haenkei",
+     "Ensete ventricosum"
+    ]
+   },
+   {
+    "species": "Asplenium nidus",
+    "rank": 1,
+    "top3": [
+     "Asplenium nidus",
+     "Cycas scratchleyana",
+     "Sindora coriacea"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Epipremnum pinnatum",
+     "Philodendron bipinnatifidum"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Epipremnum pinnatum",
+     "Homalomena cordata"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Epipremnum pinnatum",
+     "Cyrtostachys loriae"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 6,
+    "top3": [
+     "Pandanus furcatus",
+     "Annona muricata",
+     "Epipremnum pinnatum"
+    ]
+   },
+   {
+    "species": "Monstera deliciosa",
+    "rank": 1,
+    "top3": [
+     "Monstera deliciosa",
+     "Thaumatophyllum bipinnatifidum",
+     "Epipremnum pinnatum"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": 37,
+    "top3": [
+     "Monstera deliciosa",
+     "Selaginella intermedia",
+     "Rhaphidophora tetrasperma"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": 32,
+    "top3": [
+     "Epipremnum pinnatum",
+     "Aralidium pinnatifidum",
+     "Osmoxylon novoguineense"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": 5,
+    "top3": [
+     "Anadendrum microstachyum",
+     "Claoxylon indicum",
+     "Aglaonema modestum"
+    ]
+   },
+   {
+    "species": "Monstera adansonii",
+    "rank": 16,
+    "top3": [
+     "Maranta leuconeura",
+     "Monstera deliciosa",
+     "Rhaphidophora tetrasperma"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Goeppertia makoyana",
+     "Aglaonema commutatum"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Blumea sylvatica",
+     "Palaquium obovatum"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Goeppertia makoyana",
+     "Holochlamys beccarii"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Aglaonema commutatum",
+     "Aleurites rockinghamensis"
+    ]
+   },
+   {
+    "species": "Dieffenbachia seguine",
+    "rank": 1,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Aglaonema commutatum",
+     "Aglaonema modestum"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 1,
+    "top3": [
+     "Epipremnum aureum",
+     "Alocasia wentii",
+     "Schismatoglottis calyptrata"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 1,
+    "top3": [
+     "Epipremnum aureum",
+     "Hernandia nymphaeifolia",
+     "Piper fragile"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 1,
+    "top3": [
+     "Epipremnum aureum",
+     "Monstera adansonii",
+     "Campnosperma coriaceum"
+    ]
+   },
+   {
+    "species": "Epipremnum aureum",
+    "rank": 14,
+    "top3": [
+     "Melientha suavis",
+     "Syzygium glabratum",
+     "Rhaphidophora spuria"
+    ]
+   },
+   {
+    "species": "Dracaena angolensis",
+    "rank": 1,
+    "top3": [
+     "Dracaena angolensis",
+     "Desmostachya bipinnata",
+     "Cenchrus brownii"
+    ]
+   },
+   {
+    "species": "Dracaena angolensis",
+    "rank": 1,
+    "top3": [
+     "Dracaena angolensis",
+     "Dracaena finlaysonii",
+     "Dracaena trifasciata"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": 1,
+    "top3": [
+     "Spathiphyllum cochlearispathum",
+     "Aglaonema modestum",
+     "Spathiphyllum wallisii"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": 1,
+    "top3": [
+     "Spathiphyllum cochlearispathum",
+     "Aglaonema modestum",
+     "Spathiphyllum wallisii"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": 1,
+    "top3": [
+     "Spathiphyllum cochlearispathum",
+     "Aglaonema modestum",
+     "Spathiphyllum wallisii"
+    ]
+   },
+   {
+    "species": "Spathiphyllum cochlearispathum",
+    "rank": 13,
+    "top3": [
+     "Spathiphyllum commutatum",
+     "Heliconia indica",
+     "Cyclodictyon blumeanum"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": 1,
+    "top3": [
+     "Zamioculcas zamiifolia",
+     "Bridelia tomentosa",
+     "Diospyros buxifolia"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": 33,
+    "top3": [
+     "Cestrum nocturnum",
+     "Gynochthodes rigida",
+     "Embelia viridiflora"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": 47,
+    "top3": [
+     "Pseudechinolaena polystachya",
+     "Canarium asperum",
+     "Gynochthodes rigida"
+    ]
+   },
+   {
+    "species": "Zamioculcas zamiifolia",
+    "rank": 1,
+    "top3": [
+     "Zamioculcas zamiifolia",
+     "Diospyros buxifolia",
+     "Ilex crenata"
+    ]
+   },
+   {
+    "species": "Goeppertia roseopicta",
+    "rank": 1,
+    "top3": [
+     "Goeppertia roseopicta",
+     "Goeppertia makoyana",
+     "Iresine diffusa"
+    ]
+   },
+   {
+    "species": "Goeppertia roseopicta",
+    "rank": 1,
+    "top3": [
+     "Goeppertia roseopicta",
+     "Goeppertia makoyana",
+     "Aglaonema modestum"
+    ]
+   },
+   {
+    "species": "Goeppertia roseopicta",
+    "rank": 1,
+    "top3": [
+     "Goeppertia roseopicta",
+     "Anthurium crystallinum",
+     "Cyrtandra splendens"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": 1,
+    "top3": [
+     "Goeppertia makoyana",
+     "Aglaonema nitidum",
+     "Goeppertia roseopicta"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": 1,
+    "top3": [
+     "Goeppertia makoyana",
+     "Stachyphrynium repens",
+     "Dieffenbachia seguine"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": 1,
+    "top3": [
+     "Goeppertia makoyana",
+     "Aglaonema nitidum",
+     "Goeppertia roseopicta"
+    ]
+   },
+   {
+    "species": "Goeppertia makoyana",
+    "rank": 1,
+    "top3": [
+     "Goeppertia makoyana",
+     "Goeppertia zebrina",
+     "Goeppertia roseopicta"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": 1,
+    "top3": [
+     "Anthurium crystallinum",
+     "Alocasia reginula",
+     "Syngonium podophyllum"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": 1,
+    "top3": [
+     "Anthurium crystallinum",
+     "Piper porphyrophyllum",
+     "Piper ornatum"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": 1,
+    "top3": [
+     "Anthurium crystallinum",
+     "Philodendron hederaceum",
+     "Piper ornatum"
+    ]
+   },
+   {
+    "species": "Anthurium crystallinum",
+    "rank": 1,
+    "top3": [
+     "Anthurium crystallinum",
+     "Remusatia vivipara",
+     "Alocasia reginula"
+    ]
+   },
+   {
+    "species": "Aglaonema modestum",
+    "rank": 1,
+    "top3": [
+     "Aglaonema modestum",
+     "Donax canniformis",
+     "Stachyphrynium repens"
+    ]
+   },
+   {
+    "species": "Aglaonema modestum",
+    "rank": 1,
+    "top3": [
+     "Aglaonema modestum",
+     "Spathiphyllum wallisii",
+     "Cyrtosperma macrotum"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": 7,
+    "top3": [
+     "Asplenium caudatum",
+     "Dicksonia blumei",
+     "Cycas rumphii"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": 2,
+    "top3": [
+     "Nephrolepis cordifolia",
+     "Nephrolepis exaltata",
+     "Lomagramma lomarioides"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": 4,
+    "top3": [
+     "Nephrolepis cordifolia",
+     "Dicranopteris pubigera",
+     "Dicranopteris linearis"
+    ]
+   },
+   {
+    "species": "Nephrolepis exaltata",
+    "rank": 4,
+    "top3": [
+     "Nephrolepis cordifolia",
+     "Dicranopteris pubigera",
+     "Dicranopteris linearis"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": 1,
+    "top3": [
+     "Chlorophytum comosum",
+     "Pandanus dubius",
+     "Tradescantia spathacea"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": 6,
+    "top3": [
+     "Gahnia aspera",
+     "Chloris truncata",
+     "Carex indica"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": 13,
+    "top3": [
+     "Tradescantia fluminensis",
+     "Coelogyne flexuosa",
+     "Spathoglottis vanvuurenii"
+    ]
+   },
+   {
+    "species": "Chlorophytum comosum",
+    "rank": 1,
+    "top3": [
+     "Chlorophytum comosum",
+     "Proiphys amboinensis",
+     "Dianella ensifolia"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": 10,
+    "top3": [
+     "Begonia stilpnophylla",
+     "Begonia cucullata",
+     "Begonia coriacea"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": 73,
+    "top3": [
+     "Begonia cucullata",
+     "Alpinia javanica",
+     "Begonia obliqua"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": 2,
+    "top3": [
+     "Begonia baramensis",
+     "Begonia maculata",
+     "Cyrtosperma merkusii"
+    ]
+   },
+   {
+    "species": "Begonia maculata",
+    "rank": 386,
+    "top3": [
+     "Begonia cucullata",
+     "Begonia muricata",
+     "Alpinia zerumbet"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": 1,
+    "top3": [
+     "Crassula ovata",
+     "Rhaphiolepis indica",
+     "Leptospermum amboinense"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": 1,
+    "top3": [
+     "Crassula ovata",
+     "Pisonia aculeata",
+     "Pluchea indica"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": 1,
+    "top3": [
+     "Crassula ovata",
+     "Lumnitzera racemosa",
+     "Avicennia marina"
+    ]
+   },
+   {
+    "species": "Crassula ovata",
+    "rank": 1,
+    "top3": [
+     "Crassula ovata",
+     "Aegiceras corniculatum",
+     "Apodytes dimidiata"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": 1,
+    "top3": [
+     "Echeveria elegans",
+     "Crassula ovata",
+     "Portulaca quadrifida"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": 1,
+    "top3": [
+     "Echeveria elegans",
+     "Kalanchoe laetivirens",
+     "Crassula ovata"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": 1,
+    "top3": [
+     "Echeveria elegans",
+     "Crassula ovata",
+     "Salvinia molesta"
+    ]
+   },
+   {
+    "species": "Echeveria elegans",
+    "rank": 357,
+    "top3": [
+     "Cyperus platystylis",
+     "Eria javanica",
+     "Cyperus javanicus"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": 1,
+    "top3": [
+     "Haworthiopsis attenuata",
+     "Euphorbia trigona",
+     "Drosera indica"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": 1,
+    "top3": [
+     "Haworthiopsis attenuata",
+     "Elytrophorus spicatus",
+     "Aloe vera"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": 1,
+    "top3": [
+     "Haworthiopsis attenuata",
+     "Begonia maculata",
+     "Euphorbia trigona"
+    ]
+   },
+   {
+    "species": "Haworthiopsis attenuata",
+    "rank": 1,
+    "top3": [
+     "Haworthiopsis attenuata",
+     "Aloe vera",
+     "Pandanus odorifer"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": 1,
+    "top3": [
+     "Schlumbergera truncata",
+     "Curcuma zedoaria",
+     "Curcuma petiolata"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": 1,
+    "top3": [
+     "Schlumbergera truncata",
+     "Opuntia cochenillifera",
+     "Opuntia elatior"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": 15,
+    "top3": [
+     "Antrophyum plantagineum",
+     "Dendrobium macrostachyum",
+     "Pyrrosia mannii"
+    ]
+   },
+   {
+    "species": "Schlumbergera truncata",
+    "rank": 1,
+    "top3": [
+     "Schlumbergera truncata",
+     "Dendrobium faciferum",
+     "Curcuma petiolata"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": 1,
+    "top3": [
+     "Opuntia microdasys",
+     "Herissantia crispa",
+     "Potentilla sundaica"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": 1,
+    "top3": [
+     "Opuntia microdasys",
+     "Opuntia elatior",
+     "Gerbera piloselloides"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": 1,
+    "top3": [
+     "Opuntia microdasys",
+     "Opuntia cochenillifera",
+     "Opuntia elatior"
+    ]
+   },
+   {
+    "species": "Opuntia microdasys",
+    "rank": 1,
+    "top3": [
+     "Opuntia microdasys",
+     "Opuntia elatior",
+     "Opuntia cochenillifera"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": 29,
+    "top3": [
+     "Ficus recurva",
+     "Hoya lacunosa",
+     "Amydrium humile"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": 44,
+    "top3": [
+     "Pyrrosia lanceolata",
+     "Hetaeria oblongifolia",
+     "Liparis rheedei"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": 1,
+    "top3": [
+     "Peperomia obtusifolia",
+     "Huperzia squarrosa",
+     "Amorphophallus paeoniifolius"
+    ]
+   },
+   {
+    "species": "Peperomia obtusifolia",
+    "rank": 1,
+    "top3": [
+     "Peperomia obtusifolia",
+     "Ceriops australis",
+     "Lumnitzera racemosa"
+    ]
+   },
+   {
+    "species": "Peperomia caperata",
+    "rank": 1,
+    "top3": [
+     "Peperomia caperata",
+     "Cissus discolor",
+     "Peperomia argyreia"
+    ]
+   },
+   {
+    "species": "Peperomia caperata",
+    "rank": 1,
+    "top3": [
+     "Peperomia caperata",
+     "Peperomia argyreia",
+     "Cissus discolor"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": 1,
+    "top3": [
+     "Pilea peperomioides",
+     "Peperomia argyreia",
+     "Centella asiatica"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": 1,
+    "top3": [
+     "Pilea peperomioides",
+     "Anthurium andraeanum",
+     "Rhaphidophora tetrasperma"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": 1,
+    "top3": [
+     "Pilea peperomioides",
+     "Stephania japonica",
+     "Peperomia argyreia"
+    ]
+   },
+   {
+    "species": "Pilea peperomioides",
+    "rank": 1,
+    "top3": [
+     "Pilea peperomioides",
+     "Centella asiatica",
+     "Peperomia argyreia"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": 3,
+    "top3": [
+     "Liparis elliptica",
+     "Peperomia tetraphylla",
+     "Hoya carnosa"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": 1,
+    "top3": [
+     "Hoya carnosa",
+     "Hoya coriacea",
+     "Hoya diversifolia"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": 1,
+    "top3": [
+     "Hoya carnosa",
+     "Hoya diversifolia",
+     "Hoya verticillata"
+    ]
+   },
+   {
+    "species": "Hoya carnosa",
+    "rank": 3,
+    "top3": [
+     "Ficus disticha",
+     "Adenia cordifolia",
+     "Hoya carnosa"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": 1,
+    "top3": [
+     "Beaucarnea recurvata",
+     "Gymnostoma papuanum",
+     "Freycinetia timorensis"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": 35,
+    "top3": [
+     "Pandanus amaryllifolius",
+     "Carex rafflesiana",
+     "Cymbopogon citratus"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": 1,
+    "top3": [
+     "Beaucarnea recurvata",
+     "Cassia abbreviata",
+     "Albizia lebbekoides"
+    ]
+   },
+   {
+    "species": "Beaucarnea recurvata",
+    "rank": 1,
+    "top3": [
+     "Beaucarnea recurvata",
+     "Pandanus krauelianus",
+     "Pandanus dubius"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": 1,
+    "top3": [
+     "Rhaphidophora tetrasperma",
+     "Monstera deliciosa",
+     "Amydrium zippelianum"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": 1,
+    "top3": [
+     "Rhaphidophora tetrasperma",
+     "Amydrium zippelianum",
+     "Monstera deliciosa"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": 1,
+    "top3": [
+     "Rhaphidophora tetrasperma",
+     "Amydrium zippelianum",
+     "Hemionitis arifolia"
+    ]
+   },
+   {
+    "species": "Rhaphidophora tetrasperma",
+    "rank": 1,
+    "top3": [
+     "Rhaphidophora tetrasperma",
+     "Monstera deliciosa",
+     "Epipremnum pinnatum"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": 1,
+    "top3": [
+     "Kalanchoe blossfeldiana",
+     "Puccinia thaliae",
+     "Pentas lanceolata"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": 2,
+    "top3": [
+     "Ixora coccinea",
+     "Kalanchoe blossfeldiana",
+     "Ixora chinensis"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": 1,
+    "top3": [
+     "Kalanchoe blossfeldiana",
+     "Pentas lanceolata",
+     "Puccinia thaliae"
+    ]
+   },
+   {
+    "species": "Kalanchoe blossfeldiana",
+    "rank": 1,
+    "top3": [
+     "Kalanchoe blossfeldiana",
+     "Aeschynanthus radicans",
+     "Rhododendron longiflorum"
+    ]
+   },
+   {
+    "species": "Curio rowleyanus",
+    "rank": 82,
+    "top3": [
+     "Hoya lacunosa",
+     "Melicope xanthoxyloides",
+     "Filicium decipiens"
+    ]
+   },
+   {
+    "species": "Curio rowleyanus",
+    "rank": 1,
+    "top3": [
+     "Curio rowleyanus",
+     "Diospyros cauliflora",
+     "Anamirta cocculus"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 1,
+    "top3": [
+     "Plumeria rubra",
+     "Plumeria alba",
+     "Plumeria obtusa"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 814,
+    "top3": [
+     "Alstonia beatricis",
+     "Barringtonia macrocarpa",
+     "Neesia altissima"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 4,
+    "top3": [
+     "Adenium obesum",
+     "Kopsia fruticosa",
+     "Ixora chinensis"
+    ]
+   },
+   {
+    "species": "Plumeria rubra",
+    "rank": 1,
+    "top3": [
+     "Plumeria rubra",
+     "Plumeria alba",
+     "Plumeria obtusa"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 3,
+    "top3": [
+     "Bougainvillea glabra",
+     "Hibiscus rosa-sinensis",
+     "Bougainvillea spectabilis"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 2,
+    "top3": [
+     "Bougainvillea glabra",
+     "Bougainvillea spectabilis",
+     "Canavalia gladiata"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 1,
+    "top3": [
+     "Bougainvillea spectabilis",
+     "Bougainvillea glabra",
+     "Mussaenda erythrophylla"
+    ]
+   },
+   {
+    "species": "Bougainvillea spectabilis",
+    "rank": 2,
+    "top3": [
+     "Bougainvillea glabra",
+     "Bougainvillea spectabilis",
+     "Jatropha integerrima"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 1,
+    "top3": [
+     "Hibiscus rosa-sinensis",
+     "Hibiscus \u00d7 rosa-sinensis",
+     "Hibiscus archeri"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 2743,
+    "top3": [
+     "Cissus adnata",
+     "Commersonia bartramia",
+     "Malvaviscus penduliflorus"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 1,
+    "top3": [
+     "Hibiscus rosa-sinensis",
+     "Hibiscus \u00d7 rosa-sinensis",
+     "Hibiscus archeri"
+    ]
+   },
+   {
+    "species": "Hibiscus rosa-sinensis",
+    "rank": 3,
+    "top3": [
+     "Hibiscus \u00d7 rosa-sinensis",
+     "Hibiscus archeri",
+     "Hibiscus rosa-sinensis"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Heliconia rauliniana",
+     "Heliconia collinsiana"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Aechmea gamosepala",
+     "Alpinia purpurata"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Heliconia bihai",
+     "Heliconia collinsiana"
+    ]
+   },
+   {
+    "species": "Heliconia rostrata",
+    "rank": 1,
+    "top3": [
+     "Heliconia rostrata",
+     "Heliconia bihai",
+     "Heliconia wagneriana"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 4,
+    "top3": [
+     "Dieffenbachia seguine",
+     "Semecarpus longifolius",
+     "Lygodium circinnatum"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 45,
+    "top3": [
+     "Polyscias fruticosa",
+     "Crotalaria paniculata",
+     "Oldenlandia herbacea"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 793,
+    "top3": [
+     "Goniophlebium persicifolium",
+     "Arachniodes carvifolia",
+     "Apostasia nuda"
+    ]
+   },
+   {
+    "species": "Codiaeum variegatum",
+    "rank": 1,
+    "top3": [
+     "Codiaeum variegatum",
+     "Oleandra pistillaris",
+     "Oleandra neriiformis"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": 2,
+    "top3": [
+     "Alpinia nutans",
+     "Alpinia zerumbet",
+     "Alpinia mutica"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": 3,
+    "top3": [
+     "Alpinia mutica",
+     "Alpinia nieuwenhuizii",
+     "Alpinia zerumbet"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": 2,
+    "top3": [
+     "Alpinia nutans",
+     "Alpinia zerumbet",
+     "Alpinia mutica"
+    ]
+   },
+   {
+    "species": "Alpinia zerumbet",
+    "rank": 53,
+    "top3": [
+     "Musa balbisiana",
+     "Heliconia indica",
+     "Curcuma longa"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": 50,
+    "top3": [
+     "Cyrtostachys renda",
+     "Calamus warburgii",
+     "Elaeis guineensis"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": 4,
+    "top3": [
+     "Oncosperma horridum",
+     "Corypha utan",
+     "Oncosperma tigillarium"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": 1,
+    "top3": [
+     "Roystonea regia",
+     "Syzygium sayeri",
+     "Tetrameles nudiflora"
+    ]
+   },
+   {
+    "species": "Roystonea regia",
+    "rank": 4,
+    "top3": [
+     "Heterospathe elata",
+     "Wodyetia bifurcata",
+     "Elaeis guineensis"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": 54,
+    "top3": [
+     "Scaevola taccada",
+     "Daphniphyllum glaucescens",
+     "Bruguiera exaristata"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": 1,
+    "top3": [
+     "Adenium obesum",
+     "Rhododendron lamrialianum",
+     "Aloe vera"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": 1,
+    "top3": [
+     "Adenium obesum",
+     "Rhododendron wentianum",
+     "Rhododendron beyerinckianum"
+    ]
+   },
+   {
+    "species": "Adenium obesum",
+    "rank": 2,
+    "top3": [
+     "Rhododendron praetervisum",
+     "Adenium obesum",
+     "Rhododendron baconii"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": 1,
+    "top3": [
+     "Pachira aquatica",
+     "Calliandra surinamensis",
+     "Barringtonia asiatica"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": 1,
+    "top3": [
+     "Pachira aquatica",
+     "Calliandra surinamensis",
+     "Sonneratia caseolaris"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": 79,
+    "top3": [
+     "Archidendron ellipticum",
+     "Pentaspadon motleyi",
+     "Alstonia angustiloba"
+    ]
+   },
+   {
+    "species": "Pachira aquatica",
+    "rank": 27,
+    "top3": [
+     "Teijsmanniodendron pteropodum",
+     "Alstonia beatricis",
+     "Melicope glabra"
+    ]
+   },
+   {
+    "species": "Amanita princeps",
+    "rank": 2,
+    "top3": [
+     "Guettarda speciosa",
+     "Amanita princeps",
+     "Chlorophyllum hortense"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": 1,
+    "top3": [
+     "Amanita hemibapha",
+     "Russula amoenolens",
+     "Russula intermedia"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": 1,
+    "top3": [
+     "Amanita hemibapha",
+     "Russula amoenolens",
+     "Leucocoprinus birnbaumii"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": 1,
+    "top3": [
+     "Amanita hemibapha",
+     "Coprinus comatus",
+     "Lycoperdon pratense"
+    ]
+   },
+   {
+    "species": "Amanita hemibapha",
+    "rank": 1,
+    "top3": [
+     "Amanita hemibapha",
+     "Lithocarpus lauterbachii",
+     "Rafflesia horsfieldii"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 1,
+    "top3": [
+     "Chlorophyllum molybdites",
+     "Chlorophyllum hortense",
+     "Volvariella bombycina"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 5,
+    "top3": [
+     "Lactarius fuliginosus",
+     "Russula intermedia",
+     "Pluteus cervinus"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 9,
+    "top3": [
+     "Macrolepiota dolichaula",
+     "Volvariella volvacea",
+     "Oudemansiella canarii"
+    ]
+   },
+   {
+    "species": "Chlorophyllum molybdites",
+    "rank": 1,
+    "top3": [
+     "Chlorophyllum molybdites",
+     "Lycoperdon pratense",
+     "Macrolepiota dolichaula"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": 2,
+    "top3": [
+     "Termitomyces clypeatus",
+     "Termitomyces microcarpus",
+     "Lentinus squarrosulus"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": 1,
+    "top3": [
+     "Termitomyces microcarpus",
+     "Oudemansiella canarii",
+     "Hydropus nigrita"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": 4,
+    "top3": [
+     "Conocybe apala",
+     "Panaeolus antillarum",
+     "Psilocybe cubensis"
+    ]
+   },
+   {
+    "species": "Termitomyces microcarpus",
+    "rank": 67,
+    "top3": [
+     "Caulerpa taxifolia",
+     "Halimeda discoidea",
+     "Tremella fuciformis"
+    ]
+   },
+   {
+    "species": "Termitomyces eurrhizus",
+    "rank": 8,
+    "top3": [
+     "Melanoleuca melaleuca",
+     "Collybiopsis menehune",
+     "Russula amoenolens"
+    ]
+   },
+   {
+    "species": "Termitomyces eurrhizus",
+    "rank": 69,
+    "top3": [
+     "Cheirostylis montana",
+     "Bridelia insulana",
+     "Asparagus racemosus"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": 1,
+    "top3": [
+     "Termitomyces clypeatus",
+     "Pluteus cervinus",
+     "Pleurotus ostreatus"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": 183,
+    "top3": [
+     "Sida alnifolia",
+     "Pinalia multiflora",
+     "Cratoxylum cochinchinense"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": 2,
+    "top3": [
+     "Russula rosea",
+     "Termitomyces clypeatus",
+     "Pleurotus ostreatus"
+    ]
+   },
+   {
+    "species": "Termitomyces clypeatus",
+    "rank": 1,
+    "top3": [
+     "Termitomyces clypeatus",
+     "Panaeolus cambodginiensis",
+     "Oudemansiella canarii"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 1,
+    "top3": [
+     "Volvariella volvacea",
+     "Gymnopilus picreus",
+     "Ficus pumila"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 1,
+    "top3": [
+     "Volvariella volvacea",
+     "Scleroderma nitidum",
+     "Dioscorea nummularia"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 17,
+    "top3": [
+     "Collybiopsis menehune",
+     "Collybiopsis confluens",
+     "Pleurotus pulmonarius"
+    ]
+   },
+   {
+    "species": "Volvariella volvacea",
+    "rank": 1,
+    "top3": [
+     "Volvariella volvacea",
+     "Russula farinipes",
+     "Termitomyces clypeatus"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": 2,
+    "top3": [
+     "Volvariella volvacea",
+     "Volvariella bombycina",
+     "Oudemansiella canarii"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": 1,
+    "top3": [
+     "Volvariella bombycina",
+     "Oudemansiella canarii",
+     "Mucidula mucida"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": 1,
+    "top3": [
+     "Volvariella bombycina",
+     "Volvariella volvacea",
+     "Agaricus trisulphuratus"
+    ]
+   },
+   {
+    "species": "Volvariella bombycina",
+    "rank": 17,
+    "top3": [
+     "Suillus granulatus",
+     "Sutorius eximius",
+     "Volvariella volvacea"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": 4,
+    "top3": [
+     "Auricularia cornea",
+     "Pleurotus pulmonarius",
+     "Auricularia nigricans"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": 2,
+    "top3": [
+     "Auricularia cornea",
+     "Auricularia auricula-judae",
+     "Auricularia delicata"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": 1,
+    "top3": [
+     "Auricularia auricula-judae",
+     "Ganoderma tsugae",
+     "Auricularia cornea"
+    ]
+   },
+   {
+    "species": "Auricularia auricula-judae",
+    "rank": 1,
+    "top3": [
+     "Auricularia auricula-judae",
+     "Stereum ostrea",
+     "Auricularia cornea"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 2,
+    "top3": [
+     "Pleurotus djamor",
+     "Schizophyllum commune",
+     "Lentinus sajor-caju"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 1,
+    "top3": [
+     "Schizophyllum commune",
+     "Pleurotus djamor",
+     "Parmotrema perlatum"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 1,
+    "top3": [
+     "Schizophyllum commune",
+     "Parmotrema eurysacum",
+     "Halimeda discoidea"
+    ]
+   },
+   {
+    "species": "Schizophyllum commune",
+    "rank": 1,
+    "top3": [
+     "Schizophyllum commune",
+     "Calathella digitiformis",
+     "Pleurotus djamor"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 2,
+    "top3": [
+     "Galerina marginata",
+     "Pleurotus ostreatus",
+     "Pleurotus pulmonarius"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 2,
+    "top3": [
+     "Galerina marginata",
+     "Pleurotus ostreatus",
+     "Pleurotus pulmonarius"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 5,
+    "top3": [
+     "Pleurotus djamor",
+     "Pleurotus pulmonarius",
+     "Lentinus squarrosulus"
+    ]
+   },
+   {
+    "species": "Pleurotus ostreatus",
+    "rank": 8,
+    "top3": [
+     "Lentinus squarrosulus",
+     "Pleurotus djamor",
+     "Lentinus sajor-caju"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": 1,
+    "top3": [
+     "Pleurotus cystidiosus",
+     "Aspergillus niger",
+     "Galerina marginata"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": 10,
+    "top3": [
+     "Stereum ostrea",
+     "Coelogyne miniata",
+     "Parmotrema perlatum"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": 1,
+    "top3": [
+     "Pleurotus cystidiosus",
+     "Fusarium proliferatum",
+     "Coprinellus disseminatus"
+    ]
+   },
+   {
+    "species": "Pleurotus cystidiosus",
+    "rank": 1,
+    "top3": [
+     "Pleurotus cystidiosus",
+     "Sordaria fimicola",
+     "Ascodesmis nigricans"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": 7,
+    "top3": [
+     "Pleurotus ostreatus",
+     "Volvariella bombycina",
+     "Galerina marginata"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": 4,
+    "top3": [
+     "Stereum ostrea",
+     "Volvariella bombycina",
+     "Schizophyllum commune"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": 1,
+    "top3": [
+     "Lentinula edodes",
+     "Ganoderma tsugae",
+     "Ganoderma lucidum"
+    ]
+   },
+   {
+    "species": "Lentinula edodes",
+    "rank": 2,
+    "top3": [
+     "Pluteus aurantiorugosus",
+     "Lentinula edodes",
+     "Chlorophyllum molybdites"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": 2,
+    "top3": [
+     "Panaeolus cinctulus",
+     "Psilocybe cubensis",
+     "Laccaria amethystina"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": 2,
+    "top3": [
+     "Melanoleuca melaleuca",
+     "Psilocybe cubensis",
+     "Russula amoenolens"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": 3,
+    "top3": [
+     "Chlorophyllum molybdites",
+     "Melanoleuca melaleuca",
+     "Psilocybe cubensis"
+    ]
+   },
+   {
+    "species": "Psilocybe cubensis",
+    "rank": 4,
+    "top3": [
+     "Psilocybe subaeruginascens",
+     "Lentinula edodes",
+     "Coprinopsis mexicana"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": 2,
+    "top3": [
+     "Mycena galericulata",
+     "Coprinopsis atramentaria",
+     "Entoloma pleopodium"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": 26,
+    "top3": [
+     "Psilocybe cubensis",
+     "Coprinopsis lagopus",
+     "Russula farinipes"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": 1,
+    "top3": [
+     "Coprinopsis atramentaria",
+     "Agaricus rotalis",
+     "Coprinopsis mexicana"
+    ]
+   },
+   {
+    "species": "Coprinopsis atramentaria",
+    "rank": 2,
+    "top3": [
+     "Russula aeruginea",
+     "Coprinopsis atramentaria",
+     "Russula anthracina"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": 2,
+    "top3": [
+     "Chlorophyllum hortense",
+     "Macrolepiota dolichaula",
+     "Chlorophyllum molybdites"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": 2,
+    "top3": [
+     "Chlorophyllum hortense",
+     "Macrolepiota dolichaula",
+     "Chlorophyllum molybdites"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": 1,
+    "top3": [
+     "Macrolepiota dolichaula",
+     "Psilocybe cubensis",
+     "Eriocaulon brownianum"
+    ]
+   },
+   {
+    "species": "Macrolepiota dolichaula",
+    "rank": 1,
+    "top3": [
+     "Macrolepiota dolichaula",
+     "Chlorophyllum molybdites",
+     "Chlorophyllum hortense"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": 3,
+    "top3": [
+     "Pseudohydnum gelatinosum",
+     "Lentinus squarrosulus",
+     "Oudemansiella canarii"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": 9,
+    "top3": [
+     "Candolleomyces candolleanus",
+     "Lentinus squarrosulus",
+     "Lentinus sajor-caju"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": 1,
+    "top3": [
+     "Oudemansiella canarii",
+     "Hydropus nigrita",
+     "Entoloma pleopodium"
+    ]
+   },
+   {
+    "species": "Oudemansiella canarii",
+    "rank": 1,
+    "top3": [
+     "Oudemansiella canarii",
+     "Pleurotus cystidiosus",
+     "Hydropus nigrita"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": 1,
+    "top3": [
+     "Galerina marginata",
+     "Russula emetica",
+     "Auricularia auricula-judae"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": 1,
+    "top3": [
+     "Galerina marginata",
+     "Psilocybe cubensis",
+     "Hydropus nigrita"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": 1,
+    "top3": [
+     "Galerina marginata",
+     "Collybiopsis confluens",
+     "Russula emetica"
+    ]
+   },
+   {
+    "species": "Galerina marginata",
+    "rank": 1,
+    "top3": [
+     "Galerina marginata",
+     "Collybiopsis confluens",
+     "Psilocybe cubensis"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": 2,
+    "top3": [
+     "Psilocybe cubensis",
+     "Agaricus bisporus",
+     "Russula adusta"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": 11,
+    "top3": [
+     "Russula farinipes",
+     "Russula melliolens",
+     "Russula rosea"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": 1,
+    "top3": [
+     "Agaricus bisporus",
+     "Earliella scabrosa",
+     "Pangium edule"
+    ]
+   },
+   {
+    "species": "Agaricus bisporus",
+    "rank": 1,
+    "top3": [
+     "Agaricus bisporus",
+     "Candolleomyces candolleanus",
+     "Volvariella bombycina"
+    ]
+   }
+  ]
+ }
+}

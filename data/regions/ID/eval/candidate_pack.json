@@ -1,0 +1,39 @@
+{
+ "path": "/agent/repos/openwild/work/packs/ID-candidate.owpack",
+ "size": 660496384,
+ "sha256": "23dab2e99aed872083933649fcdbfb5812d17909885ed4baa4b0b4e7a3d83954",
+ "version": 2026111823,
+ "published_version": 2026111816,
+ "augment": {
+  "added_species": 45,
+  "added_photos": 404,
+  "added_prototypes": 1261
+ },
+ "before": {
+  "top1": 0.4371,
+  "top3": 0.5487,
+  "top5": 0.5944,
+  "top10": 0.6532
+ },
+ "after": {
+  "top1": 0.4444,
+  "top3": 0.5568,
+  "top5": 0.6026,
+  "top10": 0.6609
+ },
+ "before_photos": 34852,
+ "after_photos": 36113,
+ "heldout": {
+  "before": {
+   "tested": 56,
+   "top1": 0.4107,
+   "top3": 0.5536
+  },
+  "after": {
+   "tested": 213,
+   "top1": 0.5915,
+   "top3": 0.7418
+  }
+ },
+ "bioclip": "not built: no Indonesia boost is published, and a partial BioCLIP file would replace recognition for every other species"
+}
