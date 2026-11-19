@@ -1,0 +1,416 @@
+{
+ "photos_tested": 8207,
+ "species_tested": 1327,
+ "species_total": 1369,
+ "top_k": {
+  "top1": 0.4691,
+  "top3": 0.6068,
+  "top5": 0.6675,
+  "top10": 0.7329
+ },
+ "median_rank": 2.0,
+ "most_confused": [
+  {
+   "true": "Opuntia lasiacantha",
+   "shown_first": "Opuntia elatior",
+   "times": 5
+  },
+  {
+   "true": "Abutilon australiense",
+   "shown_first": "Abutilon guineense",
+   "times": 5
+  },
+  {
+   "true": "Piper betle",
+   "shown_first": "Piper lanatum",
+   "times": 4
+  },
+  {
+   "true": "Aloe officinalis",
+   "shown_first": "Aloe vera",
+   "times": 4
+  },
+  {
+   "true": "Abutilon guineense",
+   "shown_first": "Abutilon australiense",
+   "times": 4
+  },
+  {
+   "true": "Lygodium auriculatum",
+   "shown_first": "Lygodium circinnatum",
+   "times": 4
+  },
+  {
+   "true": "Dicranopteris linearis",
+   "shown_first": "Nephrolepis cordifolia",
+   "times": 3
+  },
+  {
+   "true": "Strophocaulon unitum",
+   "shown_first": "Sphaerostephanos hirsutus",
+   "times": 3
+  },
+  {
+   "true": "Fimbristylis littoralis",
+   "shown_first": "Fimbristylis quinquangularis",
+   "times": 3
+  },
+  {
+   "true": "Paspalum dilatatum",
+   "shown_first": "Paspalum scrobiculatum",
+   "times": 3
+  },
+  {
+   "true": "Myrmecodia tuberosa",
+   "shown_first": "Myrmecodia platytyrea",
+   "times": 3
+  },
+  {
+   "true": "Ammannia baccifera",
+   "shown_first": "Ammannia auriculata",
+   "times": 3
+  },
+  {
+   "true": "Gossypium herbaceum",
+   "shown_first": "Gossypium arboreum",
+   "times": 3
+  },
+  {
+   "true": "Cenchrus setosus",
+   "shown_first": "Cenchrus pedicellatus",
+   "times": 3
+  },
+  {
+   "true": "Vanda tricolor",
+   "shown_first": "Vanda insignis",
+   "times": 3
+  },
+  {
+   "true": "Phyllanthus urinaria",
+   "shown_first": "Phyllanthus amarus",
+   "times": 3
+  },
+  {
+   "true": "Bruguiera exaristata",
+   "shown_first": "Bruguiera parviflora",
+   "times": 3
+  },
+  {
+   "true": "Uraria crinita",
+   "shown_first": "Uraria picta",
+   "times": 3
+  },
+  {
+   "true": "Synedrella nodiflora",
+   "shown_first": "Eleutheranthera ruderalis",
+   "times": 3
+  },
+  {
+   "true": "Eleusine indica",
+   "shown_first": "Urochloa trichopus",
+   "times": 3
+  },
+  {
+   "true": "Tribulus terrestris",
+   "shown_first": "Tribulus cistoides",
+   "times": 3
+  },
+  {
+   "true": "Cenchrus ciliaris",
+   "shown_first": "Setaria parviflora",
+   "times": 3
+  },
+  {
+   "true": "Sesbania bispinosa",
+   "shown_first": "Sesbania cannabina",
+   "times": 3
+  },
+  {
+   "true": "Microporus xanthopus",
+   "shown_first": "Stereum ostrea",
+   "times": 3
+  },
+  {
+   "true": "Lentinus sajor-caju",
+   "shown_first": "Lentinus squarrosulus",
+   "times": 3
+  },
+  {
+   "true": "Borassus flabellifer",
+   "shown_first": "Corypha utan",
+   "times": 3
+  },
+  {
+   "true": "Morinda citrifolia",
+   "shown_first": "Morinda bracteata",
+   "times": 3
+  },
+  {
+   "true": "Sonneratia alba",
+   "shown_first": "Psidium cattleianum",
+   "times": 3
+  },
+  {
+   "true": "Commelina diffusa",
+   "shown_first": "Commelina benghalensis",
+   "times": 3
+  },
+  {
+   "true": "Pontederia crassipes",
+   "shown_first": "Pontederia vaginalis",
+   "times": 3
+  },
+  {
+   "true": "Persicaria attenuata",
+   "shown_first": "Persicaria barbata",
+   "times": 3
+  },
+  {
+   "true": "Pupalia micrantha",
+   "shown_first": "Pupalia lappacea",
+   "times": 3
+  },
+  {
+   "true": "Phaseolus lunatus",
+   "shown_first": "Phaseolus vulgaris",
+   "times": 3
+  },
+  {
+   "true": "Leucas zeylanica",
+   "shown_first": "Leucas lavandulifolia",
+   "times": 3
+  },
+  {
+   "true": "Thunbergia fragrans",
+   "shown_first": "Thunbergia hastata",
+   "times": 3
+  },
+  {
+   "true": "Stachytarpheta indica",
+   "shown_first": "Stachytarpheta jamaicensis",
+   "times": 3
+  },
+  {
+   "true": "Microporus affinis",
+   "shown_first": "Stereum ostrea",
+   "times": 3
+  },
+  {
+   "true": "Pyrrosia lanceolata",
+   "shown_first": "Pyrrosia longifolia",
+   "times": 3
+  },
+  {
+   "true": "Opuntia elatior",
+   "shown_first": "Opuntia lasiacantha",
+   "times": 3
+  },
+  {
+   "true": "Brucea javanica",
+   "shown_first": "Callicarpa pedunculata",
+   "times": 3
+  }
+ ],
+ "hardest_species": [
+  {
+   "species": "Crotalaria montana",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus racemosa",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Heritiera littoralis",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Averrhoa carambola",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Sporobolus pyramidalis",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Malachra capitata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Mimusops elengi",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Crotalaria beddomeana",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Boerhavia repens",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus benjamina",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Phyllanthus reticulatus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Erythrina variegata",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Delonix regia",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Mammea odorata",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Mallotus peltatus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Senna siamea",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Eragrostis japonica",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Putranjiva roxburghii",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Phaseolus vulgaris",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Breynia androgyna",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Kleinhovia hospita",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Tectona grandis",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Polystachya concreta",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Alstonia scholaris",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Alternanthera sessilis",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Nauclea orientalis",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Zornia gibbosa",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Bulbostylis barbata",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Camonea pilosa",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Medicago polymorpha",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Didymocheton gaudichaudianus",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Ziziphus mauritiana",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Strophocaulon unitum",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Nephrolepis biserrata",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Paspalum conjugatum",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Gnetum gnemon",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Oplismenus compositus",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Leea guineensis",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Glochidion philippicum",
+   "photos": 6,
+   "top1": 0.0
+  },
+  {
+   "species": "Causonis maritima",
+   "photos": 6,
+   "top1": 0.0
+  }
+ ]
+}
