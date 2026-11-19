@@ -18,6 +18,7 @@ import java.io.File
 import org.openwild.app.core.ConfidenceResult
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
+import org.openwild.app.core.PackFocus
 import org.openwild.app.core.RegionFusion
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.core.RegionLibrary
@@ -327,7 +328,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         openPacks.forEach { runCatching { it.close() } }
         openPacks = loaded
-        val focus = loaded.firstOrNull { it.regionId == focusId } ?: loaded.firstOrNull()
+        // World (and the other names-only regions) have an empty photo table. Leaving one of
+        // those in front hides every picture, including the ones still stored in Indonesia.
+        val chosenId = PackFocus.choose(
+            focusId,
+            loaded.map { PackFocus.Candidate(it.regionId, it.hasPhotos, it.species.size) },
+        )
+        val focus = loaded.firstOrNull { it.regionId == chosenId } ?: loaded.firstOrNull()
         pack = focus
         libraries = loaded.map { RegionLibrary(it.regionId, it.species, it.index, it.params, it.projection) }
         identifier = focus?.let { Identifier(it.index, it.species, it.params, it.projection) }
@@ -543,10 +550,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(downloading = it.downloading - p.regionId, message = r.exceptionOrNull()?.message) }
         refreshInstalled()
         if (r.isSuccess) {
-            val cur = pack?.regionId
+            val curPack = pack
+            val cur = curPack?.regionId
             val curInfo = _state.value.regions.firstOrNull { it.id == cur }
             val replacesLegacy = curInfo?.hidden == true && curInfo.parentId == p.regionId
-            if (cur == null || cur == p.regionId || replacesLegacy) useRegion(p.regionId)
+            // The guide on screen has no pictures (World, or nothing loaded yet). Show this download.
+            val blank = curPack == null || !curPack.hasPhotos
+            if (blank || cur == p.regionId || replacesLegacy) useRegion(p.regionId)
         }
     }
 
@@ -561,7 +571,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         loadActivePack()
     }
 
-    /** Include or leave out a downloaded region for Identify. Turning one on also shows it in Explore. */
+    /**
+     * Include or leave out a downloaded region for Identify. Turning one on asks Explore to show it.
+     * [loadActivePack] keeps a region that has pictures in front of a names-only region, so World
+     * cannot blank the guide.
+     */
     fun setRegionEnabled(regionId: String, on: Boolean) = viewModelScope.launch {
         if (on && _state.value.installed.none { it.regionId == regionId && it.compatible }) return@launch
         val next = ow.packs.enabledRegionIds().toMutableSet()

@@ -265,6 +265,28 @@ class RegionFusionTest {
         assertTrue(fused.result.probs[0] > split.probs[0])
         println("FUSE splitTop=${"%.3f".format(split.probs[0])} fusedTop=${"%.3f".format(fused.result.probs[0])}")
     }
+
+    @Test
+    fun aRegionWithNoFingerprintsCannotBecomeTheResult() {
+        val indonesia = library("ID", arrayOf("Cocos nucifera"), byteArrayOf(127, 0, 0, 0), intArrayOf(0))
+        val world = RegionLibrary(
+            "WORLD",
+            SpeciesTable(
+                longArrayOf(0),
+                arrayOf("Cocos nucifera"),
+                arrayOfNulls(1),
+                BooleanArray(1),
+                intArrayOf(100),
+                Array(12) { IntArray(1) { 128 } },
+            ),
+            PrototypeIndex(4, byteArrayOf(), floatArrayOf(), intArrayOf(), booleanArrayOf(), 1),
+            ConfidenceParams(temperature = 0.2),
+        )
+        val photo = listOf(floatArrayOf(1f, 0f, 0f, 0f))
+        val fused = RegionFusion.identify(listOf(world, indonesia), photo, KingdomFilter.ANY, 6, "WORLD")!!
+        assertEquals("ID", fused.displayRegionId)
+        assertEquals(0, fused.result.top)
+    }
 }
 
 class CultivatedPriorTest {
