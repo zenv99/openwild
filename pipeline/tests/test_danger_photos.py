@@ -147,6 +147,73 @@ def test_merge_adds_finer_species_and_skips_a_hidden_url(tmp_path: Path):
     con.close()
 
 
+def test_example_caption_names_the_depicted_species():
+    from openwild_pipeline.danger_photos import display_observer
+
+    assert display_observer({
+        "observer": "Ada Lovelace", "stage": "example", "depicts": "Cycas rumphii",
+    }) == "Ada Lovelace — example: Cycas rumphii"
+    assert display_observer({"observer": "Ada Lovelace", "stage": "field", "depicts": ""}) == "Ada Lovelace"
+
+
+def test_example_photo_is_shown_and_not_fingerprinted(tmp_path: Path):
+    import numpy as np
+
+    pack = tmp_path / "p.owpack"
+    _pack(pack, [{
+        "id": 1, "name": "Cycas montana",
+        "content": {"toxicity": "deadly", "edibility": "unknown", "level": "genus"},
+    }])
+    img = tmp_path / "leaf.jpg"
+    Image.new("RGB", (400, 300), (20, 120, 40)).save(img, "JPEG")
+    emb = np.ones((2, 8), np.float32)
+    result = add_display_photos(pack, [
+        {
+            "scientific_name": "Cycas montana",
+            "file": str(img),
+            "license": "cc-by-sa",
+            "observer": "Ada Lovelace — example: Cycas rumphii",
+            "page": "https://commons.wikimedia.org/wiki/File:Cycas_rumphii.jpg",
+            "stage": "example",
+        },
+        {
+            "scientific_name": "Cycas montana",
+            "file": str(img),
+            "license": "cc-by",
+            "observer": "Ada Lovelace",
+            "page": "https://commons.wikimedia.org/wiki/File:Cycas_montana.jpg",
+            "stage": "leaves",
+        },
+    ], embeddings=emb)
+    assert result["photos_added"] == 2
+    assert result["prototypes_added"] == 1
+    con = sqlite3.connect(pack)
+    stages = {r[0] for r in con.execute("SELECT stage FROM photo")}
+    assert stages == {"example", "leaves"}
+    assert con.execute("SELECT COUNT(*) FROM prototype").fetchone()[0] == 1
+    con.close()
+
+
+def test_two_photos_from_one_page_both_ship(tmp_path: Path):
+    pack = tmp_path / "p.owpack"
+    _pack(pack, [{
+        "id": 1, "name": "Amanita borneensis",
+        "content": {"toxicity": "deadly", "edibility": "unknown", "level": "genus"},
+    }])
+    img = tmp_path / "cap.jpg"
+    Image.new("RGB", (400, 300), (40, 30, 20)).save(img, "JPEG")
+    page = "https://www.inaturalist.org/observations/25991355"
+    result = add_display_photos(pack, [
+        {"scientific_name": "Amanita borneensis", "file": str(img), "license": "cc-by-sa",
+         "observer": "Chael Thomas — example: Amanita fuliginea", "page": page,
+         "image_url": "https://example.test/a.jpg", "stage": "example"},
+        {"scientific_name": "Amanita borneensis", "file": str(img), "license": "cc-by-sa",
+         "observer": "Chael Thomas — example: Amanita fuliginea", "page": page,
+         "image_url": "https://example.test/b.jpg", "stage": "example"},
+    ], embeddings=None)
+    assert result["photos_added"] == 2
+
+
 def test_added_photo_becomes_the_cover(tmp_path: Path):
     pack = tmp_path / "p.owpack"
     _pack(pack, [{

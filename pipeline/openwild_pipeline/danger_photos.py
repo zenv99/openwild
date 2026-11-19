@@ -4,6 +4,11 @@ A photo is kept only when the source names this species (or a synonym of the acc
 and the licence is one the pack may ship. No-derivatives licences, Plants For A Future, and
 tropical.theferns.info are never used. Needs-ID iNaturalist observations are not used.
 A photo of a different species, including a lookalike in the same genus, is rejected.
+
+Genus and family warnings are the exception that is pinned by hand. A row with stage
+"example" and a `depicts` name is a living photo of a representative species, captioned
+"Example: <name>". It is shown on the warning and is never used as a fingerprint of the
+named entry.
 """
 from __future__ import annotations
 
@@ -21,14 +26,15 @@ from .http import USER_AGENT, get_json
 
 LIVING = {"field", "flower", "fruit", "leaves", "closeup", "seedling", "bark"}
 # Shown in the app, but not a photo of this species (or not a living plant).
-NOT_LIVING = {"specimen", "related", "exact_specimen"}
+# "example" is a labeled photo of a representative species on a genus or family warning.
+NOT_LIVING = {"specimen", "related", "exact_specimen", "example"}
 BINOMIAL_RE = re.compile(r"([A-Z][a-z]{2,})[ _]([a-z]{3,})")
 RANK_STOP = {"subsp", "subspecies", "ssp", "var", "variety", "f", "forma", "cv", "cultivar"}
 BLOCKED_HOSTS = ("pfaf.org", "theferns.info", "tropical.theferns.info")
 FUNGI_OBS_GENERA = {"amanita", "galerina", "lepiota", "cortinarius", "inocybe", "pholiotina", "conocybe", "gyromitra"}
 
 FIELDS = [
-    "scientific_name", "accepted_name", "image_url", "license", "observer", "page",
+    "scientific_name", "accepted_name", "depicts", "image_url", "license", "observer", "page",
     "stage", "source", "commercial_ok", "file",
 ]
 
@@ -634,6 +640,17 @@ def fetch_gaps(pack: Path, dest_dir: Path, *, tags: tuple[str, ...] = ("deadly",
     return saved
 
 
+def display_observer(row: dict) -> str:
+    """Photographer credit. An example photo also names the species in the picture."""
+    observer = (row.get("observer") or "").strip()
+    depicts = (row.get("depicts") or "").strip()
+    if (row.get("stage") or "") == "example" and depicts and "example:" not in observer.lower():
+        observer = f"{observer} — example: {depicts}".strip()
+        if observer.startswith("—"):
+            observer = observer.lstrip("— ").strip()
+    return observer
+
+
 def load_pinned(region_id: str) -> list[dict]:
     """Photos recorded for a region (data/regions/<id>/danger_photos.csv) whose files are still on disk.
 
@@ -650,22 +667,25 @@ def load_pinned(region_id: str) -> list[dict]:
             continue
         if _allowed_license(row.get("license")) is None:
             continue
-        file_ = Path(row.get("file") or "")
-        if not file_.exists():
+        file_ = Path(row["file"]) if (row.get("file") or "").strip() else None
+        if file_ is None or not file_.is_file():
             digest = hashlib.sha1((row.get("image_url") or "").encode()).hexdigest()[:16]
             file_ = cache / f"{digest}.jpg"
-            if not file_.exists() and row.get("image_url"):
+            if not file_.is_file() and row.get("image_url"):
                 download_image(row["image_url"], file_)
-        if not file_.exists():
+        if not file_.is_file():
             continue
         rows.append({
             "scientific_name": row["scientific_name"],
             "path": str(file_),
             "license": row["license"],
-            "observer": row.get("observer") or "",
+            "observer": display_observer(row),
             "page": row.get("page") or row.get("image_url") or "",
             "url": row.get("page") or row.get("image_url") or "",
+            # Two photos of one observation share a page. The image URL is what makes each one distinct.
+            "image_url": row.get("image_url") or "",
             "stage": row.get("stage") or "field",
             "source": row.get("source") or "danger",
+            "depicts": (row.get("depicts") or "").strip(),
         })
     return rows

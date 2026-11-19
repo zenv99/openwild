@@ -97,7 +97,7 @@ def boost_pack(full_pack: Path, photos_csv: Path, vecs: dict[str, np.ndarray], o
                 by_page.setdefault(k, r["path"])
     src = sqlite3.connect(full_pack)
     meta = dict(src.execute("SELECT key, value FROM meta"))
-    rows = src.execute("SELECT species_id, url FROM photo WHERE stage NOT IN ('related', 'specimen', 'exact_specimen')").fetchall()
+    rows = src.execute("SELECT species_id, url FROM photo WHERE stage NOT IN ('related', 'specimen', 'exact_specimen', 'example')").fetchall()
     if src.execute("SELECT 1 FROM sqlite_master WHERE name='refpage'").fetchone():
         rows += src.execute("SELECT species_id, page FROM refpage").fetchall()   # extra reference photos
     seen_rows = set()
@@ -147,7 +147,7 @@ def text_prototypes(full_pack: Path, image_vecs: dict[str, np.ndarray], photos_c
     model.eval()
     con = sqlite3.connect(full_pack)
     rows = con.execute("SELECT id, scientific_name, common_name, kingdom, family, genus FROM species").fetchall()
-    photo_rows = con.execute("SELECT species_id, url FROM photo WHERE stage NOT IN ('related', 'specimen', 'exact_specimen')").fetchall()
+    photo_rows = con.execute("SELECT species_id, url FROM photo WHERE stage NOT IN ('related', 'specimen', 'exact_specimen', 'example')").fetchall()
     con.close()
     texts = []
     for sid, sci, common, kingdom, family, genus in rows:
