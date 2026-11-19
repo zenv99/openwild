@@ -34,10 +34,35 @@ def student_ckpt() -> Path:
 def cmd_content_validate(_):
     from .content import load_curated, load_group_rules, load_quick
 
+    from .deadly import coverage, validate_collection
+
     entries = load_curated(strict=True)
     quick = load_quick(strict=True)
     rules = load_group_rules(strict=True)
+    problems = validate_collection()
+    if problems:
+        raise SystemExit("deadly collection:\n" + "\n".join(problems))
+    cov = coverage()
     print(f"OK: {len(entries)} full species entries, {len(quick)} one-liner entries, {len(rules)} genus/family rules")
+    print(f"OK: deadly collection {cov['species']} species, {cov['with_photo']} with a photo, {cov['missing_photo']} missing")
+
+
+def cmd_deadly_report(_):
+    import json
+
+    from .deadly import coverage, validate_collection
+
+    problems = validate_collection()
+    cov = coverage()
+    print(json.dumps({k: cov[k] for k in ("species", "with_photo", "missing_photo", "photo_rows", "by_kingdom", "missing")}, indent=2))
+    if problems:
+        raise SystemExit("deadly collection:\n" + "\n".join(problems[:40]))
+
+
+def cmd_deadly_photos(a):
+    from .deadly_photos import fetch
+
+    fetch(per_species=a.per_species, only_missing=not a.refresh)
 
 
 def cmd_regions_export(_):
@@ -320,6 +345,7 @@ def cmd_build(a):
     build_pack(
         out, region.id, region.name, a.version, records, curated, params,
         sources=["iNaturalist Licensed Observation Images (registry.opendata.aws/inaturalist-open-data)", "GBIF.org"],
+        include_deadly=True,
     )
     print(out)
 
@@ -355,6 +381,7 @@ def cmd_guide_pack(a):
         ))
     out = Path(a.out) if a.out else config.PACKS_DIR / f"{region.id}-v{a.version}.owpack"
     build_pack(out, region.id, region.name, a.version, recs, load_curated(), guide_only=True,
+               include_deadly=True,
                sources=["GBIF.org", "Kew WCVP (CC BY)", "Wikipedia (CC BY-SA)", "Wikidata (CC0)"])
     print(out, f"{out.stat().st_size / 1e6:.1f} MB")
 
@@ -496,7 +523,7 @@ def cmd_photo_pack(a):
         ))
     out = Path(a.out) if a.out else config.PACKS_DIR / f"{region.id}-v{a.version}.owpack"
     build_pack(out, region.id, region.name, a.version, recs, load_curated(), params=params, guide_only=True,
-               min_photos_for_image_protos=2, photos_per_species=a.photos_shown,
+               min_photos_for_image_protos=2, photos_per_species=a.photos_shown, include_deadly=True,
                sources=["GBIF.org occurrence media (CC licences)", "Kew WCVP (CC BY)", "Wikipedia (CC BY-SA)", "Wikidata (CC0)"])
     with_photos = sum(1 for r in recs if r.embeddings is not None and len(r.embeddings) >= 2)
     print(out, f"{out.stat().st_size / 1e6:.1f} MB; {with_photos} species identifiable by photo")
@@ -552,7 +579,11 @@ def main(argv=None):
     sp.add_argument("region")
     sp.add_argument("--species", required=True)
     sp.add_argument("--per", type=int, default=1)
-    add("content-validate", cmd_content_validate, "validate content/curated/*.yaml")
+    add("content-validate", cmd_content_validate, "validate content/curated/*.yaml and the deadly collection")
+    add("deadly-report", cmd_deadly_report, "print deadly-collection coverage (species, photos, gaps)")
+    sp = add("deadly-photos", cmd_deadly_photos, "download openly licensed photos for deadly species still missing one")
+    sp.add_argument("--per-species", type=int, default=2)
+    sp.add_argument("--refresh", action="store_true", help="look up every species again, not only gaps")
     add("regions-export", cmd_regions_export, "write the app's offline region index (assets/regions.json)")
     sp = add("regions-from-naturalearth", cmd_regions_from_naturalearth, "print regions.yaml entries for every country")
     sp.add_argument("geojson")

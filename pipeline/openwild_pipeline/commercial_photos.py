@@ -1396,7 +1396,7 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     build_pack(
         dest, region.id, region.name, version, recs, load_curated(), guide_only=True,
         min_photos_for_image_protos=1, photos_per_species=photos_per_species, photos_per_key_species=photos_per_species,
-        keep_each_prototype=True,
+        keep_each_prototype=True, include_deadly=True,
         sources=[
             "OpenWild community photographers (their own photos, CC BY 4.0)",
             "GBIF species list for this region (occurrence counts)",

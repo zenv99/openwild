@@ -46,6 +46,26 @@ python -m openwild_pipeline.cli export                 # -> android/app/src/main
 
 **If you retrain the model, bump `MODEL_ID` in `config.py` and `Embedder.MODEL_ID` in the app, and rebuild every pack.** Packs and model must match.
 
+## Deadly collection
+
+`content/deadly/species.csv` is the global list of plant and fungus species that can kill a person, with the toxin, the dangerous parts, the route (eaten, touched, or breathed in) and a source. `content/deadly/photos.csv` credits the photos and `content/deadly/img/` holds the compressed display images. Plants For A Future and tropical.theferns.info are not used.
+
+`guide-pack`, `photo-pack`, `region` and `commercial-pack` add this list to **every** region, including `WORLD`, and pack a photo for each species that does not already have one. Hand-written entries in `content/curated/` keep their own wording. WORLD still has no general photo set; it does carry these deadly photos.
+
+```bash
+cd pipeline
+python -m openwild_pipeline.cli content-validate
+python -m openwild_pipeline.cli deadly-report
+# Refresh the table or fill a photo that has gone missing (does not upload):
+python -m openwild_pipeline.deadly_catalog
+python -m openwild_pipeline.cli deadly-photos
+# Rebuild packs when you mean to publish. These commands do not upload, tag, or release.
+# Deadly species and their photos are included automatically, including for WORLD.
+python -m openwild_pipeline.cli commercial-pack WORLD --version 1 --out ../work/packs/WORLD.owpack
+python -m openwild_pipeline.cli commercial-pack ID --version 1 --out ../work/packs/ID.owpack
+python -m openwild_pipeline.cli guide-pack ID --version 1
+```
+
 ## Per region: pack
 
 ```bash

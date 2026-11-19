@@ -3,9 +3,10 @@ package org.openwild.app.core
 /**
  * Which downloaded region Explore, the species page, and the home photo rows should show.
  *
- * A region such as World is names and safety text only: its photo table is empty. If that
- * region is the one on screen, every picture in the guide disappears even though another
- * downloaded region still has its photos. Keep a region that has pictures in front.
+ * A pack with an empty photo table (an older World download is names and safety text only)
+ * would hide every picture if it stayed on screen while another downloaded region still had
+ * photos. Keep a region that has pictures in front, unless the one on screen already has any.
+ * A World pack that carries the deadly collection has those photos, so it stays on screen.
  */
 object PackFocus {
     data class Candidate(val regionId: String, val hasPhotos: Boolean, val speciesCount: Int = 0)

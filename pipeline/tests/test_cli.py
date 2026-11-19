@@ -56,9 +56,19 @@ def test_photo_pack_command_end_to_end(tmp_path, monkeypatch):
     out = tmp_path / "ID-BA.owpack"
     cli.cmd_photo_pack(argparse.Namespace(region="ID-BA", version=5, out=str(out), photos_shown=3))
     con = sqlite3.connect(out)
-    assert con.execute("SELECT COUNT(DISTINCT species_id) FROM photo").fetchone()[0] == 2
-    first = con.execute("SELECT observer FROM photo WHERE rank = 0").fetchall()
-    assert all(o[0] != "o0" for o in first)  # herbarium sheet never the cover
+    # The two plants this test embedded still have their own photos. The deadly collection is added
+    # on top, so the pack is no longer only these two species.
+    for name in ("Musa acuminata", "Cocos nucifera"):
+        n = con.execute(
+            "SELECT COUNT(*) FROM photo p JOIN species s ON s.id=p.species_id WHERE s.scientific_name=?",
+            (name,),
+        ).fetchone()[0]
+        assert n >= 1, name
+    first = con.execute(
+        "SELECT p.observer FROM photo p JOIN species s ON s.id=p.species_id WHERE p.rank=0 AND s.scientific_name IN ('Musa acuminata','Cocos nucifera')"
+    ).fetchall()
+    assert first and all(o[0] != "o0" for o in first)  # herbarium sheet never the cover
+    assert con.execute("SELECT 1 FROM species WHERE scientific_name='Amanita phalloides'").fetchone()
 
 
 def test_photo_fetch_caps_and_prefers_field(monkeypatch, tmp_path):
