@@ -65,6 +65,13 @@ def cmd_deadly_photos(a):
     fetch(per_species=a.per_species, only_missing=not a.refresh)
 
 
+def cmd_deadly_inject(a):
+    """Add the deadly collection to an existing pack file. Does not upload it."""
+    from .deadly import insert_into_pack
+
+    print(insert_into_pack(Path(a.pack)))
+
+
 def cmd_regions_export(_):
     from .regions import export_app_index
 
@@ -584,6 +591,8 @@ def main(argv=None):
     sp = add("deadly-photos", cmd_deadly_photos, "download openly licensed photos for deadly species still missing one")
     sp.add_argument("--per-species", type=int, default=2)
     sp.add_argument("--refresh", action="store_true", help="look up every species again, not only gaps")
+    sp = add("deadly-inject", cmd_deadly_inject, "add the deadly collection to an existing .owpack (does not upload)")
+    sp.add_argument("pack")
     add("regions-export", cmd_regions_export, "write the app's offline region index (assets/regions.json)")
     sp = add("regions-from-naturalearth", cmd_regions_from_naturalearth, "print regions.yaml entries for every country")
     sp.add_argument("geojson")

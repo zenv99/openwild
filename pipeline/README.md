@@ -62,8 +62,9 @@ python -m openwild_pipeline.cli deadly-photos
 # Rebuild packs when you mean to publish. These commands do not upload, tag, or release.
 # Deadly species and their photos are included automatically, including for WORLD.
 python -m openwild_pipeline.cli commercial-pack WORLD --version 1 --out ../work/packs/WORLD.owpack
-python -m openwild_pipeline.cli commercial-pack ID --version 1 --out ../work/packs/ID.owpack
 python -m openwild_pipeline.cli guide-pack ID --version 1
+# Or add the collection to a pack that is already built:
+python -m openwild_pipeline.cli deadly-inject ../work/packs/WORLD.owpack
 ```
 
 ## Per region: pack

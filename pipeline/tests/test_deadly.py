@@ -98,6 +98,52 @@ def test_deadly_photo_is_packed_for_world(tmp_path: Path, monkeypatch):
     con.close()
 
 
+def test_inject_adds_a_deadly_species_to_an_existing_pack(tmp_path: Path, monkeypatch):
+    img = tmp_path / "cap.jpg"
+    Image.new("RGB", (240, 240), (180, 170, 80)).save(img, "JPEG")
+    monkeypatch.setattr("openwild_pipeline.deadly.load_species", lambda path=None: [{
+        "scientific_name": "Amanita phalloides",
+        "kingdom": "Fungi",
+        "family": "Amanitaceae",
+        "genus": "Amanita",
+        "common_name": "death cap",
+        "route": "ingestion",
+        "toxic_parts": "whole mushroom",
+        "toxin": "amatoxins",
+        "severity": "Frequently fatal.",
+        "symptoms": "Severe vomiting, then liver failure.",
+        "onset": "Usually 6–24 hours after eating.",
+        "what_to_do": "Seek emergency medical care immediately.",
+        "psychoactive": "0",
+        "edibility": "deadly",
+        "toxicity": "deadly",
+        "source": "Wikipedia: Amanita phalloides",
+        "aliases": "",
+    }])
+    monkeypatch.setattr("openwild_pipeline.deadly.load_photos", lambda path=None: {
+        "amanita phalloides": [{
+            "scientific_name": "Amanita phalloides",
+            "file": str(img),
+            "license": "cc0",
+            "observer": "Ada Lovelace",
+            "page": "https://commons.wikimedia.org/wiki/File:Amanita_phalloides.jpg",
+            "stage": "field",
+        }],
+    })
+    pack = build_pack(
+        tmp_path / "WORLD.owpack", "WORLD", "World", 1,
+        [SpeciesRecord("Musa acuminata", "Plantae")], {}, guide_only=True, include_deadly=False,
+    )
+    from openwild_pipeline.deadly import insert_into_pack
+
+    stats = insert_into_pack(pack)
+    assert stats["species_added"] == 1
+    assert stats["photos_added"] == 1
+    con = sqlite3.connect(pack)
+    assert con.execute("SELECT COUNT(*) FROM species").fetchone()[0] == 2
+    con.close()
+
+
 def test_apply_does_not_duplicate_an_alias(monkeypatch):
     monkeypatch.setattr("openwild_pipeline.deadly.load_photos", lambda path=None: {})
     species, _ = apply_to_pack(
