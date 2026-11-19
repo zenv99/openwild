@@ -6,9 +6,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Coarse location is enough to pick a region; it never leaves the phone. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- INTERNET is used for two things only, both on the user's tap and only with GitHub:
-         downloading region packs, and (after the user agrees on a permission screen) sending their own
-         plant photos to the OpenWild photo inbox. Nothing else is ever sent. -->
+    <!-- INTERNET is used only when the person taps something:
+         region downloads from GitHub, photos they agreed to send to the OpenWild inbox,
+         and an optional Pl@ntNet check (my-api.plantnet.org) after they turn it on and tap it. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

@@ -49,6 +49,7 @@ object Contribute {
         val body = buildString {
             appendLine("**App said:** $top (${res.result.score}% match confidence, ${res.result.tier})")
             appendLine("**Region pack:** ${pack.regionId} v${pack.version}")
+            appendLine("**Brain:** ${res.brain} (selected ${res.brainRequested}, scan ${res.scanDetail})")
             appendLine("**Photos used:** ${res.photoCount}")
             appendLine()
             appendLine("**What I think it is (and how sure):** ")
@@ -71,6 +72,7 @@ object Contribute {
             appendLine("**Top matches:** ${c.topMatches}")
             appendLine("**Photos used:** ${c.photoCount}")
             appendLine("**Region pack:** ${c.regionId} v${c.packVersion} · model ${c.modelId}")
+            appendLine("**Brain:** ${c.brain.ifBlank { "unknown" }} (selected ${c.brainRequested.ifBlank { c.brain }}, scan ${c.scanDetail.ifBlank { "unknown" }})")
             appendLine()
             appendLine("**How sure are you, and what told you?** ")
             appendLine()

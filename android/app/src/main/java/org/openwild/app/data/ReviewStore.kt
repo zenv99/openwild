@@ -35,6 +35,12 @@ class ReviewStore(context: Context) {
         val id: Long, val regionId: String, val packVersion: Int, val modelId: String,
         val predicted: String, val chosen: String, val chosenRank: Int, val topMatches: String,
         val photoCount: Int, val createdAt: Long, val sent: Boolean,
+        /** Model that produced the result: standard or bioclip. */
+        val brain: String = "",
+        /** What was selected, when that differs from [brain]. */
+        val brainRequested: String = "",
+        /** several_crops or one_crop. */
+        val scanDetail: String = "",
     )
 
     init {
@@ -44,15 +50,30 @@ class ReviewStore(context: Context) {
                 region_id TEXT NOT NULL, pack_version INTEGER NOT NULL, model_id TEXT NOT NULL,
                 predicted TEXT NOT NULL, chosen TEXT NOT NULL, chosen_rank INTEGER NOT NULL,
                 top_matches TEXT NOT NULL, photo_count INTEGER NOT NULL,
-                created_at INTEGER NOT NULL, sent INTEGER NOT NULL DEFAULT 0
+                created_at INTEGER NOT NULL, sent INTEGER NOT NULL DEFAULT 0,
+                brain TEXT NOT NULL DEFAULT '',
+                brain_requested TEXT NOT NULL DEFAULT '',
+                scan_detail TEXT NOT NULL DEFAULT ''
             )""",
         )
+        ensureColumn("correction", "brain", "TEXT NOT NULL DEFAULT ''")
+        ensureColumn("correction", "brain_requested", "TEXT NOT NULL DEFAULT ''")
+        ensureColumn("correction", "scan_detail", "TEXT NOT NULL DEFAULT ''")
+    }
+
+    private fun ensureColumn(table: String, column: String, decl: String) {
+        val names = db.rawQuery("PRAGMA table_info($table)", null).use { c ->
+            buildList {
+                while (c.moveToNext()) add(c.getString(1))
+            }
+        }
+        if (column !in names) db.execSQL("ALTER TABLE $table ADD COLUMN $column $decl")
     }
 
     fun saveCorrection(c: Correction): Long {
         db.execSQL(
-            "INSERT INTO correction (region_id, pack_version, model_id, predicted, chosen, chosen_rank, top_matches, photo_count, created_at, sent) VALUES (?,?,?,?,?,?,?,?,?,0)",
-            arrayOf(c.regionId, c.packVersion.toLong(), c.modelId, c.predicted, c.chosen, c.chosenRank.toLong(), c.topMatches, c.photoCount.toLong(), c.createdAt),
+            "INSERT INTO correction (region_id, pack_version, model_id, predicted, chosen, chosen_rank, top_matches, photo_count, created_at, sent, brain, brain_requested, scan_detail) VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?)",
+            arrayOf(c.regionId, c.packVersion.toLong(), c.modelId, c.predicted, c.chosen, c.chosenRank.toLong(), c.topMatches, c.photoCount.toLong(), c.createdAt, c.brain, c.brainRequested, c.scanDetail),
         )
         return db.rawQuery("SELECT last_insert_rowid()", null).use { if (it.moveToFirst()) it.getLong(0) else -1L }
     }
@@ -60,9 +81,15 @@ class ReviewStore(context: Context) {
     fun markSent(id: Long) = db.execSQL("UPDATE correction SET sent = 1 WHERE id = ?", arrayOf(id))
 
     fun unsentCorrections(): List<Correction> =
-        db.rawQuery("SELECT id, region_id, pack_version, model_id, predicted, chosen, chosen_rank, top_matches, photo_count, created_at, sent FROM correction WHERE sent = 0 ORDER BY id", null).use { c ->
+        db.rawQuery("SELECT id, region_id, pack_version, model_id, predicted, chosen, chosen_rank, top_matches, photo_count, created_at, sent, brain, brain_requested, scan_detail FROM correction WHERE sent = 0 ORDER BY id", null).use { c ->
             buildList {
-                while (c.moveToNext()) add(Correction(c.getLong(0), c.getString(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5), c.getInt(6), c.getString(7), c.getInt(8), c.getLong(9), c.getInt(10) == 1))
+                while (c.moveToNext()) add(
+                    Correction(
+                        c.getLong(0), c.getString(1), c.getInt(2), c.getString(3), c.getString(4), c.getString(5),
+                        c.getInt(6), c.getString(7), c.getInt(8), c.getLong(9), c.getInt(10) == 1,
+                        c.getString(11) ?: "", c.getString(12) ?: "", c.getString(13) ?: "",
+                    ),
+                )
             }
         }
 

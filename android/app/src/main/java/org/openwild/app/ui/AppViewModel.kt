@@ -52,6 +52,12 @@ data class IdResult(
     val hasUnderside: Boolean,
     /** Fingerprints of the photos just identified, same order as the photos. Kept for a wrong-ID report. */
     val embeddings: List<FloatArray> = emptyList(),
+    /** Model that produced this result (standard or bioclip). Frozen so a later switch does not rewrite the report. */
+    val brain: String = org.openwild.app.core.BrainList.STANDARD,
+    /** What the person had selected. Differs from [brain] when BioCLIP was selected but not on the phone. */
+    val brainRequested: String = org.openwild.app.core.BrainList.STANDARD,
+    /** several_crops or one_crop. */
+    val scanDetail: String = org.openwild.app.core.BrainList.SCAN_SEVERAL,
 )
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
@@ -147,6 +153,9 @@ data class UpgradeState(
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Opt-in online check (cloud identification); reset for every new identification. */
     val online = OnlineCheck(app, viewModelScope)
+
+    /** Opt-in Pl@ntNet check. A photo is sent only when the person taps the button on a result. */
+    val plantNet = PlantNet(app, viewModelScope)
 
 
     private val ow = app as OpenWildApp
@@ -648,6 +657,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun identify() = viewModelScope.launch {
         online.reset()
+        plantNet.reset()
         val s = _state.value
         val emb = activeEmbedder ?: ow.embedder
         val id = identifier
@@ -676,6 +686,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         _state.update { it.copy(busy = true) }
         val careful = s.scanCareful
+        val requested = s.brainModel
+        val ran = org.openwild.app.core.BrainList.ran(requested, s.upgrade.active)
+        val scan = org.openwild.app.core.BrainList.scanDetail(careful)
         val res = withContext(Dispatchers.Default) {
             val embeddings = s.photos.map { emb.embed(it.bitmap, careful) }
             val month = Calendar.getInstance().get(Calendar.MONTH) + 1
@@ -686,13 +699,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 val r = fused.result
                 val deadly = SafetyPolicy.deadlyCandidates(r) { display.content(it)?.isDeadly == true }
                 val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], display.content(it)?.isDeadly == true) }
-                display to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings)
+                display to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings, ran, requested, scan)
             } else {
                 val shown = p ?: return@withContext null
                 val r = id!!.identify(embeddings, s.filter, month)
                 val deadly = SafetyPolicy.deadlyCandidates(r) { shown.content(it)?.isDeadly == true }
                 val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], shown.content(it)?.isDeadly == true) }
-                shown to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings)
+                shown to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings, ran, requested, scan)
             }
         }
         if (res == null) {
@@ -734,6 +747,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             id = 0, regionId = p.regionId, packVersion = p.version, modelId = p.modelId,
             predicted = names[res.result.top], chosen = names[chosenIndex], chosenRank = rank,
             topMatches = top, photoCount = res.photoCount, createdAt = System.currentTimeMillis(), sent = false,
+            brain = res.brain, brainRequested = res.brainRequested, scanDetail = res.scanDetail,
         )
         val id = ow.reviews.saveCorrection(c)
         _state.update { it.copy(message = getApplication<Application>().getString(R.string.correction_saved)) }

@@ -101,7 +101,7 @@ jobs:
           $AAPT dump badging $APK > badging.txt
           $AAPT dump xmltree $APK AndroidManifest.xml > manifest.txt
           echo "Permissions:"; grep "uses-permission" badging.txt || true
-          # Only these permissions are allowed. INTERNET is for region downloads from GitHub only (PackManager.ALLOWED_HOSTS).
+          # Only these permissions are allowed. INTERNET is for GitHub (packs, inbox) and an opt-in Pl@ntNet check.
           ALLOWED="android.permission.CAMERA android.permission.ACCESS_COARSE_LOCATION android.permission.INTERNET org.openwild.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
           for p in $(grep "uses-permission" badging.txt | sed "s/.*name='\([^']*\)'.*/\1/"); do
             echo " $ALLOWED " | grep -q " $p " || { echo "FAIL: unexpected permission $p"; exit 1; }
@@ -111,12 +111,14 @@ jobs:
           if grep "allowBackup" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: backup enabled"; exit 1; fi
           if grep "usesCleartextTraffic" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: plain http allowed"; exit 1; fi
           grep -q "networkSecurityConfig" manifest.txt || { echo "FAIL: no network security config"; exit 1; }
-          # Network code may only live in PackManager (region downloads) and PhotoInbox (photos the user
-          # agreed to send), and PhotoInbox may only talk to api.github.com.
-          HITS=$(grep -rlE "HttpURLConnection|java\.net\.URL\b|okhttp|Socket\(" app/src/main/java | grep -v -e "pack/PackManager.kt" -e "ui/PhotoInbox.kt" || true)
-          if [ -n "$HITS" ]; then echo "FAIL: network code outside PackManager/PhotoInbox: $HITS"; exit 1; fi
+          # Network code may only live in PackManager (region downloads), PhotoInbox (photos the user
+          # agreed to send), and PlantNet (opt-in identify). PhotoInbox may only talk to api.github.com.
+          # PlantNet may only talk to my-api.plantnet.org.
+          HITS=$(grep -rlE "HttpURLConnection|java\.net\.URL\b|okhttp|Socket\(" app/src/main/java | grep -v -e "pack/PackManager.kt" -e "ui/PhotoInbox.kt" -e "ui/PlantNet.kt" || true)
+          if [ -n "$HITS" ]; then echo "FAIL: network code outside PackManager/PhotoInbox/PlantNet: $HITS"; exit 1; fi
           if grep -oE "https?://[a-zA-Z0-9.-]+" app/src/main/java/org/openwild/app/ui/PhotoInbox.kt | grep -v "^https://api.github.com$"; then echo "FAIL: PhotoInbox talks to another host"; exit 1; fi
-          echo "PASS: only allowed permissions, HTTPS-only, network code only in PackManager/PhotoInbox, not debuggable, backup off"
+          if grep -oE "https?://[a-zA-Z0-9.-]+" app/src/main/java/org/openwild/app/ui/PlantNet.kt | grep -v "^https://my-api.plantnet.org$"; then echo "FAIL: PlantNet talks to another host"; exit 1; fi
+          echo "PASS: only allowed permissions, HTTPS-only, network code only in PackManager/PhotoInbox/PlantNet, not debuggable, backup off"
           # versionName is 1.0.N. versionCode stays on the workflow run number so it is above every v0.7 build.
           VC=$(grep -o "versionCode='[0-9]*'" badging.txt | head -1 | grep -o '[0-9]*')
           VN=$(grep -o "versionName='[^']*'" badging.txt | head -1 | sed "s/versionName='//;s/'//")
@@ -134,7 +136,7 @@ jobs:
         run: |
           VER="${OW_VERSION_NAME:?version name was not set}"
           cp app/build/outputs/apk/release/app-release.apk OpenWild.apk
-          NOTES="OpenWild ${VER}. Goes online only to download regions from GitHub; HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
+          NOTES="OpenWild ${VER}. Goes online to download regions from GitHub, and to Pl@ntNet only if you turn on Online check and tap it. HTTPS only, not debuggable, no cloud backup (checked automatically on every build).
           Install: download OpenWild.apk on your Android phone, open it, allow installing from this source.
           Automatic updates: install Obtainium (free, open source) and add https://github.com/zenv99/openwild
           Signed with the ${OW_SIGNED} key. Certificate SHA-256: ${OW_CERT_SHA256}"

@@ -187,5 +187,8 @@ fun wrongIdFields(res: IdResult, names: Array<String>, packVersion: Int, modelId
         .put("top_matches", top)
         .put("pack_version", packVersion)
         .put("model", modelId)
+        .put("brain", res.brain)
+        .put("brain_requested", res.brainRequested)
+        .put("scan_detail", res.scanDetail)
         .put("embeddings", emb)
 }
