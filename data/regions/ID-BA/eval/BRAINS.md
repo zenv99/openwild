@@ -51,6 +51,24 @@ a name prototype in the boost. Scindapsus pictus and Marasmius haematocephalus a
 Any extra reference photos added to species that already had image prototypes are also absent.
 The published boost cannot see the new references.
 
+## Rebuilt boost for pack 2026111900
+
+Rebuilt and uploaded as `ID.bioclip2.owboost`. The previous file is
+`ID.bioclip2-backup-2026111816.owboost` on the same release. `index.json` does not list boosts,
+so it was left as it is. `boosts.json` now points at the new file.
+
+- SHA-256 `bc9c4c5ad5b15bf9bcd5018921896f6439d8357b31ddb97da21bc7773b94f22d`
+- 58,720,256 bytes
+- pack version 2026111900
+- 39,551 image prototypes for 5,608 species, plus 31,013 name prototypes
+- A fresh download matches that hash and version
+
+Leave-one-out on this pack's own reference photos (the country library, not the smaller
+38,371-photo set above): 39,139 photos, 5,196 species, top-1 61.6%, top-3 76.3%.
+44 of the 45 newly appended species have image prototypes. Oudemansiella canarii does not:
+its six iNaturalist files return 404, so it has a name prototype only. 183 photo URLs in the
+pack could not be fetched, across 37 species that now have a name prototype instead.
+
 The 48.7% name-only figure in the table is from the subdivision boost build, not from this country
 file. DINOv2 ViT-B/14 and the 700-species numbers are from the measured head-to-head on this same photo
 store (700 species, three photos held out of five to eight). ViT-B is ahead of ViT-S and behind
