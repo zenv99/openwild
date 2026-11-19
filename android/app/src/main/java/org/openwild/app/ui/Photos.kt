@@ -165,12 +165,21 @@ fun SpeciesTile(pack: RegionPack, i: Int, modifier: Modifier = Modifier, onClick
                 .wrapContentWidth(align = Alignment.Start, unbounded = false),
         ) { DangerBadge(flags, fungus = pack.species.isFungus[i]) }
         if (pack.photosWanted(i)) PhotosWantedBadge(Modifier.align(Alignment.TopEnd).padding(8.dp))
-        // Cover borrowed from a related species: say so on the card itself.
+        // Cover borrowed from a relative, or an example on a genus/family warning: say so on the card.
         val borrowed = remember(key) { pack.photoCount(i) == 0 }
+        val hint by produceState<RegionPack.CoverHint?>(null, key, borrowed) {
+            if (borrowed) value = withContext(Dispatchers.IO) { pack.coverHint(i) }
+        }
         if (b != null && borrowed) {
+            val depicted = hint?.observer?.substringAfter("example: ", "")?.trim()?.takeIf { it.isNotBlank() }
+            val chip = if (hint?.stage == "example" && depicted != null) {
+                stringResource(R.string.example_banner, depicted)
+            } else {
+                stringResource(R.string.related_tile)
+            }
             Text(
-                stringResource(R.string.related_tile), color = Color.White, style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
+                chip, color = Color.White, style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.TopStart).padding(start = 8.dp, top = 40.dp)
                     .clip(RoundedCornerShape(50)).background(PhotoWanted).padding(horizontal = 8.dp, vertical = 3.dp),
             )
@@ -201,6 +210,7 @@ fun stageLabel(stage: String): String = stringResource(
         "closeup" -> R.string.stage_closeup
         "bark" -> R.string.stage_bark
         "related" -> R.string.stage_related
+        "example" -> R.string.stage_example
         "exact_specimen" -> R.string.stage_exact_specimen
         "field" -> R.string.stage_field
         "specimen" -> R.string.stage_specimen
@@ -294,6 +304,22 @@ fun RelatedBanner(p: RegionPack.Photo, modifier: Modifier = Modifier) {
             Text(
                 stringResource(R.string.exact_specimen_banner), color = Color.White, style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis,
+            )
+        }
+        return
+    }
+    if (p.stage == "example") {
+        val depicted = p.observer?.substringAfter("example: ", "")?.trim()?.takeIf { it.isNotBlank() }
+        Row(
+            modifier.fillMaxWidth().background(PhotoWanted.copy(alpha = 0.95f)).padding(horizontal = 12.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Filled.Info, null, tint = Color.White, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(
+                if (depicted != null) stringResource(R.string.example_banner, depicted) else stringResource(R.string.stage_example),
+                color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
+                maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
         }
         return
@@ -547,5 +573,5 @@ private fun ZoomableImage(bmp: ImageBitmap, name: String) {
 }
 
 
-/** Photos that are not a living photo of this plant: a relative's, or a museum specimen. Never used for ID. */
-fun String.isBorrowedStage(): Boolean = this == "related" || this == "exact_specimen"
+/** Photos that are not a living photo of this plant: an example, a relative's, or a museum specimen. Never used for ID. */
+fun String.isBorrowedStage(): Boolean = this == "related" || this == "exact_specimen" || this == "example"

@@ -134,7 +134,7 @@ class RegionPack(file: File) : Closeable {
     /** Plants with at least one real photo of their own (not a relative or museum specimen). */
     val photoSpeciesCount: Int by lazy {
         synchronized(dbLock) {
-            db.rawQuery("SELECT COUNT(DISTINCT species_id) FROM photo WHERE stage NOT IN ('related','specimen','exact_specimen')", null)
+            db.rawQuery("SELECT COUNT(DISTINCT species_id) FROM photo WHERE stage NOT IN ('related','specimen','exact_specimen','example')", null)
                 .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
         }
     }
@@ -283,6 +283,19 @@ class RegionPack(file: File) : Closeable {
         ).use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
     }
 
+    /** Stage and credit of the cover photo, for the "Example:" caption on a genus or family warning. */
+    fun coverHint(i: Int): CoverHint? = synchronized(dbLock) {
+        if (!hasPhotos || i !in species.ids.indices || !hasStageColumn) return null
+        db.rawQuery(
+            "SELECT stage, observer FROM photo WHERE species_id = ?$NOT_SHEET ORDER BY rank LIMIT 1",
+            arrayOf(species.ids[i].toString()),
+        ).use { c ->
+            if (!c.moveToFirst()) null else CoverHint(c.getString(0) ?: "unspecified", if (c.isNull(1)) null else c.getString(1))
+        }
+    }
+
+    data class CoverHint(val stage: String, val observer: String?)
+
     /** Cover photo (larger image) for grid tiles, or null. */
     fun coverImage(i: Int): ByteArray? = synchronized(dbLock) { coverLocked(i) }
 
@@ -326,7 +339,7 @@ class RegionPack(file: File) : Closeable {
     private val stageCounts: Map<Int, Map<String, Int>> by lazy {
         synchronized(dbLock) {
             if (!hasPhotos) return@synchronized emptyMap()
-            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo WHERE stage NOT IN ('specimen', 'related', 'exact_specimen') GROUP BY species_id, stage"
+            val sql = if (hasStageColumn) "SELECT species_id, stage, COUNT(*) FROM photo WHERE stage NOT IN ('specimen', 'related', 'exact_specimen', 'example') GROUP BY species_id, stage"
             else "SELECT species_id, 'unspecified', COUNT(*) FROM photo GROUP BY species_id"
             val out = HashMap<Int, HashMap<String, Int>>()
             db.rawQuery(sql, null).use { c ->

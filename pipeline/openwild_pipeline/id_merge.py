@@ -303,7 +303,10 @@ def add_display_photos(pack: Path, rows: list[dict], embeddings) -> dict:
             "INSERT INTO attribution (species_id, observer, license, url) VALUES (?,?,?,?)",
             (sid, (row.get("observer") or "")[:200], lic, page),
         )
-        if embeddings is not None and proto_n.get(sid, 0) < 6:
+        # A labeled example, a relative, or a museum sheet must not become a fingerprint of this name.
+        if embeddings is not None and (row.get("stage") or "") not in (
+            "example", "related", "specimen", "exact_specimen",
+        ) and proto_n.get(sid, 0) < 6:
             vec = np.asarray(embeddings[i], dtype="float32")
             norm = float(np.linalg.norm(vec)) or 1.0
             blob, scale = quantize(vec / norm)

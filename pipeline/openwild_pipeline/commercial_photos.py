@@ -1276,7 +1276,9 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     critical = safety_species(species_rows)
     by_genus: dict[str, list[str]] = defaultdict(list)
     for k, v in by.items():
-        by_genus[k.split()[0]].append(k)
+        # An example photo is a different species, pinned for a warning. It is not a donor picture of this name.
+        if any((p.get("stage") or "") != "example" for p, _ in v):
+            by_genus[k.split()[0]].append(k)
     related = 0
     recs = []
     # Every name people use for each plant (local tongues first), from Wikidata on top of GBIF's.
@@ -1316,12 +1318,15 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     fb_skipped = 0
     for r in species_rows:
         key = r["scientific_name"].lower()
-        pairs = by.get(key, [])
+        raw_pairs = by.get(key, [])
+        # Labeled examples stay on the page and out of the fingerprint. They are not this species.
+        examples = [p for p, _e in raw_pairs if (p.get("stage") or "") == "example"]
+        pairs = [(p, e) for p, e in raw_pairs if (p.get("stage") or "") != "example"]
         borrowed: list[dict] = []
         cache_only = _time.monotonic() > fb_deadline
-        if cache_only and not pairs:
+        if cache_only and not pairs and not examples:
             fb_skipped += 1
-        if not pairs:
+        if not pairs and not examples:
             # Deadly/poisonous and never photographed alive: the exact plant as a museum specimen first.
             fungus = (r.get("kingdom") or "").lower() == "fungi" or str(r.get("is_fungus", "")).lower() in ("1", "true")
             exact = exact_specimens(r["scientific_name"], photos_path.parent, cache_only=cache_only) if key in critical and not fungus else []
@@ -1372,11 +1377,14 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
             description=dsc.get("description") or None,
             wiki_url=dsc.get("wiki_url") or None,
             embeddings=np.stack([e for _, e in pairs]) if pairs else None,
-            attributions=[{"observer": p.get("observer"), "license": p["license"], "url": p["page"]} for p, _ in pairs] + [{"observer": b["observer"], "license": b["license"], "url": b["url"]} for b in borrowed],
+            attributions=[{"observer": p.get("observer"), "license": p["license"], "url": p["page"]} for p, _ in pairs] + [{"observer": b["observer"], "license": b["license"], "url": b["url"]} for b in borrowed] + [{"observer": p.get("observer"), "license": p["license"], "url": p["page"]} for p in examples],
             photos=[{
                 "path": p["path"], "observer": p.get("observer"), "license": p["license"],
                 "url": p["page"], "stage": p.get("stage") or "unspecified",
-            } for p, _ in pairs] + borrowed,
+            } for p, _ in pairs] + borrowed + [{
+                "path": p["path"], "observer": p.get("observer"), "license": p["license"],
+                "url": p["page"], "stage": "example",
+            } for p in examples],
         ))
     print(f"RELATED {related} plants without their own photo show a related species (labelled, never used for ID)", flush=True)
     if fb_skipped:
