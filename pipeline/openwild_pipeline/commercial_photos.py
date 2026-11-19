@@ -1264,7 +1264,10 @@ def build_region_photo_pack(region_id: str, version: int, out: Path | None = Non
     # A poisonous or edible plant with no photo of its own gets display-only photos of its closest relative
     # (same genus, most photos), clearly labelled "related species". Never used for photo ID.
     species_rows = list(csv.DictReader(open(d / "species.csv", encoding="utf-8")))
+    from .cultivated import cultivated_species_rows
     from .regions import merged_donors, union_species_rows
+    # Cultivated and introduced names (houseplants, garden plants, fungi) that the wild list missed.
+    species_rows = union_species_rows(species_rows, cultivated_species_rows(region_id))
     for donor in merged_donors(region_id):
         extra = config.DATA_REGIONS / donor / "species.csv"
         if extra.exists():

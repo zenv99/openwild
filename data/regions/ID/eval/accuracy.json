@@ -1,0 +1,416 @@
+{
+ "photos_tested": 36113,
+ "species_tested": 5397,
+ "species_total": 5615,
+ "top_k": {
+  "top1": 0.4444,
+  "top3": 0.5568,
+  "top5": 0.6026,
+  "top10": 0.6609
+ },
+ "median_rank": 2.0,
+ "most_confused": [
+  {
+   "true": "Solanum pubescens",
+   "shown_first": "Solanum poka",
+   "times": 6
+  },
+  {
+   "true": "Auricularia nigricans",
+   "shown_first": "Auricularia cornea",
+   "times": 6
+  },
+  {
+   "true": "Morella javanica",
+   "shown_first": "Myrica javanica",
+   "times": 6
+  },
+  {
+   "true": "Microsorum membranifolium",
+   "shown_first": "Phymatosorus membranifolius",
+   "times": 6
+  },
+  {
+   "true": "Pneumatopteris callosa",
+   "shown_first": "Thelypteris callosa",
+   "times": 6
+  },
+  {
+   "true": "Sphaerostephanos heterocarpos",
+   "shown_first": "Thelypteris heterocarpos",
+   "times": 6
+  },
+  {
+   "true": "Phymatosorus membranifolius",
+   "shown_first": "Microsorum membranifolium",
+   "times": 6
+  },
+  {
+   "true": "Thelypteris callosa",
+   "shown_first": "Pneumatopteris callosa",
+   "times": 6
+  },
+  {
+   "true": "Thelypteris heterocarpos",
+   "shown_first": "Sphaerostephanos heterocarpos",
+   "times": 6
+  },
+  {
+   "true": "Lygodium circinnatum",
+   "shown_first": "Lygodium longifolium",
+   "times": 5
+  },
+  {
+   "true": "Nephrolepis cordifolia",
+   "shown_first": "Nephrolepis exaltata",
+   "times": 5
+  },
+  {
+   "true": "Adiantum tenerum",
+   "shown_first": "Adiantum raddianum",
+   "times": 5
+  },
+  {
+   "true": "Breynia vitis-idaea",
+   "shown_first": "Phyllanthus vitis-idaea",
+   "times": 5
+  },
+  {
+   "true": "Myrica javanica",
+   "shown_first": "Morella javanica",
+   "times": 5
+  },
+  {
+   "true": "Solanum poka",
+   "shown_first": "Solanum pubescens",
+   "times": 5
+  },
+  {
+   "true": "Phyllanthus vitis-idaea",
+   "shown_first": "Breynia vitis-idaea",
+   "times": 5
+  },
+  {
+   "true": "Breynia androgyna",
+   "shown_first": "Phyllanthus androgynus",
+   "times": 4
+  },
+  {
+   "true": "Medinilla speciosa",
+   "shown_first": "Medinilla cumingii",
+   "times": 4
+  },
+  {
+   "true": "Rhododendron javanicum",
+   "shown_first": "Rhododendron rarilepidotum",
+   "times": 4
+  },
+  {
+   "true": "Ocimum basilicum",
+   "shown_first": "Ocimum \u00d7 africanum",
+   "times": 4
+  },
+  {
+   "true": "Connarus monocarpus",
+   "shown_first": "Connarus monocarpos",
+   "times": 4
+  },
+  {
+   "true": "Saribus rotundifolius",
+   "shown_first": "Livistona chinensis",
+   "times": 4
+  },
+  {
+   "true": "Syzygium antisepticum",
+   "shown_first": "Syzygium zeylanicum",
+   "times": 4
+  },
+  {
+   "true": "Pontederia hastata",
+   "shown_first": "Pontederia vaginalis",
+   "times": 4
+  },
+  {
+   "true": "Callicarpa pedunculata",
+   "shown_first": "Callicarpa rubella",
+   "times": 4
+  },
+  {
+   "true": "Portulaca quadrifida",
+   "shown_first": "Portulaca oleracea",
+   "times": 4
+  },
+  {
+   "true": "Auricularia nigricans",
+   "shown_first": "Auricularia fibrillifera",
+   "times": 4
+  },
+  {
+   "true": "Chlorophyllum hortense",
+   "shown_first": "Macrolepiota dolichaula",
+   "times": 4
+  },
+  {
+   "true": "Cymbidium aloifolium",
+   "shown_first": "Cymbidium bicolor",
+   "times": 4
+  },
+  {
+   "true": "Livistona chinensis",
+   "shown_first": "Saribus rotundifolius",
+   "times": 4
+  },
+  {
+   "true": "Heliotropium elongatum",
+   "shown_first": "Heliotropium indicum",
+   "times": 4
+  },
+  {
+   "true": "Artocarpus camansi",
+   "shown_first": "Artocarpus altilis",
+   "times": 4
+  },
+  {
+   "true": "Phyllanthus androgynus",
+   "shown_first": "Breynia androgyna",
+   "times": 4
+  },
+  {
+   "true": "Dieffenbachia seguine",
+   "shown_first": "Aglaonema commutatum",
+   "times": 4
+  },
+  {
+   "true": "Morinda citrifolia",
+   "shown_first": "Morinda bracteata",
+   "times": 3
+  },
+  {
+   "true": "Centrosema pubescens",
+   "shown_first": "Centrosema molle",
+   "times": 3
+  },
+  {
+   "true": "Melaleuca cajuputi",
+   "shown_first": "Melaleuca leucadendra",
+   "times": 3
+  },
+  {
+   "true": "Dracaena angustifolia",
+   "shown_first": "Dracaena reflexa",
+   "times": 3
+  },
+  {
+   "true": "Pontederia crassipes",
+   "shown_first": "Pontederia vaginalis",
+   "times": 3
+  },
+  {
+   "true": "Hyptis capitata",
+   "shown_first": "Hyptis brevipes",
+   "times": 3
+  }
+ ],
+ "hardest_species": [
+  {
+   "species": "Xylocarpus rumphii",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Ximenia americana",
+   "photos": 12,
+   "top1": 0.0
+  },
+  {
+   "species": "Carallia brachiata",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Excoecaria agallocha",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Gmelina elliptica",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Heritiera littoralis",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Cyperus haspan",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Zornia gibbosa",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Samanea saman",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Digitaria setigera",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Dimocarpus longan",
+   "photos": 11,
+   "top1": 0.0
+  },
+  {
+   "species": "Alstonia scholaris",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Flagellaria indica",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Clausena excavata",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Harpullia cupanioides",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Cordia dichotoma",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Salacca zalacca",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus caulocarpa",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus religiosa",
+   "photos": 10,
+   "top1": 0.0
+  },
+  {
+   "species": "Mallotus peltatus",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Pongamia pinnata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ipomoea batatas",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Melia azedarach",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus racemosa",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ageratina riparia",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ceiba pentandra",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Phyllanthus emblica",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Tacca leontopetaloides",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Cyperus mindorensis",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Pogonatherum crinitum",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Kalanchoe integra",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ceriops decandra",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Sonchus oleraceus",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Alloteropsis cimicina",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Eriochloa procera",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Eucalyptus obliqua",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Bambusa multiplex",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Pterocarpus indicus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Mangifera indica",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Eleusine indica",
+   "photos": 8,
+   "top1": 0.0
+  }
+ ]
+}
