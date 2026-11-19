@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import org.openwild.app.core.Fingerprints
+import org.openwild.app.core.ScanViews
 import org.tensorflow.lite.Interpreter
 import java.io.Closeable
 import java.io.FileInputStream
@@ -77,17 +78,43 @@ class Embedder private constructor(private val interpreter: Interpreter) : Close
     private val pixels = IntArray(INPUT * INPUT)
 
     /**
-     * One fingerprint. [careful] looks at several crops (centre, flip, upper band, tighter centre)
-     * and averages them. The pack's prototypes stay the same; only the query changes.
+     * One fingerprint. [careful] looks at several crops (centre, horizontal flip, upper band,
+     * tighter centre) and averages them. The pack's prototypes stay the same; only the query changes.
      * Careful is the default because a phone photo often includes wall, pot and floor.
+     * Cropping happens before the interpreter lock so the model is only held while it runs.
      */
-    @Synchronized
     fun embed(bitmap: Bitmap, careful: Boolean = true): FloatArray {
-        if (!careful) return embedOne(bitmap)
-        val crops = queryCrops(bitmap)
-        val vecs = crops.map { embedOne(it) }
-        for (c in crops) if (c !== bitmap) c.recycle()
-        return Fingerprints.meanUnit(vecs)
+        val crops = views(bitmap, careful)
+        try {
+            val vecs = ArrayList<FloatArray>(crops.size)
+            for (c in crops) vecs += embedOne(c.bitmap)
+            return if (vecs.size == 1) vecs[0] else Fingerprints.meanUnit(vecs)
+        } finally {
+            for (c in crops) if (c.own) c.bitmap.recycle()
+        }
+    }
+
+    private class Held(val bitmap: Bitmap, val own: Boolean)
+
+    /** Same rectangles as [ScanViews]. The caller's bitmap is never recycled here. */
+    private fun views(bitmap: Bitmap, careful: Boolean): List<Held> {
+        val specs = ScanViews.of(bitmap.width, bitmap.height, careful)
+        if (specs.size == 1 && !specs[0].flip) return listOf(Held(bitmap, false))
+        return specs.map { spec ->
+            val full = spec.left == 0 && spec.top == 0 && spec.width == bitmap.width && spec.height == bitmap.height
+            val base = if (full) bitmap else Bitmap.createBitmap(bitmap, spec.left, spec.top, spec.width, spec.height)
+            if (!spec.flip) {
+                Held(base, base !== bitmap)
+            } else {
+                val flipped = Bitmap.createBitmap(
+                    base, 0, 0, base.width, base.height,
+                    Matrix().apply { postScale(-1f, 1f, base.width / 2f, base.height / 2f) },
+                    true,
+                )
+                if (base !== bitmap) base.recycle()
+                Held(flipped, true)
+            }
+        }
     }
 
     @Synchronized
@@ -110,21 +137,6 @@ class Embedder private constructor(private val interpreter: Interpreter) : Close
         for (i in v.indices) v[i] /= n
         if (square !== bitmap) square.recycle()
         return v
-    }
-
-    /** Crops of the user's photo. The original bitmap is not recycled here. */
-    private fun queryCrops(bitmap: Bitmap): List<Bitmap> {
-        val w = bitmap.width
-        val h = bitmap.height
-        if (w < 2 || h < 2) return listOf(bitmap)
-        val flip = Bitmap.createBitmap(bitmap, 0, 0, w, h, Matrix().apply { postScale(-1f, 1f, w / 2f, h / 2f) }, true)
-        val upperH = (h * 0.72f).toInt().coerceIn(1, h)
-        val upper = Bitmap.createBitmap(bitmap, 0, 0, w, upperH)
-        val side = (minOf(w, h) * 0.72f).toInt().coerceAtLeast(1)
-        val left = ((w - side) / 2).coerceAtLeast(0)
-        val top = ((h - side) / 2).coerceAtLeast(0)
-        val tight = Bitmap.createBitmap(bitmap, left, top, side.coerceAtMost(w - left), side.coerceAtMost(h - top))
-        return listOf(bitmap, flip, upper, tight)
     }
 
     /** One dummy inference so the first real identification isn't slowed by lazy initialisation. */

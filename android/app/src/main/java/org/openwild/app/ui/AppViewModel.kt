@@ -16,9 +16,11 @@ import org.openwild.app.R
 import org.openwild.app.data.ReviewStore
 import java.io.File
 import org.openwild.app.core.ConfidenceResult
+import org.openwild.app.core.FingerprintCache
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
 import org.openwild.app.core.PackFocus
+import org.openwild.app.core.PrototypeIndex
 import org.openwild.app.core.RegionFusion
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.core.RegionLibrary
@@ -177,9 +179,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var openPacks: List<RegionPack> = emptyList()
     private var libraries: List<RegionLibrary> = emptyList()
     /** BioCLIP 2 embedder when "Better recognition" is active for this pack; otherwise the built-in model. */
-    private var activeEmbedder: org.openwild.app.ml.Embedder? = null
-    private var upgradeEmbedder: org.openwild.app.ml.Embedder? = null
+    @Volatile private var activeEmbedder: org.openwild.app.ml.Embedder? = null
+    @Volatile private var upgradeEmbedder: org.openwild.app.ml.Embedder? = null
     private var upgradeInfo: PackManager.Upgrade? = null
+    private val fingerprints = FingerprintCache()
+    private val boostLock = Any()
+    private var boostHit: BoostHit? = null
+
+    private class BoostHit(val key: String, val index: PrototypeIndex, val textOffset: Double)
 
     init {
         viewModelScope.launch {
@@ -347,28 +354,31 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         pack = focus
         libraries = loaded.map { RegionLibrary(it.regionId, it.species, it.index, it.params, it.projection) }
         identifier = focus?.let { Identifier(it.index, it.species, it.params, it.projection) }
-        activeEmbedder = null
         // Better recognition uses a different fingerprint space, so it stays on the Explore region
-        // rather than being mixed with the built-in fingerprints.
+        // rather than being mixed with the built-in fingerprints. The interpreter stays loaded;
+        // the boost file is read again only when the file itself changed.
         var usingUpgrade = false
+        var nextEmbedder: org.openwild.app.ml.Embedder? = null
         if (focus != null && ow.packs.betterRecognition && ow.packs.upgradeModel.exists()) {
             val boost = ow.packs.boostFile(focus.regionId)
             if (boost.exists()) {
                 val pair = withContext(Dispatchers.IO) {
                     val e = upgradeEmbedder ?: org.openwild.app.ml.Embedder.loadFileOrNull(ow.packs.upgradeModel)?.also { upgradeEmbedder = it }
-                    val idx = focus.boostIndex(boost)
-                    if (e != null && idx != null && idx.dim == e.dim) e to idx else null
+                    val hit = if (e == null) null else boostFor(focus, boost)
+                    if (e != null && hit != null && hit.index.dim == e.dim) Triple(e, hit.index, hit.textOffset) else null
                 }
                 if (pair != null) {
-                    activeEmbedder = pair.first
+                    nextEmbedder = pair.first
                     val prm = org.openwild.app.core.ConfidenceParams.calibrated(focus.params, "bioclip2")
-                        .copy(textProtoPenalty = -focus.boostTextOffset)
+                        .copy(textProtoPenalty = -pair.third)
                     identifier = Identifier(pair.second, focus.species, prm, null)
                     libraries = emptyList()
                     usingUpgrade = true
                 }
             }
         }
+        if (nextEmbedder !== activeEmbedder) fingerprints.clear()
+        activeEmbedder = nextEmbedder
         val shownModel = if (usingUpgrade) "bioclip2-vitl14-224-v1" else org.openwild.app.ml.Embedder.modelId(getApplication())
         _state.update { s ->
             s.copy(
@@ -516,6 +526,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun removeUpgrade() = viewModelScope.launch {
         upgradeEmbedder?.close()
         upgradeEmbedder = null
+        activeEmbedder = null
+        fingerprints.clear()
+        synchronized(boostLock) { boostHit = null }
         withContext(Dispatchers.IO) { ow.packs.removeUpgrade() }
         loadActivePack()
     }
@@ -613,6 +626,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         upgradeEmbedder?.close()
         upgradeEmbedder = null
         activeEmbedder = null
+        fingerprints.clear()
+        synchronized(boostLock) { boostHit = null }
         withContext(Dispatchers.IO) { ow.packs.removeUpgrade() }
         loadActivePack()
     }
@@ -622,10 +637,28 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         upgradeEmbedder?.close()
         upgradeEmbedder = null
         activeEmbedder = null
+        fingerprints.clear()
+        synchronized(boostLock) { boostHit = null }
         withContext(Dispatchers.IO) { ow.packs.removeUpgrade() }
         val note = getApplication<Application>().getString(R.string.brain_disabled_note)
         _state.update { it.copy(brainOn = false, message = note) }
         loadActivePack()
+    }
+
+    /** Boost prototypes already read for this exact file. A pack refresh does not open the file again. */
+    private fun boostFor(focus: RegionPack, file: File): BoostHit? {
+        val key = "${focus.regionId}:${focus.version}:${file.path}:${file.length()}:${file.lastModified()}"
+        synchronized(boostLock) { boostHit?.takeIf { it.key == key } }?.let { return it }
+        val index = focus.boostIndex(file) ?: return null
+        val hit = BoostHit(key, index, focus.boostTextOffset)
+        synchronized(boostLock) { boostHit = hit }
+        return hit
+    }
+
+    private sealed interface IdAttempt {
+        data class Ready(val display: RegionPack, val result: IdResult) : IdAttempt
+        data object NeedsModel : IdAttempt
+        data object NoMatch : IdAttempt
     }
 
     // ---------- capture & identify ----------
@@ -673,19 +706,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         online.reset()
         plantNet.reset()
         val s = _state.value
-        val emb = activeEmbedder ?: ow.embedder
         val id = identifier
         val p = pack
         val app = getApplication<Application>()
         if (s.photos.isEmpty()) return@launch
-        if (!s.brainOn || emb == null) {
-            _state.update {
-                it.copy(message = app.getString(if (!s.brainOn) R.string.brain_off_search else R.string.identify_needs_model))
-            }
+        if (!s.brainOn) {
+            _state.update { it.copy(message = app.getString(R.string.brain_off_search)) }
             tab(Screen.Explore)
             return@launch
         }
         val libs = libraries
+        val packsNow = openPacks
         if (libs.isEmpty() && (id == null || p == null)) {
             _state.update { it.copy(message = app.getString(R.string.identify_needs_pack)) }
             return@launch
@@ -703,30 +734,46 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val requested = s.brainModel
         val ran = org.openwild.app.core.BrainList.ran(requested, s.upgrade.active)
         val scan = org.openwild.app.core.BrainList.scanDetail(careful)
+        // Model load and inference stay off the main thread. The same photo is not embedded twice.
         val res = withContext(Dispatchers.Default) {
-            val embeddings = s.photos.map { emb.embed(it.bitmap, careful) }
+            val emb = activeEmbedder ?: ow.embedder
+            if (emb == null) return@withContext IdAttempt.NeedsModel
+            val embeddings = s.photos.map { photo ->
+                fingerprints.get(photo.bitmap, emb, careful) ?: emb.embed(photo.bitmap, careful).also {
+                    fingerprints.put(photo.bitmap, emb, careful, it)
+                }
+            }
             val month = Calendar.getInstance().get(Calendar.MONTH) + 1
             if (libs.isNotEmpty()) {
                 val fused = RegionFusion.identify(libs, embeddings, s.filter, month, p?.regionId)
-                if (fused == null) return@withContext null
-                val display = openPacks.firstOrNull { it.regionId == fused.displayRegionId } ?: p ?: return@withContext null
+                    ?: return@withContext IdAttempt.NoMatch
+                val display = packsNow.firstOrNull { it.regionId == fused.displayRegionId } ?: p ?: return@withContext IdAttempt.NoMatch
                 val r = fused.result
                 val deadly = SafetyPolicy.deadlyCandidates(r) { display.content(it)?.isDeadly == true }
                 val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], display.content(it)?.isDeadly == true) }
-                display to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings, ran, requested, scan)
+                IdAttempt.Ready(display, IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings, ran, requested, scan))
             } else {
-                val shown = p ?: return@withContext null
+                val shown = p ?: return@withContext IdAttempt.NoMatch
                 val r = id!!.identify(embeddings, s.filter, month)
                 val deadly = SafetyPolicy.deadlyCandidates(r) { shown.content(it)?.isDeadly == true }
                 val cands = r.order.take(MAX_MATCHES).map { Candidate(it, r.probs[it], shown.content(it)?.isDeadly == true) }
-                shown to IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings, ran, requested, scan)
+                IdAttempt.Ready(shown, IdResult(r, cands, deadly, s.photos.size, s.photos.any { it.part.isUnderside }, embeddings, ran, requested, scan))
             }
         }
-        if (res == null) {
-            _state.update { it.copy(busy = false, message = app.getString(R.string.identify_no_fingerprints)) }
-            return@launch
+        val ready = when (res) {
+            IdAttempt.NeedsModel -> {
+                _state.update { it.copy(busy = false, message = app.getString(R.string.identify_needs_model)) }
+                tab(Screen.Explore)
+                return@launch
+            }
+            IdAttempt.NoMatch -> {
+                _state.update { it.copy(busy = false, message = app.getString(R.string.identify_no_fingerprints)) }
+                return@launch
+            }
+            is IdAttempt.Ready -> res
         }
-        val (display, result) = res
+        val display = ready.display
+        val result = ready.result
         pack = display
         ow.packs.activeRegionId = display.regionId
         _state.update {

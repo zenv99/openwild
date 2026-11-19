@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import org.openwild.app.R
 import org.openwild.app.ui.ReportSender
 import org.openwild.app.ui.rememberReportSender
+import org.openwild.app.core.AnswerLayout
 import org.openwild.app.core.Tier
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.PlantNetCard
@@ -71,15 +72,104 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
     val pack = vm.pack ?: return
     val context = LocalContext.current
     val tier = res.result.tier
-    val top = res.candidates.first()
     val sp = pack.species
+    val single = AnswerLayout.singleAnswer(res.result)
 
     ScrollColumn {
         // Red banner for any plausible deadly candidate (SAFETY.md §3), above everything else.
         res.deadly.forEach { WarningBox(stringResource(R.string.deadly_banner, displayName(vm, it))) }
         if (tier == Tier.UNKNOWN) WarningBox(stringResource(R.string.notice_not_in_library))
+        if (tier == Tier.LOW) WarningBox(stringResource(R.string.notice_not_confident))
 
-        Card(
+        if (single && res.candidates.isNotEmpty()) {
+            val top = res.candidates.first()
+            TopMatchCard(state, vm, res, top, tier, sp)
+        } else {
+            Shortlist(state, vm, res, tier)
+        }
+        Text(
+            stringResource(R.string.results_safety_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        // Opt-in: a slower, more careful check in the cloud against thousands of real photos.
+        org.openwild.app.ui.OnlineCheckCard(state, vm)
+        // Opt-in Pl@ntNet. Sends a photo only when the person taps the button.
+        PlantNetCard(state, vm)
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (tier != Tier.HIGH && state.photos.size < AppViewModel.MAX_PHOTOS) {
+                OutlinedButton(onClick = vm::addMorePhotos, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Filled.AddAPhoto, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.add_photo))
+                }
+            }
+            OutlinedButton(onClick = { vm.back(); vm.back(); vm.startCapture() }, modifier = Modifier.weight(1f)) {
+                Icon(Icons.Filled.Refresh, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.new_search))
+            }
+        }
+
+        // Wrong plant? Browse every likely match, most likely first, and pick the right one.
+        Button(onClick = { vm.go(Screen.Matches(0)) }, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.ViewCarousel, null, Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.matches_browse, res.candidates.size))
+        }
+
+        val skip = if (single) 1 else AnswerLayout.SHORTLIST
+        val rest = res.candidates.drop(skip).take(4)
+        if (rest.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.other_candidates))
+            rest.forEachIndexed { k, c ->
+                // Opens the match browser at this candidate; species pages from there stay LOW tier.
+                CandidateRow(vm, c) { vm.go(Screen.Matches(skip + k)) }
+            }
+        }
+
+        // Privacy-first contribution: nothing leaves the phone unless the user shares it.
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = { Contribute.shareSighting(context, state, vm) }) {
+                Icon(Icons.AutoMirrored.Filled.Send, null, Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.share_sighting))
+            }
+            val reports = rememberReportSender(suggestions = vm::suggestNames)
+            TextButton(onClick = {
+                val pk = vm.pack
+                if (pk != null) {
+                    reports.send(ReportSender.Request(
+                        regionId = pk.regionId,
+                        predicted = pk.species.scientificNames[res.result.top],
+                        chosen = null,
+                        fields = org.openwild.app.ui.wrongIdFields(res, pk.species.scientificNames, pk.version, state.modelId, "wrong"),
+                        photos = state.photos,
+                    ))
+                }
+            }) {
+                Icon(Icons.Filled.Flag, null, Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.report_wrong))
+            }
+        }
+        Footer()
+    }
+}
+
+@Composable
+private fun TopMatchCard(
+    state: UiState,
+    vm: AppViewModel,
+    res: org.openwild.app.ui.IdResult,
+    top: org.openwild.app.ui.Candidate,
+    tier: Tier,
+    sp: org.openwild.app.core.SpeciesTable,
+) {
+    val pack = vm.pack ?: return
+    Card(
             Modifier.fillMaxWidth().clickable { vm.go(Screen.Species(top.index, tier)) },
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -121,74 +211,26 @@ fun ResultsScreen(state: UiState, vm: AppViewModel) {
                 }
             }
         }
-        Text(
-            stringResource(R.string.results_safety_note),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        if (tier == Tier.LOW) WarningBox(stringResource(R.string.notice_not_confident))
+}
 
-        // Opt-in: a slower, more careful check in the cloud against thousands of real photos.
-        org.openwild.app.ui.OnlineCheckCard(state, vm)
-        // Opt-in Pl@ntNet. Sends a photo only when the person taps the button.
-        PlantNetCard(state, vm)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (tier != Tier.HIGH && state.photos.size < AppViewModel.MAX_PHOTOS) {
-                OutlinedButton(onClick = vm::addMorePhotos, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Filled.AddAPhoto, null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.add_photo))
-                }
-            }
-            OutlinedButton(onClick = { vm.back(); vm.back(); vm.startCapture() }, modifier = Modifier.weight(1f)) {
-                Icon(Icons.Filled.Refresh, null, Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.new_search))
+@Composable
+private fun Shortlist(state: UiState, vm: AppViewModel, res: org.openwild.app.ui.IdResult, tier: Tier) {
+    state.photos.firstOrNull()?.let { p ->
+        Box {
+            Image(
+                bitmap = p.bitmap.asImageBitmap(),
+                contentDescription = stringResource(R.string.your_photo),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().height(160.dp).clip(MaterialTheme.shapes.large),
+            )
+            Box(Modifier.align(Alignment.TopStart).padding(12.dp)) {
+                Pill(tierLabel(tier), Color.White, tierColor(tier))
             }
         }
-
-        // Wrong plant? Browse every likely match, most likely first, and pick the right one.
-        Button(onClick = { vm.go(Screen.Matches(0)) }, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.ViewCarousel, null, Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.matches_browse, res.candidates.size))
-        }
-
-        if (res.candidates.size > 1) {
-            SectionTitle(stringResource(R.string.other_candidates))
-            res.candidates.drop(1).take(4).forEachIndexed { k, c ->
-                // Opens the match browser at this candidate; species pages from there stay LOW tier.
-                CandidateRow(vm, c) { vm.go(Screen.Matches(k + 1)) }
-            }
-        }
-
-        // Privacy-first contribution: nothing leaves the phone unless the user shares it.
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextButton(onClick = { Contribute.shareSighting(context, state, vm) }) {
-                Icon(Icons.AutoMirrored.Filled.Send, null, Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.share_sighting))
-            }
-            val reports = rememberReportSender(suggestions = vm::suggestNames)
-            TextButton(onClick = {
-                val pk = vm.pack
-                if (pk != null) {
-                    reports.send(ReportSender.Request(
-                        regionId = pk.regionId,
-                        predicted = pk.species.scientificNames[res.result.top],
-                        chosen = null,
-                        fields = org.openwild.app.ui.wrongIdFields(res, pk.species.scientificNames, pk.version, state.modelId, "wrong"),
-                        photos = state.photos,
-                    ))
-                }
-            }) {
-                Icon(Icons.Filled.Flag, null, Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.report_wrong))
-            }
-        }
-        Footer()
+    }
+    SectionTitle(stringResource(R.string.possible_matches))
+    res.candidates.take(AnswerLayout.SHORTLIST).forEachIndexed { k, c ->
+        CandidateRow(vm, c) { vm.go(Screen.Matches(k)) }
     }
 }
 
