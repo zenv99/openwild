@@ -68,7 +68,10 @@ import org.openwild.app.R
 import org.openwild.app.pack.RegionPack
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.PlantNetToggle
+import org.openwild.app.ui.DownloadGate
+import org.openwild.app.ui.DownloadGateDialog
 import org.openwild.app.ui.Footer
+import org.openwild.app.ui.rememberDownloadGate
 import org.openwild.app.ui.Pill
 import org.openwild.app.ui.Screen
 import org.openwild.app.ui.UiState
@@ -81,6 +84,7 @@ import org.openwild.app.ui.theme.Lime
 
 @Composable
 fun HomeScreen(state: UiState, vm: AppViewModel) {
+    val gate = rememberDownloadGate()
     val regionOn = state.activeRegionName != null
     val canPhoto = regionOn && state.brainOn && !state.modelMissing && state.photoIdReady
     val scroll = rememberScrollState()
@@ -180,7 +184,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
                             LinearProgressIndicator(progress = { pct }, modifier = Modifier.fillMaxWidth())
                         } else {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Button(onClick = { vm.download(offer) }) {
+                                Button(onClick = { gate.ask(offer.size) { vm.download(offer) } }) {
                                     Text(
                                         if (light) stringResource(R.string.full_photos_action, offer.name, (offer.size / 1_000_000).toInt())
                                         else stringResource(R.string.update_ready_action, (offer.size / 1_000_000).toInt())
@@ -274,7 +278,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
             }
 
             GlassPanel {
-                LegacyPackOffer(state, vm)
+                LegacyPackOffer(state, vm, gate)
                 OnThisPhone(state, vm)
             }
 
@@ -290,11 +294,12 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
             }
             Footer()
         }
+        DownloadGateDialog(gate)
     }
 }
 
 @Composable
-private fun LegacyPackOffer(state: UiState, vm: AppViewModel) {
+private fun LegacyPackOffer(state: UiState, vm: AppViewModel, gate: DownloadGate) {
     state.installed.forEach { installed ->
         val info = state.regions.firstOrNull { it.id == installed.regionId && it.hidden } ?: return@forEach
         val parent = state.regions.firstOrNull { it.id == info.parentId && !it.hidden } ?: return@forEach
@@ -308,7 +313,7 @@ private fun LegacyPackOffer(state: UiState, vm: AppViewModel) {
                 style = MaterialTheme.typography.bodyMedium,
             )
             if (remote != null) {
-                Button(onClick = { vm.download(remote) }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
+                Button(onClick = { gate.ask(remote.size) { vm.download(remote) } }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
             } else {
                 TextButton(onClick = { vm.tab(Screen.Packs) }) { Text(stringResource(R.string.legacy_pack_action, parent.name)) }
             }
