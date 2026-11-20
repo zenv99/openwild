@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
@@ -72,7 +71,7 @@ fun rememberReportSender(
         var withPhotos by remember(p) { mutableStateOf(p.photos.isNotEmpty()) }
         var shareLocation by remember(p) { mutableStateOf(false) }
         val ideas = suggestions(guess)
-        AlertDialog(
+        ImeAlertDialog(
             onDismissRequest = { pending = null },
             title = { Text(stringResource(R.string.report_ask_title)) },
             text = {
@@ -89,7 +88,7 @@ fun rememberReportSender(
                         value = guess,
                         onValueChange = { guess = it.take(120) },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
                         label = { Text(stringResource(R.string.report_guess)) },
                     )
                     ideas.forEach { hit ->
@@ -100,7 +99,7 @@ fun rememberReportSender(
                     OutlinedTextField(
                         value = note,
                         onValueChange = { note = it.take(500) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
                         label = { Text(stringResource(R.string.report_note)) },
                         minLines = 2,
                     )
@@ -116,7 +115,8 @@ fun rememberReportSender(
                     }
                     if (withPhotos) {
                         OutlinedTextField(
-                            value = credit, onValueChange = { credit = it.take(60) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                            value = credit, onValueChange = { credit = it.take(60) }, singleLine = true,
+                            modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
                             label = { Text(stringResource(R.string.report_credit)) },
                         )
                     }

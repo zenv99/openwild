@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import org.openwild.app.R
+import org.openwild.app.ui.bringIntoViewOnFocus
 import org.openwild.app.ui.rememberFeedbackSender
 import androidx.compose.material3.OutlinedButton
 import org.openwild.app.core.SafetyPolicy
@@ -265,28 +266,31 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
                 )
             }
         }
-        OutlinedTextField(
-            value = body,
-            onValueChange = { if (it.length <= 4000) body = it },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
-            label = { Text(stringResource(R.string.review_text_label)) },
-        )
         val feedback = rememberFeedbackSender()
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(enabled = ready && rating in 1..5, onClick = { vm.saveReview(regionId, scientificName, rating, body) }) {
-                Text(stringResource(R.string.review_save))
-            }
-            // Optional: share it with OpenWild (asks first). Tips, local names and corrections help everyone.
-            if (feedback.enabled) {
-                OutlinedButton(enabled = ready && (rating in 1..5 || body.isNotBlank()), onClick = {
-                    vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body)
-                    feedback.send(
-                        regionId, scientificName, "review",
-                        org.json.JSONObject().put("rating", rating).put("text", body.take(4000)),
-                        "${"★".repeat(rating)} " + body.take(120) + if (body.length > 120) "…" else "",
-                    )
-                }) { Text(stringResource(R.string.review_share)) }
+        // Field and save action scroll together, so the keyboard does not cover what is being typed.
+        Column(Modifier.fillMaxWidth().bringIntoViewOnFocus(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            OutlinedTextField(
+                value = body,
+                onValueChange = { if (it.length <= 4000) body = it },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                label = { Text(stringResource(R.string.review_text_label)) },
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(enabled = ready && rating in 1..5, onClick = { vm.saveReview(regionId, scientificName, rating, body) }) {
+                    Text(stringResource(R.string.review_save))
+                }
+                // Optional: share it with OpenWild (asks first). Tips, local names and corrections help everyone.
+                if (feedback.enabled) {
+                    OutlinedButton(enabled = ready && (rating in 1..5 || body.isNotBlank()), onClick = {
+                        vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body)
+                        feedback.send(
+                            regionId, scientificName, "review",
+                            org.json.JSONObject().put("rating", rating).put("text", body.take(4000)),
+                            "${"★".repeat(rating)} " + body.take(120) + if (body.length > 120) "…" else "",
+                        )
+                    }) { Text(stringResource(R.string.review_share)) }
+                }
             }
         }
     }

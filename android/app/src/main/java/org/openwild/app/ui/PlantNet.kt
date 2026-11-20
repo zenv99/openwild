@@ -230,7 +230,7 @@ fun PlantNetToggle(plantNet: PlantNet) {
                     key = it.take(80)
                     plantNet.setUserKey(it)
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 label = { Text(stringResource(R.string.plantnet_key)) },

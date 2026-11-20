@@ -7,6 +7,7 @@ import androidx.compose.material3.RadioButton
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalContext
@@ -88,7 +89,7 @@ fun HomeScreen(state: UiState, vm: AppViewModel) {
     Box(Modifier.fillMaxSize().background(Color(0xFF04140F))) {
         ForestBackdrop(scroll.value.toFloat(), motion, Modifier.fillMaxSize())
         Column(
-            Modifier.fillMaxSize().verticalScroll(scroll)
+            Modifier.fillMaxSize().imePadding().verticalScroll(scroll)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

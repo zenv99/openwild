@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.openwild.app.R
+import org.openwild.app.ui.bringIntoViewOnFocus
 import org.openwild.app.ui.ReportSender
 import org.openwild.app.ui.rememberReportSender
 import org.openwild.app.core.Tier
@@ -85,7 +87,7 @@ fun MatchBrowserScreen(start: Int, state: UiState, vm: AppViewModel) {
     androidx.compose.runtime.LaunchedEffect(pager.currentPage) { chips.animateScrollToItem(pager.currentPage) }
     fun go(page: Int) = scope.launch { pager.animateScrollToPage(page.coerceIn(0, pages - 1)) }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().imePadding()) {
         // Your photo + where you are.
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
             state.photos.firstOrNull()?.let { p ->
@@ -227,7 +229,8 @@ private fun SearchAllSpecies(vm: AppViewModel, onPick: (Int) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.matches_not_listed), style = MaterialTheme.typography.titleMedium)
         OutlinedTextField(
-            value = q, onValueChange = { q = it }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+            value = q, onValueChange = { q = it }, singleLine = true,
+            modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
             leadingIcon = { Icon(Icons.Filled.Search, null) },
             placeholder = { Text(stringResource(R.string.search_species, sp.size)) },
         )

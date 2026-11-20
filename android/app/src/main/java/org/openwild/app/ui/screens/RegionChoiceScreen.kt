@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,6 +40,7 @@ import org.openwild.app.R
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.pack.PackManager
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.bringIntoViewOnFocus
 import org.openwild.app.ui.UiState
 
 /** First launch: the user picks a region. Nothing is installed until they do. */
@@ -57,7 +59,7 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
     val grouped = regions.groupBy { it.continent.ifBlank { "Other" } }.toSortedMap()
 
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        Modifier.fillMaxSize().imePadding().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
@@ -92,7 +94,7 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                 placeholder = { Text(stringResource(R.string.search_regions)) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
             )
         }
         if (state.suggestedRegionId == null && q.isEmpty()) {

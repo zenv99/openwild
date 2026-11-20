@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -60,6 +61,7 @@ import org.openwild.app.R
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.pack.PackManager
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.bringIntoViewOnFocus
 import org.openwild.app.ui.UiState
 import org.openwild.app.ui.WarningBox
 import org.openwild.app.ui.theme.Leaf
@@ -109,7 +111,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
     val updates = state.installed.count { p -> remote[p.regionId]?.let { it.version > p.version } == true }
 
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        Modifier.fillMaxSize().imePadding().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
@@ -148,7 +150,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
                 placeholder = { Text(stringResource(R.string.search_regions)) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
             )
         }
 

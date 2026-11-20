@@ -60,6 +60,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.openwild.app.R
+import org.openwild.app.ui.bringIntoViewOnFocus
 import org.openwild.app.ui.PhotoInbox
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TextButton
@@ -191,7 +192,8 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
             Text(stringResource(R.string.contrib_anonymous), style = MaterialTheme.typography.bodyMedium)
         }
         if (!anonymous) OutlinedTextField(
-            value = credit, onValueChange = { credit = it.take(60) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+            value = credit, onValueChange = { credit = it.take(60) }, singleLine = true,
+            modifier = Modifier.fillMaxWidth().bringIntoViewOnFocus(),
             label = { Text(stringResource(R.string.contrib_credit)) },
             supportingText = { Text(stringResource(R.string.contrib_credit_help)) },
         )

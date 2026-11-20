@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -52,6 +53,7 @@ import org.openwild.app.core.Tier
 import org.openwild.app.pack.RegionPack.ExploreFilter
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.DangerBadge
+import org.openwild.app.ui.bringIntoViewOnFocus
 import org.openwild.app.ui.Screen
 import org.openwild.app.ui.UiState
 import org.openwild.app.ui.theme.Danger
@@ -103,7 +105,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
 
     LazyVerticalGrid(
         columns = if (showGrid) GridCells.Adaptive(150.dp) else GridCells.Fixed(1),
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -115,7 +117,7 @@ fun ExploreScreen(state: UiState, vm: AppViewModel) {
                 placeholder = { Text(stringResource(R.string.search_species, pack.species.size)) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).bringIntoViewOnFocus(),
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
