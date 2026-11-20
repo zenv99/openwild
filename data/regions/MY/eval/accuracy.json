@@ -1,0 +1,416 @@
+{
+ "photos_tested": 19693,
+ "species_tested": 4199,
+ "species_total": 4700,
+ "top_k": {
+  "top1": 0.3678,
+  "top3": 0.492,
+  "top5": 0.5431,
+  "top10": 0.6066
+ },
+ "median_rank": 4.0,
+ "most_confused": [
+  {
+   "true": "Hugonia griffithiana",
+   "shown_first": "Indorouchera griffithiana",
+   "times": 6
+  },
+  {
+   "true": "Thelypteris callosa",
+   "shown_first": "Pneumatopteris callosa",
+   "times": 6
+  },
+  {
+   "true": "Microsorum membranifolium",
+   "shown_first": "Phymatosorus membranifolius",
+   "times": 6
+  },
+  {
+   "true": "Phymatosorus membranifolius",
+   "shown_first": "Microsorum membranifolium",
+   "times": 6
+  },
+  {
+   "true": "Pneumatopteris callosa",
+   "shown_first": "Thelypteris callosa",
+   "times": 6
+  },
+  {
+   "true": "Sonneratia griffithii",
+   "shown_first": "Sonneratia alba",
+   "times": 6
+  },
+  {
+   "true": "Indorouchera griffithiana",
+   "shown_first": "Hugonia griffithiana",
+   "times": 6
+  },
+  {
+   "true": "Cinnamomum parthenoxylon",
+   "shown_first": "Camphora parthenoxylon",
+   "times": 5
+  },
+  {
+   "true": "Cymbidium aloifolium",
+   "shown_first": "Cymbidium bicolor",
+   "times": 5
+  },
+  {
+   "true": "Camphora parthenoxylon",
+   "shown_first": "Cinnamomum parthenoxylon",
+   "times": 5
+  },
+  {
+   "true": "Sonneratia alba",
+   "shown_first": "Sonneratia griffithii",
+   "times": 5
+  },
+  {
+   "true": "Licuala grandis",
+   "shown_first": "Licuala peltata",
+   "times": 5
+  },
+  {
+   "true": "Medinilla speciosa",
+   "shown_first": "Medinilla beamanii",
+   "times": 4
+  },
+  {
+   "true": "Ficus fistulosa",
+   "shown_first": "Ficus rosulata",
+   "times": 4
+  },
+  {
+   "true": "Thelephora aurantiotincta",
+   "shown_first": "Thelephora vialis",
+   "times": 4
+  },
+  {
+   "true": "Solanum nigrum",
+   "shown_first": "Lycianthes denticulata",
+   "times": 4
+  },
+  {
+   "true": "Ceropegia trichantha",
+   "shown_first": "Ceropegia lucida",
+   "times": 4
+  },
+  {
+   "true": "Lycianthes denticulata",
+   "shown_first": "Solanum nigrum",
+   "times": 4
+  },
+  {
+   "true": "Thelypteris parasitica",
+   "shown_first": "Pteris biaurita",
+   "times": 4
+  },
+  {
+   "true": "Schima crenata",
+   "shown_first": "Schima wallichii",
+   "times": 4
+  },
+  {
+   "true": "Gnetum gnemonoides",
+   "shown_first": "Gnetum cuspidatum",
+   "times": 3
+  },
+  {
+   "true": "Alocasia odora",
+   "shown_first": "Alocasia macrorrhizos",
+   "times": 3
+  },
+  {
+   "true": "Mussaenda frondosa",
+   "shown_first": "Mussaenda villosa",
+   "times": 3
+  },
+  {
+   "true": "Leucas zeylanica",
+   "shown_first": "Leucas lavandulifolia",
+   "times": 3
+  },
+  {
+   "true": "Gaultheria leucocarpa",
+   "shown_first": "Gaultheria cumingiana",
+   "times": 3
+  },
+  {
+   "true": "Typha angustifolia",
+   "shown_first": "Typha domingensis",
+   "times": 3
+  },
+  {
+   "true": "Nymphaea nouchali",
+   "shown_first": "Nymphaea pubescens",
+   "times": 3
+  },
+  {
+   "true": "Senna obtusifolia",
+   "shown_first": "Senna tora",
+   "times": 3
+  },
+  {
+   "true": "Galinsoga parviflora",
+   "shown_first": "Galinsoga quadriradiata",
+   "times": 3
+  },
+  {
+   "true": "Selaginella stipulata",
+   "shown_first": "Selaginella wallichii",
+   "times": 3
+  },
+  {
+   "true": "Pyrrosia piloselloides",
+   "shown_first": "Pyrrosia lanceolata",
+   "times": 3
+  },
+  {
+   "true": "Gnetum cuspidatum",
+   "shown_first": "Gnetum gnemonoides",
+   "times": 3
+  },
+  {
+   "true": "Bruguiera gymnorhiza",
+   "shown_first": "Bruguiera sexangula",
+   "times": 3
+  },
+  {
+   "true": "Amorphophallus brachyphyllus",
+   "shown_first": "Amorphophallus julaihii",
+   "times": 3
+  },
+  {
+   "true": "Tacca integrifolia",
+   "shown_first": "Tacca cristata",
+   "times": 3
+  },
+  {
+   "true": "Portulaca quadrifida",
+   "shown_first": "Portulaca oleracea",
+   "times": 3
+  },
+  {
+   "true": "Blumea sinuata",
+   "shown_first": "Blumea sessiliflora",
+   "times": 3
+  },
+  {
+   "true": "Ceropegia lucida",
+   "shown_first": "Ceropegia trichantha",
+   "times": 3
+  },
+  {
+   "true": "Rhododendron klossii",
+   "shown_first": "Rhododendron moulmainense",
+   "times": 3
+  },
+  {
+   "true": "Laportea interrupta",
+   "shown_first": "Laportea aestuans",
+   "times": 3
+  }
+ ],
+ "hardest_species": [
+  {
+   "species": "Pongamia pinnata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Psydrax dicoccos",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Ceodes umbellifera",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Citrus medica",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Averrhoa carambola",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Leuenbergeria bleo",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Gynochthodes umbellata",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Paspalum scrobiculatum",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Calophyllum inophyllum",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Heynea trijuga",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Capparis sepiaria",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Cynometra ramiflora",
+   "photos": 9,
+   "top1": 0.0
+  },
+  {
+   "species": "Amaranthus spinosus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus callosa",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Dillenia pentagyna",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Delonix regia",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Cinnamomum verum",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Persicaria posumbu",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Senna siamea",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Diospyros maritima",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Distimake dissectus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Saraca indica",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Celtis philippensis",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Mallotus peltatus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Ficus tinctoria",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Erythrina variegata",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Psidium cattleyanum",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Amydrium medium",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Celastrus paniculatus",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
+   "species": "Duranta erecta",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Dioscorea pentaphylla",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Xylocarpus rumphii",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Sesbania sesban",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Cayratia mollissima",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Lepisanthes tetraphylla",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Ricinus communis",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Dendrolobium umbellatum",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Tectona grandis",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Trema orientale",
+   "photos": 7,
+   "top1": 0.0
+  },
+  {
+   "species": "Syzygium malaccense",
+   "photos": 7,
+   "top1": 0.0
+  }
+ ]
+}
