@@ -102,7 +102,8 @@ jobs:
           $AAPT dump xmltree $APK AndroidManifest.xml > manifest.txt
           echo "Permissions:"; grep "uses-permission" badging.txt || true
           # Only these permissions are allowed. INTERNET is for GitHub (packs, inbox) and an opt-in Pl@ntNet check.
-          ALLOWED="android.permission.CAMERA android.permission.ACCESS_COARSE_LOCATION android.permission.INTERNET org.openwild.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+          # ACCESS_NETWORK_STATE only hides "See real photos" when the phone is offline. It sends nothing.
+          ALLOWED="android.permission.CAMERA android.permission.ACCESS_COARSE_LOCATION android.permission.INTERNET android.permission.ACCESS_NETWORK_STATE org.openwild.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
           for p in $(grep "uses-permission" badging.txt | sed "s/.*name='\([^']*\)'.*/\1/"); do
             echo " $ALLOWED " | grep -q " $p " || { echo "FAIL: unexpected permission $p"; exit 1; }
           done
