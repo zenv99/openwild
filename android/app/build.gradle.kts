@@ -114,6 +114,7 @@ dependencies {
     implementation(libs.androidx.exifinterface)
     implementation(libs.litert)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.zxing)
     debugImplementation(libs.androidx.ui.tooling)
     testImplementation(libs.junit)
 }

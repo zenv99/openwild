@@ -10,6 +10,7 @@ litert = "1.0.1"
 coroutines = "1.9.0"
 exifinterface = "1.3.7"
 junit = "4.13.2"
+zxing = "3.5.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +31,7 @@ androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterfa
 litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

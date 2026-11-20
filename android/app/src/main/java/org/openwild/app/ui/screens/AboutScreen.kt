@@ -87,6 +87,10 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
             }
         }
 
+        if (BuildConfig.SHOW_DONATIONS) {
+            BitcoinDonateSection()
+        }
+
         SectionCard(stringResource(R.string.feedback_title), Icons.Filled.Feedback, MaterialTheme.colorScheme.primary) {
             Text(stringResource(R.string.feedback_body))
             Button(onClick = { Contribute.sendFeedback(context) }, modifier = Modifier.fillMaxWidth()) {

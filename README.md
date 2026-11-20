@@ -89,7 +89,17 @@ OpenWild is free with no ads. Tips over Bitcoin Lightning: **zenv9@cake.cash**
 
 Feedback: open an issue (in-app **About → Send feedback** does this for you).
 
-> Google Play restricts in-app donation links for individuals. Build Play releases with `-PshowDonations=false`; keep the tip button in GitHub/F-Droid builds.
+> Google Play restricts in-app donation links for individuals. Build Play releases with `-PshowDonations=false`; that build hides the Lightning tip and the Bitcoin address. GitHub and F-Droid builds keep both.
+
+## Support the project
+
+OpenWild stays free. If it helped you, you can send Bitcoin to this address:
+
+```
+bc1qgj3ce8qeq22s37py9s6m2ksjpz9v3zhls5re3a
+```
+
+The About screen shows the same address, with a button that copies it. The app does not open a wallet or send anything.
 
 ## Automation
 

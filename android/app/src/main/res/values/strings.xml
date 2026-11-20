@@ -233,6 +233,11 @@
     <string name="donate_body">OpenWild is free with no ads. If it helped you, you can send a tip over Bitcoin Lightning:</string>
     <string name="donate_lightning">Tip with Lightning</string>
     <string name="copied_address">No Lightning wallet found. Address copied to clipboard.</string>
+    <string name="donate_bitcoin">Donate (Bitcoin)</string>
+    <string name="donate_bitcoin_body">Support OpenWild. If the app helped you, Bitcoin is welcome. Copy the address or scan the code. Nothing is sent from this phone.</string>
+    <string name="donate_bitcoin_copy">Copy address</string>
+    <string name="donate_bitcoin_copied">Address copied</string>
+    <string name="donate_bitcoin_qr">Bitcoin address as a QR code</string>
     <string name="feedback_title">Feedback</string>
     <string name="feedback_body">Found a bug, a wrong ID, or have an idea? Tell us. Nothing is sent until you press send.</string>
     <string name="feedback_send">Send feedback</string>
