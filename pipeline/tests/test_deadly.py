@@ -144,6 +144,37 @@ def test_inject_adds_a_deadly_species_to_an_existing_pack(tmp_path: Path, monkey
     con.close()
 
 
+def test_species_without_their_own_photo_show_a_labeled_example_and_no_fingerprint(tmp_path: Path, monkeypatch):
+    from openwild_pipeline.deadly import load_photos, load_species
+
+    photos = load_photos()
+    expect = {
+        "amanita subpallidorosea": "Amanita virosa",
+        "lepiota locanensis": "Lepiota brunneoincarnata",
+    }
+    for name, depicts in expect.items():
+        rows = photos[name]
+        assert rows and all(r["stage"] == "example" for r in rows)
+        assert all("example: " + depicts in r["observer"] for r in rows)
+    wanted = [r for r in load_species() if r["scientific_name"].lower() in expect]
+    monkeypatch.setattr("openwild_pipeline.deadly.load_species", lambda path=None: wanted)
+    monkeypatch.setattr("openwild_pipeline.deadly.load_photos", lambda path=None: {k: photos[k] for k in expect})
+    out = build_pack(
+        tmp_path / "WORLD.owpack", "WORLD", "World", 1, [], {},
+        guide_only=True, include_deadly=True,
+    )
+    con = sqlite3.connect(out)
+    assert con.execute("SELECT COUNT(*) FROM prototype").fetchone()[0] == 0
+    stages = dict(con.execute(
+        "SELECT s.scientific_name, p.stage FROM photo p JOIN species s ON s.id=p.species_id"
+    ))
+    assert stages == {
+        "Amanita subpallidorosea": "example",
+        "Lepiota locanensis": "example",
+    }
+    con.close()
+
+
 def test_apply_does_not_duplicate_an_alias(monkeypatch):
     monkeypatch.setattr("openwild_pipeline.deadly.load_photos", lambda path=None: {})
     species, _ = apply_to_pack(

@@ -30,7 +30,8 @@ PHOTO_FIELDS = [
 ]
 
 # Shown in the app. "specimen" is hidden on purpose (see the app's photo query).
-SHOWN_STAGES = {"field", "flower", "fruit", "leaves", "closeup", "seedling", "bark", "exact_specimen"}
+# "example" is a labeled photo of a different species. It is shown and never fingerprinted.
+SHOWN_STAGES = {"field", "flower", "fruit", "leaves", "closeup", "seedling", "bark", "exact_specimen", "example"}
 
 
 def _read(path: Path) -> list[dict]:
@@ -225,6 +226,7 @@ def coverage(species: list[dict] | None = None, photos: dict[str, list[dict]] | 
     photos = load_photos() if photos is None else photos
     by_kingdom: dict[str, dict] = {}
     missing = []
+    example_only = []
     with_photo = 0
     photo_rows = 0
     for row in species:
@@ -236,6 +238,8 @@ def coverage(species: list[dict] | None = None, photos: dict[str, list[dict]] | 
         if pics:
             with_photo += 1
             slot["with_photo"] += 1
+            if all((p.get("stage") or "") == "example" for p in pics):
+                example_only.append(row["scientific_name"])
         else:
             missing.append(row["scientific_name"])
     return {
@@ -243,6 +247,7 @@ def coverage(species: list[dict] | None = None, photos: dict[str, list[dict]] | 
         "with_photo": with_photo,
         "missing_photo": len(missing),
         "missing": missing,
+        "example_only": example_only,
         "photo_rows": photo_rows,
         "by_kingdom": by_kingdom,
     }

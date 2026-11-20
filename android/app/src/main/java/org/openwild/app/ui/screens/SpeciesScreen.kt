@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import org.openwild.app.R
+import org.openwild.app.ui.SeeRealPhotos
 import org.openwild.app.ui.rememberFeedbackSender
 import androidx.compose.material3.OutlinedButton
 import org.openwild.app.core.SafetyPolicy
@@ -110,6 +111,7 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
 
     ScrollColumn {
         SpeciesPhotoHeader(pack, index, sp.commonNames[index] ?: sp.scientificNames[index]) { st -> vm.go(Screen.AddPhotos(index, st)) }
+        if (content?.isDeadly == true) SeeRealPhotos(sp.scientificNames[index])
 
         // Header, coloured by danger level
         Box(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(headerBrush(content)).padding(20.dp)) {
