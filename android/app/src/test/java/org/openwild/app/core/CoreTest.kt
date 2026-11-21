@@ -327,6 +327,101 @@ class FingerprintAverageTest {
     }
 }
 
+class AnswerLayoutTest {
+    private fun result(tier: Tier, probs: DoubleArray) = ConfidenceResult(
+        order = probs.indices.sortedByDescending { probs[it] }.toIntArray(),
+        probs = probs,
+        tier = tier,
+        score = (100 * probs.max()).toInt(),
+        agreement = 1.0,
+        meanTopSim = 0.8,
+    )
+
+    @Test
+    fun lowAndUnknownListTheTopThree() {
+        assertFalse(AnswerLayout.singleAnswer(result(Tier.LOW, doubleArrayOf(0.4, 0.3, 0.2))))
+        assertFalse(AnswerLayout.singleAnswer(result(Tier.UNKNOWN, doubleArrayOf(0.9, 0.05, 0.05))))
+        assertEquals(3, AnswerLayout.SHORTLIST)
+    }
+
+    @Test
+    fun highStaysOneNameAndACloseMediumDoesNot() {
+        assertTrue(AnswerLayout.singleAnswer(result(Tier.HIGH, doubleArrayOf(0.9, 0.05, 0.05))))
+        assertTrue(AnswerLayout.singleAnswer(result(Tier.MEDIUM, doubleArrayOf(0.7, 0.2, 0.1))))
+        assertFalse(AnswerLayout.singleAnswer(result(Tier.MEDIUM, doubleArrayOf(0.52, 0.40, 0.08))))
+        assertTrue(AnswerLayout.singleAnswer(result(Tier.MEDIUM, doubleArrayOf(0.6))))
+    }
+}
+
+class ReportPhotoChoiceTest {
+    @Test
+    fun photoStaysOffUntilItIsRememberedOn() {
+        val fresh = ReportPhotoChoice.Saved(remember = false, sendPhoto = false)
+        assertFalse(ReportPhotoChoice.initialSendPhoto(fresh))
+        assertFalse(ReportPhotoChoice.initialRemember(fresh))
+        val rememberedOff = ReportPhotoChoice.Saved(remember = true, sendPhoto = false)
+        assertFalse(ReportPhotoChoice.initialSendPhoto(rememberedOff))
+        assertTrue(ReportPhotoChoice.initialRemember(rememberedOff))
+        val rememberedOn = ReportPhotoChoice.Saved(remember = true, sendPhoto = true)
+        assertTrue(ReportPhotoChoice.initialSendPhoto(rememberedOn))
+        // A leftover "send" flag does not tick the box once Remember has been cleared.
+        assertFalse(ReportPhotoChoice.initialSendPhoto(ReportPhotoChoice.Saved(remember = false, sendPhoto = true)))
+    }
+
+    @Test
+    fun rememberStoresTheTickAndClearingItForgets() {
+        assertEquals(ReportPhotoChoice.Saved(true, true), ReportPhotoChoice.afterSend(remember = true, sendPhoto = true))
+        assertEquals(ReportPhotoChoice.Saved(true, false), ReportPhotoChoice.afterSend(remember = true, sendPhoto = false))
+        assertEquals(ReportPhotoChoice.Saved(false, false), ReportPhotoChoice.afterSend(remember = false, sendPhoto = true))
+    }
+
+    @Test
+    fun photoIsAttachedOnlyWhenAsked() {
+        assertTrue(ReportPhotoChoice.attachments(false, listOf("a")).isEmpty())
+        assertEquals(listOf("a"), ReportPhotoChoice.attachments(true, listOf("a")))
+        val fields = ReportPhotoChoice.fieldUpdates("Shown", null, "  fern ", sendPhoto = false)
+        assertEquals("fern", fields["guess"])
+        assertEquals("fern", fields["suggested"])
+        assertEquals(false, fields["share_location"])
+        assertEquals(false, fields["photos_included"])
+        assertFalse(fields.containsKey("lat"))
+        assertFalse(fields.containsKey("brain"))
+    }
+}
+
+class FingerprintCacheTest {
+    @Test
+    fun samePhotoAndModelIsReused() {
+        val cache = FingerprintCache()
+        val photo = Any()
+        val model = Any()
+        val vector = floatArrayOf(0.2f, 0.3f)
+        assertTrue(cache.get(photo, model, careful = true) == null)
+        cache.put(photo, model, careful = true, vector)
+        assertTrue(cache.get(photo, model, careful = true) === vector)
+        assertTrue(cache.get(photo, model, careful = false) == null)
+        assertTrue(cache.get(photo, Any(), careful = true) == null)
+        cache.clear()
+        assertTrue(cache.get(photo, model, careful = true) == null)
+    }
+}
+
+class ScanViewsTest {
+    @Test
+    fun carefulUsesFourViewsIncludingAFlip() {
+        val fast = ScanViews.of(640, 480, careful = false)
+        assertEquals(1, fast.size)
+        assertFalse(fast[0].flip)
+        val views = ScanViews.of(640, 480, careful = true)
+        assertEquals(4, views.size)
+        assertEquals(1, views.count { it.flip })
+        assertEquals(0, views[2].top)
+        assertTrue(views[2].height < 480)
+        assertTrue(views[3].width < 640 && views[3].height < 480)
+        assertEquals(1, ScanViews.of(1, 400, careful = true).size)
+    }
+}
+
 class NameSuggestTest {
     @Test
     fun matchesScientificAndCommonNamesOffline() {

@@ -52,6 +52,7 @@
     <string name="tier_unknown">Not in our library</string>
     <string name="deadly_banner">Could be %1$s — DEADLY. Do not eat.</string>
     <string name="other_candidates">Other possibilities</string>
+    <string name="possible_matches">Possible matches</string>
     <string name="add_photo_more_confidence">Add another photo for more confidence</string>
     <string name="new_search">New identification</string>
 
@@ -396,15 +397,19 @@
     <string name="parts_title">Parts identified</string>
     <string name="also_called">Also called: %1$s</string>
     <string name="report_ask_title">Wrong identification</string>
-    <string name="report_optimize">Send data to Open Wild to optimize.</string>
     <string name="report_ask_body">The app said %1$s.</string>
     <string name="report_unknown">not sure what it is</string>
     <string name="report_guess">What do you think it is?</string>
-    <string name="report_note">Note (optional)</string>
-    <string name="report_with_photos">Include my %1$d photos (location and camera details removed), shared under CC BY 4.0</string>
-    <string name="report_location_opt_in">Include approximate location. Off unless you tick this. The region is always included.</string>
-    <string name="report_credit">Name to credit (optional, blank = anonymous)</string>
-    <string name="report_ask_not_sent">Never sent unless you tap Send: account, contacts, or phone ID. Location stays off unless you tick it.</string>
+    <string name="report_send_photo">Send my photo</string>
+    <string name="report_remember">Remember this</string>
+    <string name="report_photo_note">Your photo stays on this phone unless you tick Send my photo. If there is no connection, it waits here until it can be sent. Location is not included.</string>
+    <string name="report_photo_setting_title">Wrong identification</string>
+    <string name="report_photo_setting_on">This phone remembers whether a wrong-ID report includes your photo. You can still change it on each report.</string>
+    <string name="report_photo_setting_off">A wrong-ID report does not include your photo unless you tick Send my photo. Tick Remember this on the report to keep that choice.</string>
+    <string name="report_photo_setting_sends">Saved choice: send the photo.</string>
+    <string name="report_photo_setting_keeps">Saved choice: do not send the photo.</string>
+    <string name="report_photo_reset">Forget saved photo choice</string>
+    <string name="report_photo_reset_done">Saved photo choice forgotten.</string>
     <string name="report_sent">Report sent. Thank you, this makes the app better for everyone.</string>
     <string name="report_queued">Saved on this phone. It will send when OpenWild can reach the inbox.</string>
     <string name="pp_all">All parts</string>

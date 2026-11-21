@@ -2,6 +2,8 @@
 
 package org.openwild.app.ui.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Palette
@@ -33,6 +36,10 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -42,8 +49,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.openwild.app.BuildConfig
 import org.openwild.app.R
+import org.openwild.app.core.ReportPhotoChoice
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.Contribute
+import org.openwild.app.ui.ReportPhotoPrefs
 import org.openwild.app.ui.Footer
 import org.openwild.app.ui.Screen
 import org.openwild.app.ui.ScrollColumn
@@ -114,6 +123,24 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
 
         SectionCard(stringResource(R.string.privacy_title), Icons.Filled.Lock, Leaf) {
             Text(stringResource(R.string.privacy_body))
+        }
+
+        SectionCard(stringResource(R.string.report_photo_setting_title), Icons.Filled.Flag, MaterialTheme.colorScheme.primary) {
+            val prefs = context.getSharedPreferences(ReportPhotoPrefs.FILE, Context.MODE_PRIVATE)
+            var saved by remember { mutableStateOf(ReportPhotoPrefs.read(prefs)) }
+            Text(stringResource(if (saved.remember) R.string.report_photo_setting_on else R.string.report_photo_setting_off))
+            if (saved.remember) {
+                Text(stringResource(if (saved.sendPhoto) R.string.report_photo_setting_sends else R.string.report_photo_setting_keeps))
+            }
+            TextButton(
+                onClick = {
+                    val cleared = ReportPhotoChoice.Saved(remember = false, sendPhoto = false)
+                    ReportPhotoPrefs.write(prefs, cleared)
+                    saved = cleared
+                    Toast.makeText(context, context.getString(R.string.report_photo_reset_done), Toast.LENGTH_SHORT).show()
+                },
+                enabled = saved.remember,
+            ) { Text(stringResource(R.string.report_photo_reset)) }
         }
 
         SectionCard(stringResource(R.string.contribute_title), Icons.Filled.VerifiedUser, MaterialTheme.colorScheme.primary) {
