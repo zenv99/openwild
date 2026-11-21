@@ -41,10 +41,10 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Neo-Uvaria acuminatissima* | 0 |
 | *Xanthophyllum adenotus* | 0 |
 | *Gnetum leptostachyum* | 0 |
-| *Alphonsea maingayi* | 0 |
+| Pokok Mengkudang (*Alphonsea maingayi*) | 0 |
 | *Ixora grandifolia* | 0 |
 | *Vaccinium clementis* | 0 |
-| *Aporosa nitida* | 0 |
+| Pokok Bagil (*Aporosa nitida*) | 0 |
 | *Apiotrichum gracile* | 0 |
 | *Lithocarpus curtisii* | 0 |
 | *Mallotus caudatus* | 0 |
@@ -54,14 +54,14 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Chisocheton sarawakanus* | 0 |
 | *Memecylon scolopacinum* | 0 |
 | *Ryparosa acuminata* | 0 |
-| *Ptychopyxis costata* | 0 |
+| Pokok Mendaroh (*Ptychopyxis costata*) | 0 |
 | *Hydnocarpus woodii* | 0 |
-| *Baccaurea reticulata* | 0 |
+| Pokok Tampoi Belimbing (*Baccaurea reticulata*) | 0 |
 | *Ficus scaberrima* | 0 |
 | *Calamus marginatus* | 0 |
 | *Aglaia leptantha* | 0 |
 | *Ficus setiflora* | 0 |
-| *Archidendron microcarpum* | 0 |
+| Kabau (*Archidendron microcarpum*) | 0 |
 | Resak Daun Panjang (*Vatica oblongifolia*) | 0 |
 | *Knema scortechinii* | 0 |
 | *Diplectria divaricata* | 0 |
@@ -77,8 +77,8 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Maesa macrothyrsa* | 0 |
 | *Walsura pinnata* | 0 |
 | *Triomma malaccensis* | 0 |
-| *Aporosa symplocoides* | 0 |
-| *Dillenia sumatrana* | 0 |
+| Aporusa symplocoides (*Aporosa symplocoides*) | 0 |
+| Pokok Simpoh (*Dillenia sumatrana*) | 0 |
 | *Ryparosa hullettii* | 0 |
 | Kayu Budeng (*Diospyros venosa*) | 0 |
 | *Podila humilis* | 0 |
@@ -95,7 +95,7 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Pinanga capitata* | 0 |
 | *Grewia acuminata* | 0 |
 | *Aidia borneensis* | 0 |
-| *Melicope glabra* | 0 |
+| Pauh-pauh (*Melicope glabra*) | 0 |
 | *Microcos lanceolata* | 0 |
 | Resak Bulu (*Vatica micrantha*) | 0 |
 | *Lophopetalum beccarianum* | 0 |
@@ -119,7 +119,7 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Aglaia forbesii* | 0 |
 | *Paranephelium xestophyllum* | 0 |
 | *Symplocos ophirensis* | 0 |
-| *Chionanthus pluriflorus* | 0 |
+| Pokok Bangkulat (*Chionanthus pluriflorus*) | 0 |
 | *Mallotus korthalsii* | 0 |
 | *Calamus sparsiflorus* | 0 |
 | *Xanthophyllum griffithii* | 0 |
@@ -146,7 +146,7 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Hydnocarpus borneensis* | 0 |
 | *Urophyllum borneense* | 0 |
 | *Magnolia betongensis* | 0 |
-| *Hopea nervosa* | 0 |
+| Merawan jangkang (*Hopea nervosa*) | 0 |
 | *Polyalthia obliqua* | 0 |
 | Sepa Petri (*Gonystylus maingayi*) | 0 |
 | *Alangium meyeri* | 0 |
@@ -169,7 +169,7 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Aporosa elmeri* | 0 |
 | *Gymnosphaera glabra* | 0 |
 | *Litsea fulva* | 0 |
-| *Teijsmanniodendron simplicifolium* | 0 |
+| Pokok Buak-Buak (*Teijsmanniodendron simplicifolium*) | 0 |
 | *Antidesma venenosum* | 0 |
 | *Goniothalamus tapisoides* | 0 |
 | *Syzygium castaneum* | 0 |
@@ -197,8 +197,8 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Leea aculeata* | 0 |
 | *Actinomortierella wolfii* | 0 |
 | *Scindapsus coriaceus* | 0 |
-| *Palaquium maingayi* | 0 |
-| *Teijsmanniodendron bogoriense* | 0 |
+| Pokok Nyatoh Tembaga (*Palaquium maingayi*) | 0 |
+| Pokok Buak-Buak Jari (*Teijsmanniodendron bogoriense*) | 0 |
 | *Ardisia macrophylla* | 0 |
 | *Fusarium solani* | 0 |
 | *Anthoshorea agami* | 0 |
@@ -209,7 +209,7 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Adinandra cordifolia* | 0 |
 | *Kayea racemosa* | 0 |
 | *Melicope accedens* | 0 |
-| *Calamus rhomboideus* | 0 |
+| Rotan dawuh (*Calamus rhomboideus*) | 0 |
 | *Urophyllum nigricans* | 0 |
 | *Drepananthus magnificus* | 0 |
 | *Psychotria gyrulosa* | 0 |
@@ -225,7 +225,7 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | Yellow Meranti (*Shorea xanthophylla*) | 0 |
 | *Vaccinium claoxylon* | 0 |
 | Madang-gambici (*Lophopetalum javanicum*) | 0 |
-| *Arytera litoralis* | 0 |
+| Arytera littoralis (*Arytera litoralis*) | 0 |
 | *Parablechnum vestitum* | 0 |
 | *Gymnosphaera commutata* | 0 |
 | *Palaquium sericeum* | 0 |
@@ -247,8 +247,8 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Diplazium latisquamatum* | 0 |
 | Light Red Meranti (*Shorea lepidota*) | 0 |
 | Selangan Batu Tinteng (*Shorea brunnescens*) | 0 |
-| *Microcos latifolia* | 0 |
-| *Hopea dyeri* | 0 |
+| Daun patuk tuau (*Microcos latifolia*) | 0 |
+| Merawan palit (*Hopea dyeri*) | 0 |
 | *Calophyllum nodosum* | 0 |
 | *Picrophloeus javanensis* | 0 |
 | *Thuidium plumulosum* | 0 |
@@ -275,10 +275,10 @@ Most-seen plants with the fewest photos. Close-ups of every stage help most.
 | *Knema pseudolaurina* | 0 |
 | *Dipterocarpus nudus* | 0 |
 | *Gaultheria heterophylla* | 0 |
-| *Myristica iners* | 0 |
+| Pokok Darah-Darah (*Myristica iners*) | 0 |
 | *Tetrastigma diepenhorstii* | 0 |
 | Resak (*Vatica bella*) | 0 |
-| *Vatica nitens* | 0 |
+| Pokok Resak Daun Panjang (*Vatica nitens*) | 0 |
 | *Tetracera akara* | 0 |
 | *Cyrtandra areolata* | 0 |
 | *Acalypha caturus* | 0 |

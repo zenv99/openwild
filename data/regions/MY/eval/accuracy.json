@@ -1,12 +1,12 @@
 {
- "photos_tested": 19693,
- "species_tested": 4199,
- "species_total": 4700,
+ "photos_tested": 24629,
+ "species_tested": 5419,
+ "species_total": 6210,
  "top_k": {
-  "top1": 0.3678,
-  "top3": 0.492,
-  "top5": 0.5431,
-  "top10": 0.6066
+  "top1": 0.3687,
+  "top3": 0.493,
+  "top5": 0.5437,
+  "top10": 0.6075
  },
  "median_rank": 4.0,
  "most_confused": [
@@ -56,6 +56,11 @@
    "times": 5
   },
   {
+   "true": "Favolaschia calocera",
+   "shown_first": "Favolaschia claudopus",
+   "times": 5
+  },
+  {
    "true": "Camphora parthenoxylon",
    "shown_first": "Cinnamomum parthenoxylon",
    "times": 5
@@ -66,14 +71,14 @@
    "times": 5
   },
   {
-   "true": "Licuala grandis",
-   "shown_first": "Licuala peltata",
+   "true": "Aeschynanthus hians",
+   "shown_first": "Aeschynanthus tricolor",
    "times": 5
   },
   {
-   "true": "Medinilla speciosa",
-   "shown_first": "Medinilla beamanii",
-   "times": 4
+   "true": "Licuala grandis",
+   "shown_first": "Licuala peltata",
+   "times": 5
   },
   {
    "true": "Ficus fistulosa",
@@ -91,24 +96,19 @@
    "times": 4
   },
   {
-   "true": "Ceropegia trichantha",
-   "shown_first": "Ceropegia lucida",
+   "true": "Asplenium musifolium",
+   "shown_first": "Asplenium nidus",
    "times": 4
   },
   {
-   "true": "Lycianthes denticulata",
-   "shown_first": "Solanum nigrum",
-   "times": 4
+   "true": "Medinilla speciosa",
+   "shown_first": "Medinilla beamanii",
+   "times": 3
   },
   {
-   "true": "Thelypteris parasitica",
-   "shown_first": "Pteris biaurita",
-   "times": 4
-  },
-  {
-   "true": "Schima crenata",
-   "shown_first": "Schima wallichii",
-   "times": 4
+   "true": "Sonneratia caseolaris",
+   "shown_first": "Sonneratia griffithii",
+   "times": 3
   },
   {
    "true": "Gnetum gnemonoides",
@@ -156,13 +156,28 @@
    "times": 3
   },
   {
-   "true": "Selaginella stipulata",
-   "shown_first": "Selaginella wallichii",
+   "true": "Dacryodes rugosa",
+   "shown_first": "Dacryodes rostrata",
+   "times": 3
+  },
+  {
+   "true": "Lobaria isidiophora",
+   "shown_first": "Lobaria spathulata",
+   "times": 3
+  },
+  {
+   "true": "Trametes hirsuta",
+   "shown_first": "Trametes lactinea",
    "times": 3
   },
   {
    "true": "Pyrrosia piloselloides",
    "shown_first": "Pyrrosia lanceolata",
+   "times": 3
+  },
+  {
+   "true": "Asplenium nidus",
+   "shown_first": "Asplenium musifolium",
    "times": 3
   },
   {
@@ -194,21 +209,6 @@
    "true": "Blumea sinuata",
    "shown_first": "Blumea sessiliflora",
    "times": 3
-  },
-  {
-   "true": "Ceropegia lucida",
-   "shown_first": "Ceropegia trichantha",
-   "times": 3
-  },
-  {
-   "true": "Rhododendron klossii",
-   "shown_first": "Rhododendron moulmainense",
-   "times": 3
-  },
-  {
-   "true": "Laportea interrupta",
-   "shown_first": "Laportea aestuans",
-   "times": 3
   }
  ],
  "hardest_species": [
@@ -228,12 +228,12 @@
    "top1": 0.0
   },
   {
-   "species": "Citrus medica",
+   "species": "Averrhoa carambola",
    "photos": 9,
    "top1": 0.0
   },
   {
-   "species": "Averrhoa carambola",
+   "species": "Thysanolaena latifolia",
    "photos": 9,
    "top1": 0.0
   },
@@ -273,6 +273,11 @@
    "top1": 0.0
   },
   {
+   "species": "Psidium guajava",
+   "photos": 8,
+   "top1": 0.0
+  },
+  {
    "species": "Amaranthus spinosus",
    "photos": 8,
    "top1": 0.0
@@ -293,12 +298,12 @@
    "top1": 0.0
   },
   {
-   "species": "Cinnamomum verum",
+   "species": "Persicaria posumbu",
    "photos": 8,
    "top1": 0.0
   },
   {
-   "species": "Persicaria posumbu",
+   "species": "Digitaria radicosa",
    "photos": 8,
    "top1": 0.0
   },
@@ -379,11 +384,6 @@
   },
   {
    "species": "Cayratia mollissima",
-   "photos": 7,
-   "top1": 0.0
-  },
-  {
-   "species": "Lepisanthes tetraphylla",
    "photos": 7,
    "top1": 0.0
   },
