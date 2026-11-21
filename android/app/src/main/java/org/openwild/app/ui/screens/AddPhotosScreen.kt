@@ -36,6 +36,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -61,9 +62,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.openwild.app.OpenWildApp
 import org.openwild.app.R
-import org.openwild.app.core.PhotoLicense
+import org.openwild.app.core.Attribution
+import org.openwild.app.ui.CreditDraft
+import org.openwild.app.ui.CreditFields
 import org.openwild.app.ui.PhotoInbox
 import org.openwild.app.ui.ProfileSync
+import org.openwild.app.ui.rememberCreditDraft
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
@@ -89,14 +93,13 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
     val sp = pack.species
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val prefs = remember { context.getSharedPreferences("contribute", Context.MODE_PRIVATE) }
     val gaps = remember(index) { pack.photoGaps(index) }
     var stage by rememberSaveable { mutableStateOf(initialStage ?: gaps.firstOrNull() ?: "closeup") }
     val staged = remember { mutableStateListOf<StagedPhoto>() }
-    var credit by rememberSaveable { mutableStateOf(prefs.getString("credit", "") ?: "") }
-    var licenseCode by rememberSaveable { mutableStateOf(PhotoLicense.CC_BY.code) }
+    var credit by remember { mutableStateOf(CreditDraft()) }
+    val remembered = rememberCreditDraft()
+    LaunchedEffect(remembered) { if (remembered.remember || remembered.name.isNotBlank()) credit = remembered }
     var consent by rememberSaveable { mutableStateOf(false) }
-    var anonymous by rememberSaveable { mutableStateOf(prefs.getBoolean("anonymous", false)) }
     var busy by remember { mutableStateOf(false) }
     var savedCount by rememberSaveable { mutableStateOf(-1) }
     var pendingCamera by remember { mutableStateOf<Uri?>(null) }
@@ -190,35 +193,16 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
             }
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = anonymous, onCheckedChange = { anonymous = it; prefs.edit().putBoolean("anonymous", it).apply() })
-            Text(stringResource(R.string.contrib_anonymous), style = MaterialTheme.typography.bodyMedium)
-        }
-        if (!anonymous) OutlinedTextField(
-            value = credit, onValueChange = { credit = it.take(60) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.contrib_credit)) },
-            supportingText = { Text(stringResource(R.string.contrib_credit_help)) },
-        )
-        ProfileCreditNote(kind = "photo")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PhotoLicense.entries.forEach { license ->
-                FilterChip(
-                    selected = licenseCode == license.code,
-                    onClick = { licenseCode = license.code },
-                    label = { Text(license.label) },
-                )
-            }
-        }
-        val licenseLabel = (PhotoLicense.fromCode(licenseCode) ?: PhotoLicense.DEFAULT).label
-        Text(stringResource(R.string.profile_shown, if (anonymous) "Photo: Anonymous · $licenseLabel" else "Photo: ${credit.trim().ifBlank { "Anonymous" }} · $licenseLabel"))
+        CreditFields(credit, onChange = { credit = it }, showLicense = true, line = credit.photoLine())
+        val creditName = Attribution.creditName(credit.name)
+        val licenseLabel = (org.openwild.app.core.PhotoLicense.fromCode(credit.license) ?: org.openwild.app.core.PhotoLicense.DEFAULT).label
         Row(verticalAlignment = Alignment.Top) {
             Checkbox(checked = consent, onCheckedChange = { consent = it })
             Text(stringResource(R.string.contrib_consent), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
         }
         Text(stringResource(R.string.contrib_privacy), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-        val creditName = if (anonymous) "Anonymous" else credit.trim()
-        val ready = !busy && staged.isNotEmpty() && creditName.isNotBlank() && consent
+        val ready = !busy && staged.isNotEmpty() && consent
         if (PhotoInbox.enabled) {
             // Direct send, after asking permission. The GitHub form stays available as an alternative.
             Button(enabled = ready && sentCount < 0, modifier = Modifier.fillMaxWidth(), onClick = { askSend = true }) {
@@ -244,11 +228,11 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
         }
         val formClick = {
             busy = true
-            if (!anonymous) prefs.edit().putString("credit", credit.trim()).apply()
             val list = staged.toList()
+            val draft = credit
             scope.launch {
                 val n = withContext(Dispatchers.IO) {
-                    queuePlantPhoto(context, pack.regionId, sp.scientificNames[index], anonymous, credit, licenseCode, list)
+                    queuePlantPhoto(context, pack.regionId, sp.scientificNames[index], draft, list)
                     Contribute.savePhotosForContribution(context, sp.scientificNames[index], list)
                 }
                 savedCount = n
@@ -281,13 +265,13 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
                         askSend = false
                         busy = true
                         sendError = null
-                        if (!anonymous) prefs.edit().putString("credit", credit.trim()).apply()
                         val list = staged.toList()
+                        val draft = credit
                         progress = 0 to list.size
                         scope.launch {
                             val r = withContext(Dispatchers.IO) {
                                 runCatching {
-                                    queuePlantPhoto(context, pack.regionId, sp.scientificNames[index], anonymous, credit, licenseCode, list)
+                                    queuePlantPhoto(context, pack.regionId, sp.scientificNames[index], draft, list)
                                     PhotoInbox.send(context, pack.regionId, sp.scientificNames[index], creditName, list, licenseLabel) { d, t ->
                                         progress = d to t
                                     }
@@ -327,21 +311,21 @@ private fun queuePlantPhoto(
     context: Context,
     regionId: String,
     species: String,
-    anonymous: Boolean,
-    credit: String,
-    licenseCode: String,
+    draft: CreditDraft,
     photos: List<Contribute.StagedPhoto>,
 ) {
-    val store = (context.applicationContext as OpenWildApp).profiles
-    store.add(
+    val store = (context.applicationContext as OpenWildApp).credits
+    store.enqueue(
         kind = "photo",
         species = species,
         regionId = regionId,
         body = photos.joinToString(",") { it.stage },
         rating = 0,
-        anonymous = anonymous,
-        typedName = credit,
-        licenseCode = licenseCode,
+        typedName = draft.name,
+        title = draft.title,
+        affiliation = draft.affiliation,
+        licenseCode = draft.license,
+        avatarJpeg = draft.avatarJpeg,
     )
     runCatching { ProfileSync.sync(context) }
 }

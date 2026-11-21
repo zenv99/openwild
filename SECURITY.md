@@ -38,6 +38,6 @@ iNaturalist, never sending the user's photos there. "Turn off online check" with
 
 A separate Online check in the brain section uses the Pl@ntNet identify API (plants only, not mushrooms). It is off by default. Turning it on does not send anything. A photo is sent only when the person taps Check with Pl@ntNet on a result, and only if the phone has a connection. The free plan allows 500 identifications a day per key, including non-commercial use. The public app does not contain a key: the person pastes their own key from my.plantnet.org, and it stays in app-private storage. A private build may set `OW_PLANTNET_API_KEY` or `-PplantnetApiKey`; a key typed on the phone replaces it. Results are shown next to the offline answer with a Pl@ntNet credit. They are not a reason to eat anything. iNaturalist's computer-vision API is not public, so it is not used. No fungi identification service had terms that allow this app to call it.
 
-## Optional profiles
+## Optional name on a send
 
-Profiles are off the network unless a build sets `profilesOnline` and a profiles API URL. The default build does not. A profile someone creates (name, photo, title, affiliation, anonymous or not) stays on the phone. School-email confirmation and queue upload run only in a build where that flag is on. Anonymous credits do not include the email. Details: `docs/PROFILES-DESIGN.md`.
+There is no sign-in. A name, title, affiliation, and small picture are asked only on the form that sends a review, a photo, or an identification note. Blank means Anonymous. "Remember my name" is off until checked, and Settings can clear the saved copy. Upload runs only when a build sets `profilesOnline` and a profiles API URL. The default build does not. Details: `docs/PROFILES-DESIGN.md`.

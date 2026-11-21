@@ -14,7 +14,7 @@ OpenWild is a free gift to anyone who finds themselves outdoors and needs to kno
 ## Rules
 
 - Changes to `SAFETY.md`, `core/SafetyPolicy.kt` or the content validator need review from a maintainer **and** a domain expert.
-- No ads, analytics, tracking, or paid features. The app must work fully offline after a pack download, with or without an optional profile. Online profiles stay off unless a build sets `profilesOnline`.
+- No ads, analytics, tracking, paid features, or sign-in. The app must work fully offline after a pack download. A name on a send is optional. Online upload of those sends stays off unless a build sets `profilesOnline`.
 - No dosages, preparation or consumption instructions for psychoactive species.
 - Confidence logic changes must update both `pipeline/openwild_pipeline/confidence.py` and `android/.../core/Confidence.kt`, and keep the shared fixture test passing.
 

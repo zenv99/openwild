@@ -21,13 +21,6 @@ val profilesApiUrl: String = ((findProperty("profilesApiUrl") as String?) ?: "")
     .replace("\\", "")
     .replace("\"", "")
 
-val academicAssets = layout.buildDirectory.dir("generated/academicAssets")
-val copyAcademicDomains = tasks.register<Copy>("copyAcademicDomains") {
-    from(rootProject.file("../server/data"))
-    include("academic-domains.txt", "academic-domains-abused.txt")
-    into(academicAssets)
-}
-
 android {
     namespace = "org.openwild.app"
     compileSdk = 35
@@ -111,12 +104,6 @@ android {
     androidResources {
         noCompress += "tflite"     // memory-map the model straight from the APK
     }
-    sourceSets.getByName("main").assets.srcDir(academicAssets)
-}
-
-tasks.named("preBuild").configure { dependsOn(copyAcademicDomains) }
-tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
-    dependsOn(copyAcademicDomains)
 }
 
 dependencies {

@@ -1,6 +1,10 @@
 package org.openwild.app.ui.screens
 
 import androidx.compose.material.icons.filled.Eco
+import org.openwild.app.ui.CreditDraft
+import org.openwild.app.ui.CreditFields
+import org.openwild.app.ui.queueCredit
+import org.openwild.app.ui.rememberCreditDraft
 import org.openwild.app.ui.stageLabel
 import org.openwild.app.ui.PhotoWanted
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -44,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -242,6 +247,7 @@ fun SpeciesScreen(index: Int, tier: Tier, state: UiState, vm: AppViewModel) {
 
 @Composable
 private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewModel) {
+    val context = LocalContext.current
     var rating by remember(regionId, scientificName) { mutableIntStateOf(0) }
     var body by remember(regionId, scientificName) { mutableStateOf("") }
     var ready by remember(regionId, scientificName) { mutableStateOf(false) }
@@ -255,7 +261,9 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
     }
     SectionCard(stringResource(R.string.review_title), Icons.Filled.Star, MaterialTheme.colorScheme.primary) {
         Text(stringResource(R.string.review_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        ProfileCreditNote(kind = "review")
+        var credit by remember(regionId, scientificName) { mutableStateOf(CreditDraft()) }
+        val remembered = rememberCreditDraft()
+        LaunchedEffect(remembered) { if (remembered.remember) credit = remembered }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             for (star in 1..5) {
                 Icon(
@@ -274,6 +282,9 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
             label = { Text(stringResource(R.string.review_text_label)) },
         )
         val feedback = rememberFeedbackSender()
+        if (feedback.enabled) {
+            CreditFields(credit, onChange = { credit = it }, showLicense = false, line = credit.reviewLine())
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(enabled = ready && rating in 1..5, onClick = { vm.saveReview(regionId, scientificName, rating, body) }) {
                 Text(stringResource(R.string.review_save))
@@ -281,7 +292,8 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
             // Optional: share it with OpenWild (asks first). Tips, local names and corrections help everyone.
             if (feedback.enabled) {
                 OutlinedButton(enabled = ready && (rating in 1..5 || body.isNotBlank()), onClick = {
-                    vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body, queue = true)
+                    vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body)
+                    queueCredit(context, "review", regionId, scientificName, body, rating, credit)
                     feedback.send(
                         regionId, scientificName, "review",
                         org.json.JSONObject().put("rating", rating).put("text", body.take(4000)),

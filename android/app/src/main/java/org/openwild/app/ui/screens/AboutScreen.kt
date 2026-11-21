@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Translate
@@ -41,7 +40,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
 import org.openwild.app.BuildConfig
+import org.openwild.app.OpenWildApp
 import org.openwild.app.R
 import org.openwild.app.ui.AppViewModel
 import org.openwild.app.ui.Contribute
@@ -115,11 +116,11 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
 
         SectionCard(stringResource(R.string.privacy_title), Icons.Filled.Lock, Leaf) {
             Text(stringResource(R.string.privacy_body))
-        }
-
-        SectionCard(stringResource(R.string.profile_title), Icons.Filled.Person, MaterialTheme.colorScheme.primary) {
-            Text(stringResource(R.string.profile_about))
-            TextButton(onClick = { vm.go(Screen.Profile) }) { Text(stringResource(R.string.profile_open)) }
+            Text(stringResource(R.string.credit_clear_help), style = MaterialTheme.typography.bodySmall)
+            TextButton(onClick = {
+                (context.applicationContext as OpenWildApp).credits.clearSaved()
+                Toast.makeText(context, context.getString(R.string.credit_cleared), Toast.LENGTH_SHORT).show()
+            }) { Text(stringResource(R.string.credit_clear)) }
         }
 
         SectionCard(stringResource(R.string.contribute_title), Icons.Filled.VerifiedUser, MaterialTheme.colorScheme.primary) {

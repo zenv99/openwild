@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +36,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import org.openwild.app.OpenWildApp
 import org.openwild.app.R
 import org.openwild.app.core.NameSuggest
 import org.openwild.app.pack.Location
@@ -66,10 +66,11 @@ fun rememberReportSender(
     var pending by remember { mutableStateOf<ReportSender.Request?>(null) }
     val sender = remember { ReportSender { pending = it } }
     pending?.let { p ->
-        val prefs = context.getSharedPreferences("contribute", Context.MODE_PRIVATE)
         var guess by remember(p) { mutableStateOf(p.chosen ?: "") }
         var note by remember(p) { mutableStateOf("") }
-        var credit by remember(p) { mutableStateOf(prefs.getString("credit", "") ?: "") }
+        var credit by remember(p) { mutableStateOf(CreditDraft()) }
+        val remembered = rememberCreditDraft()
+        LaunchedEffect(remembered) { if (remembered.remember) credit = remembered }
         var withPhotos by remember(p) { mutableStateOf(p.photos.isNotEmpty()) }
         var shareLocation by remember(p) { mutableStateOf(false) }
         val ideas = suggestions(guess)
@@ -115,12 +116,7 @@ fun rememberReportSender(
                         Checkbox(checked = shareLocation, onCheckedChange = { shareLocation = it })
                         Text(stringResource(R.string.report_location_opt_in), style = MaterialTheme.typography.bodySmall)
                     }
-                    if (withPhotos) {
-                        OutlinedTextField(
-                            value = credit, onValueChange = { credit = it.take(60) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-                            label = { Text(stringResource(R.string.report_credit)) },
-                        )
-                    }
+                    CreditFields(credit, onChange = { credit = it }, showLicense = false, line = credit.noteLine())
                     Text(stringResource(R.string.report_ask_not_sent), style = MaterialTheme.typography.bodySmall)
                 }
             },
@@ -129,18 +125,20 @@ fun rememberReportSender(
                     val req = p
                     val guessNow = guess.trim()
                     val noteNow = note.trim()
-                    val creditNow = credit.trim()
+                    val draft = credit
+                    val creditNow = draft.creditName()
                     val photosOn = withPhotos
                     val locOn = shareLocation
                     pending = null
-                    if (creditNow.isNotBlank()) prefs.edit().putString("credit", creditNow).apply()
                     val fields = JSONObject(req.fields.toString())
                         .put("predicted", req.predicted)
                         .put("chosen", req.chosen ?: "")
                         .put("guess", guessNow)
                         .put("suggested", guessNow)
                         .put("note", noteNow)
-                        .put("credit", creditNow.ifBlank { "Anonymous" })
+                        .put("credit", creditNow)
+                        .put("title", if (creditNow == "Anonymous") "" else draft.title)
+                        .put("affiliation", if (creditNow == "Anonymous") "" else draft.affiliation)
                         .put("share_location", locOn)
                     if (locOn && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         Location.lastKnown(context)?.let { (lon, lat) ->
@@ -154,24 +152,14 @@ fun rememberReportSender(
                                 PhotoInbox.sendReport(req.regionId, req.chosen ?: guessNow, fields, photos) { _, _ -> }
                             }.isSuccess
                             if (!delivered) ReportOutbox.enqueue(context, req.regionId, req.chosen ?: guessNow, fields, photos)
-                            val store = (context.applicationContext as OpenWildApp).profiles
-                            val profile = store.current()
                             val lon = if (locOn && fields.has("lon")) fields.optDouble("lon") else null
                             val lat = if (locOn && fields.has("lat")) fields.optDouble("lat") else null
-                            store.add(
-                                kind = "id_feedback",
-                                species = (req.chosen ?: guessNow).ifBlank { req.predicted },
-                                regionId = req.regionId,
-                                body = noteNow.ifBlank { guessNow },
-                                rating = 0,
-                                anonymous = creditNow.isBlank() && profile?.visibility != "public",
-                                typedName = creditNow,
-                                licenseCode = profile?.license,
-                                shareLocation = locOn,
-                                longitude = lon?.takeUnless { it.isNaN() },
-                                latitude = lat?.takeUnless { it.isNaN() },
+                            queueCredit(
+                                context, "id_feedback", req.regionId,
+                                (req.chosen ?: guessNow).ifBlank { req.predicted },
+                                noteNow.ifBlank { guessNow }, 0, draft, locOn,
+                                lon?.takeUnless { it.isNaN() }, lat?.takeUnless { it.isNaN() },
                             )
-                            runCatching { ProfileSync.sync(context) }
                             delivered
                         }
                         val msg = if (sent) R.string.report_sent else R.string.report_queued
