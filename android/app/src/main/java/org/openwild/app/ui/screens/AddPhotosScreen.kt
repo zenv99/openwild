@@ -59,8 +59,11 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.openwild.app.OpenWildApp
 import org.openwild.app.R
+import org.openwild.app.core.PhotoLicense
 import org.openwild.app.ui.PhotoInbox
+import org.openwild.app.ui.ProfileSync
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
@@ -91,6 +94,7 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
     var stage by rememberSaveable { mutableStateOf(initialStage ?: gaps.firstOrNull() ?: "closeup") }
     val staged = remember { mutableStateListOf<StagedPhoto>() }
     var credit by rememberSaveable { mutableStateOf(prefs.getString("credit", "") ?: "") }
+    var licenseCode by rememberSaveable { mutableStateOf(PhotoLicense.CC_BY.code) }
     var consent by rememberSaveable { mutableStateOf(false) }
     var anonymous by rememberSaveable { mutableStateOf(prefs.getBoolean("anonymous", false)) }
     var busy by remember { mutableStateOf(false) }
@@ -195,6 +199,18 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
             label = { Text(stringResource(R.string.contrib_credit)) },
             supportingText = { Text(stringResource(R.string.contrib_credit_help)) },
         )
+        ProfileCreditNote(kind = "photo")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PhotoLicense.entries.forEach { license ->
+                FilterChip(
+                    selected = licenseCode == license.code,
+                    onClick = { licenseCode = license.code },
+                    label = { Text(license.label) },
+                )
+            }
+        }
+        val licenseLabel = (PhotoLicense.fromCode(licenseCode) ?: PhotoLicense.DEFAULT).label
+        Text(stringResource(R.string.profile_shown, if (anonymous) "Photo: Anonymous · $licenseLabel" else "Photo: ${credit.trim().ifBlank { "Anonymous" }} · $licenseLabel"))
         Row(verticalAlignment = Alignment.Top) {
             Checkbox(checked = consent, onCheckedChange = { consent = it })
             Text(stringResource(R.string.contrib_consent), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 12.dp))
@@ -231,10 +247,13 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
             if (!anonymous) prefs.edit().putString("credit", credit.trim()).apply()
             val list = staged.toList()
             scope.launch {
-                val n = withContext(Dispatchers.IO) { Contribute.savePhotosForContribution(context, sp.scientificNames[index], list) }
+                val n = withContext(Dispatchers.IO) {
+                    queuePlantPhoto(context, pack.regionId, sp.scientificNames[index], anonymous, credit, licenseCode, list)
+                    Contribute.savePhotosForContribution(context, sp.scientificNames[index], list)
+                }
                 savedCount = n
                 busy = false
-                if (n > 0) Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], creditName, list)
+                if (n > 0) Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], "$creditName, $licenseLabel", list)
             }
             Unit
         }
@@ -268,7 +287,8 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
                         scope.launch {
                             val r = withContext(Dispatchers.IO) {
                                 runCatching {
-                                    PhotoInbox.send(context, pack.regionId, sp.scientificNames[index], creditName, list) { d, t ->
+                                    queuePlantPhoto(context, pack.regionId, sp.scientificNames[index], anonymous, credit, licenseCode, list)
+                                    PhotoInbox.send(context, pack.regionId, sp.scientificNames[index], creditName, list, licenseLabel) { d, t ->
                                         progress = d to t
                                     }
                                 }
@@ -295,12 +315,35 @@ fun AddPhotosScreen(index: Int, vm: AppViewModel, initialStage: String? = null) 
                     Text(stringResource(R.string.contrib_next_title, savedCount), fontWeight = FontWeight.Bold)
                     Text(stringResource(R.string.contrib_next_steps), style = MaterialTheme.typography.bodySmall)
                     OutlinedButton(onClick = {
-                        Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], creditName, staged.toList())
+                        Contribute.openPhotoContribution(context, pack.regionId, sp.scientificNames[index], "$creditName, $licenseLabel", staged.toList())
                     }) { Text(stringResource(R.string.contrib_open_form)) }
                 }
             }
         }
     }
+}
+
+private fun queuePlantPhoto(
+    context: Context,
+    regionId: String,
+    species: String,
+    anonymous: Boolean,
+    credit: String,
+    licenseCode: String,
+    photos: List<Contribute.StagedPhoto>,
+) {
+    val store = (context.applicationContext as OpenWildApp).profiles
+    store.add(
+        kind = "photo",
+        species = species,
+        regionId = regionId,
+        body = photos.joinToString(",") { it.stage },
+        rating = 0,
+        anonymous = anonymous,
+        typedName = credit,
+        licenseCode = licenseCode,
+    )
+    runCatching { ProfileSync.sync(context) }
 }
 
 @Composable

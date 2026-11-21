@@ -112,13 +112,16 @@ jobs:
           if grep "usesCleartextTraffic" manifest.txt | grep -q "0xffffffff"; then echo "FAIL: plain http allowed"; exit 1; fi
           grep -q "networkSecurityConfig" manifest.txt || { echo "FAIL: no network security config"; exit 1; }
           # Network code may only live in PackManager (region downloads), PhotoInbox (photos the user
-          # agreed to send), and PlantNet (opt-in identify). PhotoInbox may only talk to api.github.com.
-          # PlantNet may only talk to my-api.plantnet.org.
-          HITS=$(grep -rlE "HttpURLConnection|java\.net\.URL\b|okhttp|Socket\(" app/src/main/java | grep -v -e "pack/PackManager.kt" -e "ui/PhotoInbox.kt" -e "ui/PlantNet.kt" || true)
-          if [ -n "$HITS" ]; then echo "FAIL: network code outside PackManager/PhotoInbox/PlantNet: $HITS"; exit 1; fi
+          # agreed to send), PlantNet (opt-in identify), and ProfileSync (optional profiles, off by default).
+          # PhotoInbox may only talk to api.github.com. PlantNet may only talk to my-api.plantnet.org.
+          # ProfileSync must not name a host. The URL is injected at build time and defaults to empty.
+          HITS=$(grep -rlE "HttpURLConnection|java\.net\.URL\b|okhttp|Socket\(" app/src/main/java | grep -v -e "pack/PackManager.kt" -e "ui/PhotoInbox.kt" -e "ui/PlantNet.kt" -e "ui/ProfileSync.kt" || true)
+          if [ -n "$HITS" ]; then echo "FAIL: network code outside PackManager/PhotoInbox/PlantNet/ProfileSync: $HITS"; exit 1; fi
           if grep -oE "https?://[a-zA-Z0-9.-]+" app/src/main/java/org/openwild/app/ui/PhotoInbox.kt | grep -v "^https://api.github.com$"; then echo "FAIL: PhotoInbox talks to another host"; exit 1; fi
           if grep -oE "https?://[a-zA-Z0-9.-]+" app/src/main/java/org/openwild/app/ui/PlantNet.kt | grep -v "^https://my-api.plantnet.org$"; then echo "FAIL: PlantNet talks to another host"; exit 1; fi
-          echo "PASS: only allowed permissions, HTTPS-only, network code only in PackManager/PhotoInbox/PlantNet, not debuggable, backup off"
+          if grep -oE "https?://[a-zA-Z0-9.-]+" app/src/main/java/org/openwild/app/ui/ProfileSync.kt | grep -q .; then echo "FAIL: ProfileSync must not name a host"; exit 1; fi
+          if ! grep -q 'profilesOnline") as String?) ?: "false"' app/build.gradle.kts; then echo "FAIL: profiles must default to off"; exit 1; fi
+          echo "PASS: only allowed permissions, HTTPS-only, network code only in PackManager/PhotoInbox/PlantNet/ProfileSync, profiles off by default, not debuggable, backup off"
           # versionName is 1.0.N. versionCode stays on the workflow run number so it is above every v0.7 build.
           VC=$(grep -o "versionCode='[0-9]*'" badging.txt | head -1 | grep -o '[0-9]*')
           VN=$(grep -o "versionName='[^']*'" badging.txt | head -1 | sed "s/versionName='//;s/'//")

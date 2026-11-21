@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import org.openwild.app.OpenWildApp
 import org.openwild.app.R
 import org.openwild.app.core.NameSuggest
 import org.openwild.app.pack.Location
@@ -153,6 +154,24 @@ fun rememberReportSender(
                                 PhotoInbox.sendReport(req.regionId, req.chosen ?: guessNow, fields, photos) { _, _ -> }
                             }.isSuccess
                             if (!delivered) ReportOutbox.enqueue(context, req.regionId, req.chosen ?: guessNow, fields, photos)
+                            val store = (context.applicationContext as OpenWildApp).profiles
+                            val profile = store.current()
+                            val lon = if (locOn && fields.has("lon")) fields.optDouble("lon") else null
+                            val lat = if (locOn && fields.has("lat")) fields.optDouble("lat") else null
+                            store.add(
+                                kind = "id_feedback",
+                                species = (req.chosen ?: guessNow).ifBlank { req.predicted },
+                                regionId = req.regionId,
+                                body = noteNow.ifBlank { guessNow },
+                                rating = 0,
+                                anonymous = creditNow.isBlank() && profile?.visibility != "public",
+                                typedName = creditNow,
+                                licenseCode = profile?.license,
+                                shareLocation = locOn,
+                                longitude = lon?.takeUnless { it.isNaN() },
+                                latitude = lat?.takeUnless { it.isNaN() },
+                            )
+                            runCatching { ProfileSync.sync(context) }
                             delivered
                         }
                         val msg = if (sent) R.string.report_sent else R.string.report_queued
@@ -167,7 +186,7 @@ fun rememberReportSender(
     return sender
 }
 
-private fun round1(v: Double): Double = round(v * 10.0) / 10.0
+private fun round1(v: Double): Double = org.openwild.app.core.CoarseLocation.round1(v)
 
 /** What a wrong-ID report carries besides the person's own words. No coordinates. */
 fun wrongIdFields(res: IdResult, names: Array<String>, packVersion: Int, modelId: String, kind: String): JSONObject {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug builds only. Release APKs do not include this activity. -->
+        <activity
+            android:name=".debug.ProfilePreviewActivity"
+            android:exported="true" />
+    </application>
+</manifest>

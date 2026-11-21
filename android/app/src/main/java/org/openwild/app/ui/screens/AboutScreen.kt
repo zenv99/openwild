@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Translate
@@ -114,6 +115,11 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
 
         SectionCard(stringResource(R.string.privacy_title), Icons.Filled.Lock, Leaf) {
             Text(stringResource(R.string.privacy_body))
+        }
+
+        SectionCard(stringResource(R.string.profile_title), Icons.Filled.Person, MaterialTheme.colorScheme.primary) {
+            Text(stringResource(R.string.profile_about))
+            TextButton(onClick = { vm.go(Screen.Profile) }) { Text(stringResource(R.string.profile_open)) }
         }
 
         SectionCard(stringResource(R.string.contribute_title), Icons.Filled.VerifiedUser, MaterialTheme.colorScheme.primary) {

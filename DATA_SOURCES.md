@@ -73,3 +73,7 @@ contributor and rebuilds the pack. Community photos are shown first and credited
 community". Over time they replace stock photos that carry non-commercial terms.
 
 Plants that still need photos are marked "Photos wanted" in the app, and listed in `docs/photos-wanted/`.
+
+## Academic email domains
+
+Optional profile verification uses a snapshot of university domains from [Hipo/university-domains-list](https://github.com/Hipo/university-domains-list) (MIT) and the abused-domain denylist from [JetBrains/swot](https://github.com/JetBrains/swot) (MIT). The files, licenses, and commit pins are in `server/data/`. See `server/data/SOURCES.md` and `docs/PROFILES-DESIGN.md`. The matcher is original code. A school suffix (`.edu`, `.ac.uk`, `.ac.id`, and the same pattern for other countries) is also accepted when the domain is not on the abused list.

@@ -1,0 +1,21 @@
+# Not deployed from CI. Replace database_id after `wrangler d1 create`.
+# Secrets (ADMIN_TOKEN, RESEND_API_KEY) are set with `wrangler secret put`, never committed.
+# Steps: docs/PROFILES-DESIGN.md
+name = "openwild-profiles"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "openwild-profiles"
+database_id = "replace-after-create"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "openwild-photos"
+
+[vars]
+EMAIL_MODE = "off"
+ENVIRONMENT = "production"
+# EMAIL_FROM is the verified sender for Resend. Leave empty until that account exists.
+EMAIL_FROM = ""

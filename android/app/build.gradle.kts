@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("app.cash.paparazzi") version "1.3.5"
 }
 
 // Project links and settings. Override any with -P<name>=... when building.
@@ -13,6 +14,19 @@ val lightningAddress: String = (findProperty("lightningAddress") as String?) ?: 
 val feedbackEmail: String = (findProperty("feedbackEmail") as String?) ?: ""
 // Google Play restricts in-app donation links; build Play releases with -PshowDonations=false.
 val showDonations: Boolean = ((findProperty("showDonations") as String?) ?: "true").toBoolean()
+// Optional profiles. Off unless a build the owner approves passes -PprofilesOnline=true and a URL.
+val profilesOnline: Boolean = ((findProperty("profilesOnline") as String?) ?: "false").toBoolean()
+val profilesApiUrl: String = ((findProperty("profilesApiUrl") as String?) ?: "")
+    .trim()
+    .replace("\\", "")
+    .replace("\"", "")
+
+val academicAssets = layout.buildDirectory.dir("generated/academicAssets")
+val copyAcademicDomains = tasks.register<Copy>("copyAcademicDomains") {
+    from(rootProject.file("../server/data"))
+    include("academic-domains.txt", "academic-domains-abused.txt")
+    into(academicAssets)
+}
 
 android {
     namespace = "org.openwild.app"
@@ -34,6 +48,8 @@ android {
         buildConfigField("String", "LIGHTNING_ADDRESS", "\"$lightningAddress\"")
         buildConfigField("String", "FEEDBACK_EMAIL", "\"$feedbackEmail\"")
         buildConfigField("boolean", "SHOW_DONATIONS", "$showDonations")
+        buildConfigField("boolean", "PROFILES_ONLINE", "$profilesOnline")
+        buildConfigField("String", "PROFILES_API_URL", "\"$profilesApiUrl\"")
         // The app has no INTERNET permission; keep network code paths switched off too.
         buildConfigField("boolean", "ALLOW_NETWORK", "true")
         // Photo inbox: users can send their plant photos (after a permission screen) to a private repo,
@@ -95,6 +111,12 @@ android {
     androidResources {
         noCompress += "tflite"     // memory-map the model straight from the APK
     }
+    sourceSets.getByName("main").assets.srcDir(academicAssets)
+}
+
+tasks.named("preBuild").configure { dependsOn(copyAcademicDomains) }
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+    dependsOn(copyAcademicDomains)
 }
 
 dependencies {

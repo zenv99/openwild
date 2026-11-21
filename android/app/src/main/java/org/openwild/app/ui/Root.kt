@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.openwild.app.R
 import org.openwild.app.ui.screens.AboutScreen
+import org.openwild.app.ui.screens.ProfileRoute
 import org.openwild.app.ui.screens.RegionChoiceScreen
 import org.openwild.app.ui.screens.CaptureScreen
 import org.openwild.app.ui.screens.CreditsScreen
@@ -126,6 +127,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
         Screen.Credits -> stringResource(R.string.credits)
         Screen.Explore -> stringResource(R.string.explore)
         Screen.About -> stringResource(R.string.nav_about)
+        Screen.Profile -> stringResource(R.string.profile_title)
     }
 
     Scaffold(
@@ -193,6 +195,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                     Screen.Credits -> CreditsScreen(vm)
                     Screen.Explore -> ExploreScreen(state, vm)
                     Screen.About -> AboutScreen(state, vm)
+                    Screen.Profile -> ProfileRoute()
                 }
             }
         }

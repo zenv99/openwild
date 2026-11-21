@@ -1,0 +1,11 @@
+[
+  {"name": "unapproved photo is left out even when anonymous", "verifiedAcademic": true, "visibility": "anonymous", "accountAgeDays": 30, "kind": "photo", "approved": false, "weight": 0},
+  {"name": "unapproved public photo is left out", "verifiedAcademic": true, "visibility": "public", "accountAgeDays": 30, "kind": "photo", "approved": false, "weight": 0},
+  {"name": "anonymous review stays at 1 even if the mailbox is verified", "verifiedAcademic": true, "visibility": "anonymous", "accountAgeDays": 1, "kind": "review", "approved": true, "weight": 1},
+  {"name": "anonymous approved photo stays at 1", "verifiedAcademic": true, "visibility": "anonymous", "accountAgeDays": 30, "kind": "photo", "approved": true, "weight": 1},
+  {"name": "public verified review", "verifiedAcademic": true, "visibility": "public", "accountAgeDays": 1, "kind": "review", "approved": true, "weight": 2},
+  {"name": "public verified approved photo", "verifiedAcademic": true, "visibility": "public", "accountAgeDays": 30, "kind": "photo", "approved": true, "weight": 2},
+  {"name": "public new account", "verifiedAcademic": false, "visibility": "public", "accountAgeDays": 1, "kind": "id_feedback", "approved": true, "weight": 0.75},
+  {"name": "public established account", "verifiedAcademic": false, "visibility": "public", "accountAgeDays": 7, "kind": "review", "approved": true, "weight": 1.25},
+  {"name": "public established id note", "verifiedAcademic": false, "visibility": "public", "accountAgeDays": 40, "kind": "id_feedback", "approved": true, "weight": 1.25}
+]

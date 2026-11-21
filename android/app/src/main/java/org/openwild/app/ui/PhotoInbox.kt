@@ -36,6 +36,7 @@ object PhotoInbox {
         scientificName: String,
         credit: String,
         photos: List<Contribute.StagedPhoto>,
+        license: String = "CC BY 4.0",
         progress: (Int, Int) -> Unit,
     ): Int {
         val id = UUID.randomUUID().toString().take(12)
@@ -59,7 +60,7 @@ object PhotoInbox {
             .put("region", regionId)
             .put("credit", credit.take(60))
             .put("anonymous", credit == "Anonymous")
-            .put("license", "CC BY 4.0")
+            .put("license", license)
             .put("own_photos", true)
             .put("photos", sent)
             .put("app_version", BuildConfig.VERSION_NAME)
@@ -84,7 +85,7 @@ object PhotoInbox {
      * camera data). The bot checks it weekly; good photos of the named plant go into the library, which is
      * how the app learns from its mistakes. Goes to reports/<region>/<plant>/<id>/.
      */
-    fun sendReport(regionId: String, plant: String, fields: JSONObject, photos: List<Pair<Bitmap, String>>, progress: (Int, Int) -> Unit): Int {
+    fun sendReport(regionId: String, plant: String, fields: JSONObject, photos: List<Pair<Bitmap, String>>, license: String = "CC BY 4.0", progress: (Int, Int) -> Unit): Int {
         val id = UUID.randomUUID().toString().take(12)
         val folder = "reports/$regionId/${slug(plant.ifBlank { "unknown" })}/$id"
         val sent = JSONArray()
@@ -98,7 +99,7 @@ object PhotoInbox {
             progress(k + 1, photos.size)
         }
         val body = JSONObject(fields.toString()).put("region", regionId).put("photos", sent)
-            .put("license", "CC BY 4.0").put("own_photos", true).put("app_version", BuildConfig.VERSION_NAME)
+            .put("license", license).put("own_photos", true).put("app_version", BuildConfig.VERSION_NAME)
         put("$folder/report.json", body.toString(2).toByteArray(), "Report $id: $plant")
         return sent.length()
     }

@@ -76,6 +76,7 @@ sealed interface Screen {
     data object Credits : Screen
     data object Explore : Screen
     data object About : Screen
+    data object Profile : Screen
 }
 
 /** Bottom-navigation destinations. */
@@ -245,8 +246,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun loadReview(regionId: String, scientificName: String): ReviewStore.Review? = ow.reviews.get(regionId, scientificName)
 
-    fun saveReview(regionId: String, scientificName: String, rating: Int, body: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun saveReview(regionId: String, scientificName: String, rating: Int, body: String, queue: Boolean = false) = viewModelScope.launch(Dispatchers.IO) {
         ow.reviews.save(regionId, scientificName, rating, body)
+        val profile = ow.profiles.current()
+        if (queue || profile != null) {
+            ow.profiles.add(
+                kind = "review",
+                species = scientificName,
+                regionId = regionId,
+                body = body,
+                rating = rating,
+                anonymous = profile?.visibility == "anonymous",
+                typedName = profile?.displayName ?: "",
+                licenseCode = profile?.license,
+            )
+            runCatching { ProfileSync.sync(getApplication()) }
+        }
         val saved = getApplication<Application>().getString(R.string.review_saved)
         _state.update { it.copy(message = saved) }
     }

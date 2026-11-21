@@ -255,6 +255,7 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
     }
     SectionCard(stringResource(R.string.review_title), Icons.Filled.Star, MaterialTheme.colorScheme.primary) {
         Text(stringResource(R.string.review_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        ProfileCreditNote(kind = "review")
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             for (star in 1..5) {
                 Icon(
@@ -280,7 +281,7 @@ private fun ReviewCard(regionId: String, scientificName: String, vm: AppViewMode
             // Optional: share it with OpenWild (asks first). Tips, local names and corrections help everyone.
             if (feedback.enabled) {
                 OutlinedButton(enabled = ready && (rating in 1..5 || body.isNotBlank()), onClick = {
-                    vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body)
+                    vm.saveReview(regionId, scientificName, rating.coerceAtLeast(0), body, queue = true)
                     feedback.send(
                         regionId, scientificName, "review",
                         org.json.JSONObject().put("rating", rating).put("text", body.take(4000)),
