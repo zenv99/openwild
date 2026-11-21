@@ -76,6 +76,8 @@ sealed interface Screen {
     data object Credits : Screen
     data object Explore : Screen
     data object About : Screen
+    /** Offline list of ways to help. Links open only when a button is tapped. */
+    data object Volunteer : Screen
 }
 
 /** Bottom-navigation destinations. */

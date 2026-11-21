@@ -61,6 +61,7 @@ import org.openwild.app.ui.screens.PacksScreen
 import org.openwild.app.ui.screens.ResultsScreen
 import org.openwild.app.ui.screens.SpeciesScreen
 import org.openwild.app.ui.screens.SurvivalScreen
+import org.openwild.app.ui.screens.VolunteerScreen
 import org.openwild.app.ui.theme.OpenWildTheme
 
 @Composable
@@ -126,6 +127,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
         Screen.Credits -> stringResource(R.string.credits)
         Screen.Explore -> stringResource(R.string.explore)
         Screen.About -> stringResource(R.string.nav_about)
+        Screen.Volunteer -> stringResource(R.string.volunteer_open)
     }
 
     Scaffold(
@@ -193,6 +195,7 @@ private fun RootBody(state: UiState, vm: AppViewModel) {
                     Screen.Credits -> CreditsScreen(vm)
                     Screen.Explore -> ExploreScreen(state, vm)
                     Screen.About -> AboutScreen(state, vm)
+                    Screen.Volunteer -> VolunteerScreen()
                 }
             }
         }

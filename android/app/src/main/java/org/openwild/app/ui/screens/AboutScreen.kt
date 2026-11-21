@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -89,6 +90,19 @@ fun AboutScreen(state: UiState, vm: AppViewModel) {
 
         if (BuildConfig.SHOW_DONATIONS) {
             BitcoinDonateSection()
+        }
+
+        SectionCard(stringResource(R.string.volunteer_card_title), Icons.Filled.VolunteerActivism, Leaf) {
+            Text(stringResource(R.string.volunteer_card_body))
+            Button(
+                onClick = { vm.go(Screen.Volunteer) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Leaf, contentColor = Color.White),
+            ) {
+                Icon(Icons.Filled.VolunteerActivism, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.volunteer_open), fontWeight = FontWeight.Bold)
+            }
         }
 
         SectionCard(stringResource(R.string.feedback_title), Icons.Filled.Feedback, MaterialTheme.colorScheme.primary) {

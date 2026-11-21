@@ -101,6 +101,12 @@ bc1qgj3ce8qeq22s37py9s6m2ksjpz9v3zhls5re3a
 
 The About screen shows the same address, with a button that copies it. The app does not open a wallet or send anything.
 
+## Contributing
+
+Ways to help are in [CONTRIBUTING.md](CONTRIBUTING.md): add or fix plant photos, check plant safety info, translate the app, report a bug or idea, and help with code. Photo rules and the rule that safety data needs a source are in that file.
+
+In the app, open **About** and tap **Volunteer & improve OpenWild**. The list works offline. A link opens in the browser only when you tap it. After an identification, **Wrong ID?**, **This is it**, and a species-page review are the easiest ways to help.
+
 ## Automation
 
 - **Weekly open-data buckets** (Sundays): walks Wikipedia categories in English and Indonesian (edible fruits, vegetables, nuts, spices, herbs, edible/poisonous/deadly/psychoactive mushrooms, poisonous plants, medicinal and fibre plants), maps every article to its species through Wikidata, and turns them into one-line verdicts. Poisonous always beats edible; genus-level hits only add warnings.
