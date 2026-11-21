@@ -39,7 +39,11 @@ import org.openwild.app.R
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.pack.PackManager
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.DownloadGateDialog
+import org.openwild.app.ui.Footer
 import org.openwild.app.ui.UiState
+import org.openwild.app.ui.WarningBox
+import org.openwild.app.ui.rememberDownloadGate
 
 /** First launch: the user picks a region. Nothing is installed until they do. */
 @Composable
@@ -55,7 +59,9 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
         !r.hidden && (q.isEmpty() || r.name.lowercase().contains(q) || r.id.lowercase().contains(q))
     }
     val grouped = regions.groupBy { it.continent.ifBlank { "Other" } }.toSortedMap()
+    val gate = rememberDownloadGate()
 
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -84,6 +90,9 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                 }
             }
         }
+        if (q.isEmpty()) {
+            item { RecommendedCard(state, vm, gate) }
+        }
         item {
             OutlinedTextField(
                 value = query,
@@ -95,7 +104,7 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        if (state.suggestedRegionId == null && q.isEmpty()) {
+        if (state.suggestedRegionId == null && q.isNotEmpty()) {
             item { org.openwild.app.ui.UseLocationButton(vm) }
         }
         state.suggestedRegionId?.let { id ->
@@ -105,17 +114,24 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
                         Text(stringResource(R.string.near_you), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
                         Text(stringResource(R.string.near_you_install), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    item { ChoiceRow(suggested, ready[suggested.id], remote[suggested.id], state.installingRegion == suggested.id, state.downloading[suggested.id], vm, state.remoteLoading) }
+                    item { ChoiceRow(suggested, ready[suggested.id], remote[suggested.id], state.installingRegion == suggested.id, state.downloading[suggested.id], vm, state.remoteLoading, gate::ask) }
                 }
             }
+        }
+        if (q.isEmpty()) {
+            item { Text(stringResource(R.string.all_countries), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp)) }
         }
         grouped.forEach { (continent, list) ->
             item { Text(continent, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp)) }
             items(list, key = { it.id }) { region ->
-                ChoiceRow(region, ready[region.id], remote[region.id], state.installingRegion == region.id, state.downloading[region.id], vm, state.remoteLoading)
+                ChoiceRow(region, ready[region.id], remote[region.id], state.installingRegion == region.id, state.downloading[region.id], vm, state.remoteLoading, gate::ask)
             }
         }
+        item { WarningBox(stringResource(R.string.disclaimer_body)) }
+        item { Footer() }
         item { Spacer(Modifier.size(24.dp)) }
+    }
+    DownloadGateDialog(gate)
     }
 }
 
@@ -123,6 +139,7 @@ fun RegionChoiceScreen(state: UiState, vm: AppViewModel) {
 private fun ChoiceRow(
     region: RegionInfo, pack: PackManager.BundledPack?, online: PackManager.RemotePack?,
     installing: Boolean, progress: Float?, vm: AppViewModel, checking: Boolean = false,
+    onDownload: (Long, () -> Unit) -> Unit = { _, go -> go() },
 ) {
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
@@ -151,7 +168,7 @@ private fun ChoiceRow(
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.install_pack))
             }
-            online != null -> Button(onClick = { vm.download(online.first) }) {
+            online != null -> Button(onClick = { onDownload(online.first.size) { vm.download(online.first) } }) {
                 Icon(Icons.Filled.Download, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.download))

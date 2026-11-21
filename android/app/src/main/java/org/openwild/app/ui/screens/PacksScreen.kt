@@ -60,8 +60,12 @@ import org.openwild.app.R
 import org.openwild.app.core.RegionInfo
 import org.openwild.app.pack.PackManager
 import org.openwild.app.ui.AppViewModel
+import org.openwild.app.ui.DownloadGate
+import org.openwild.app.ui.DownloadGateDialog
+import org.openwild.app.ui.Footer
 import org.openwild.app.ui.UiState
 import org.openwild.app.ui.WarningBox
+import org.openwild.app.ui.rememberDownloadGate
 import org.openwild.app.ui.theme.Leaf
 
 private fun mb(bytes: Long) = if (bytes <= 0) "—" else "%.1f MB".format(bytes / 1_000_000.0)
@@ -107,7 +111,10 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
     val grouped = regions.groupBy { it.continent.ifBlank { "Other" } }.toSortedMap()
     val totalBytes = state.installed.sumOf { it.file.length() }
     val updates = state.installed.count { p -> remote[p.regionId]?.let { it.version > p.version } == true }
+    val updateBytes = state.installed.sumOf { p -> remote[p.regionId]?.let { PackManager.updateFor(p, it)?.size } ?: 0L }
+    val gate = rememberDownloadGate()
 
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -127,7 +134,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
                         Text(stringResource(R.string.private_note), style = MaterialTheme.typography.bodySmall)
                     }
                     if (updates > 0) {
-                        Button(onClick = vm::updateAll) { Text(stringResource(R.string.update_all, updates)) }
+                        Button(onClick = { gate.ask(updateBytes) { vm.updateAll() } }) { Text(stringResource(R.string.update_all, updates)) }
                     }
                     if (!BuildConfig.ALLOW_NETWORK) {
                         Button(onClick = { importer.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.import_region)) }
@@ -135,7 +142,10 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
                 }
             }
         }
-        item { InstalledCard(state, vm) }
+        item { InstalledCard(state, vm, gate) }
+        if (q.isEmpty()) {
+            item { RecommendedCard(state, vm, gate) }
+        }
         if (BuildConfig.ALLOW_NETWORK && state.remoteError && state.remote.isEmpty()) {
             item { WarningBox(stringResource(R.string.offline_list), danger = false) }
         }
@@ -152,7 +162,7 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
             )
         }
 
-        if (state.suggestedRegionId == null && q.isEmpty()) {
+        if (state.suggestedRegionId == null && q.isNotEmpty()) {
             item { org.openwild.app.ui.UseLocationButton(vm) }
         }
         // Near you
@@ -160,21 +170,28 @@ fun PacksScreen(state: UiState, vm: AppViewModel) {
             state.regions.firstOrNull { it.id == id }?.let { r ->
                 if (q.isEmpty()) {
                     item { Header(stringResource(R.string.near_you)) }
-                    item { RegionRow(r, status(r.id), vm, near = true) }
+                    item { RegionRow(r, status(r.id), vm, near = true, gate::ask) }
                 }
             }
         }
 
+        if (q.isEmpty()) {
+            item { Header(stringResource(R.string.all_countries)) }
+        }
         grouped.forEach { (continent, list) ->
             item(key = "h-$continent") {
                 ContinentHeader(continent, list.size, expandedByDefault = q.isNotEmpty())
             }
             items(list, key = { it.id }) { r ->
                 val open = expandedContinents[continent] ?: q.isNotEmpty()
-                AnimatedVisibility(visible = open) { RegionRow(r, status(r.id), vm, near = false) }
+                AnimatedVisibility(visible = open) { RegionRow(r, status(r.id), vm, near = false, gate::ask) }
             }
         }
+        item { WarningBox(stringResource(R.string.disclaimer_body)) }
+        item { Footer() }
         item { Spacer(Modifier.size(24.dp)) }
+    }
+    DownloadGateDialog(gate)
     }
 }
 
@@ -189,7 +206,7 @@ private fun versionDate(v: Int): String {
 
 /** Everything downloaded onto this phone, what it is, how big, and a delete button for each. */
 @Composable
-private fun InstalledCard(state: UiState, vm: AppViewModel) {
+private fun InstalledCard(state: UiState, vm: AppViewModel, gate: DownloadGate) {
     var confirm by remember { mutableStateOf<Pair<String, () -> Unit>?>(null) }
     val remote = state.remote.associateBy { it.regionId }
     Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
@@ -205,7 +222,7 @@ private fun InstalledCard(state: UiState, vm: AppViewModel) {
                     title = p.name + if (p.regionId == state.activeRegionId) " · " + stringResource(R.string.installed_in_use) else "",
                     sub = "$kind · ${versionDate(p.version)} · ${mb(p.file.length())}" +
                         (upd?.let { " · " + stringResource(R.string.installed_update, mb(it.size)) } ?: ""),
-                    onUpdate = upd?.let { u -> { vm.download(u) } },
+                    onUpdate = upd?.let { u -> { gate.ask(u.size) { vm.download(u) } } },
                     onDelete = { confirm = p.name to { vm.deletePack(p.regionId) } },
                 )
             }
@@ -277,7 +294,7 @@ private fun Header(text: String) {
 }
 
 @Composable
-private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean) {
+private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean, onDownload: (Long, () -> Unit) -> Unit) {
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -304,7 +321,7 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
         when (s) {
             is Status.Installed -> {
                 if (s.update != null) {
-                    IconButton(onClick = { vm.download(s.update) }) { Icon(Icons.Filled.SystemUpdate, stringResource(R.string.update)) }
+                    IconButton(onClick = { onDownload(s.update.size) { vm.download(s.update) } }) { Icon(Icons.Filled.SystemUpdate, stringResource(R.string.update)) }
                 } else if (s.active) {
                     Icon(Icons.Filled.CheckCircle, null, tint = Leaf)
                 }
@@ -314,7 +331,7 @@ private fun RegionRow(r: RegionInfo, s: Status, vm: AppViewModel, near: Boolean)
             Status.Installing -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp)
             }
-            is Status.Available -> IconButton(onClick = { vm.download(s.pack.first) }) {
+            is Status.Available -> IconButton(onClick = { onDownload(s.pack.first.size) { vm.download(s.pack.first) } }) {
                 Icon(Icons.Filled.CloudDownload, stringResource(R.string.download), tint = MaterialTheme.colorScheme.primary)
             }
             is Status.Downloading -> Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {

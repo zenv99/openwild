@@ -16,6 +16,7 @@ import org.openwild.app.R
 import org.openwild.app.data.ReviewStore
 import java.io.File
 import org.openwild.app.core.ConfidenceResult
+import org.openwild.app.core.CountryHint
 import org.openwild.app.core.Identifier
 import org.openwild.app.core.KingdomFilter
 import org.openwild.app.core.PackFocus
@@ -26,6 +27,7 @@ import org.openwild.app.core.RegionLocator
 import org.openwild.app.core.SafetyPolicy
 import org.openwild.app.core.Tier
 import org.openwild.app.ml.ImageUtils
+import org.openwild.app.pack.CountrySignals
 import org.openwild.app.pack.Location
 import org.openwild.app.pack.PackManager
 import org.openwild.app.pack.RegionPack
@@ -180,6 +182,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var activeEmbedder: org.openwild.app.ml.Embedder? = null
     private var upgradeEmbedder: org.openwild.app.ml.Embedder? = null
     private var upgradeInfo: PackManager.Upgrade? = null
+    private var recommendedRunning = false
 
     init {
         viewModelScope.launch {
@@ -204,14 +207,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     modelId = org.openwild.app.ml.Embedder.modelId(getApplication()),
                 )
             }
-            // First-run suggestion is a country. Asia/Makassar covers Bali, Sulawesi and Nusa Tenggara,
-            // so the suggestion is Indonesia, not Bali.
+            // A saved pick wins. Otherwise locale, SIM, network, time zone, and a coarse fix
+            // when location is already allowed. Hidden finer packs are not suggested.
             if (_state.value.suggestedRegionId == null) {
-                val tz = java.util.TimeZone.getDefault().id
-                val country = java.util.Locale.getDefault().country.uppercase()
-                val guess = if (tz == "Asia/Jakarta" || tz == "Asia/Makassar" || tz == "Asia/Jayapura") "ID" else country
-                val match = regions.firstOrNull { it.id == guess && !it.hidden }
-                    ?: regions.firstOrNull { it.id == country && !it.hidden }
+                val saved = prefs.getString(RECOMMENDED_COUNTRY, null)
+                val savedRegion = regions.firstOrNull { it.id == saved && !it.hidden && it.id != CountryHint.WORLD_ID }
+                val match = savedRegion ?: withContext(Dispatchers.IO) {
+                    CountryHint.match(regions, CountrySignals.read(getApplication(), regions))
+                }
                 if (match != null) {
                     _state.update { it.copy(suggestedRegion = match.name, suggestedRegionId = match.id) }
                 }
@@ -304,7 +307,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         } ?: return@launch
         val (country, _) = region
         _state.update { it.copy(suggestedRegion = country.name, suggestedRegionId = country.id) }
-        // Use the country pack when it is already on the phone. A hidden pack such as Bali keeps
+        prefs.edit().putString(RECOMMENDED_COUNTRY, country.id).apply()
+        // Use the country pack when it is already on the phone. A hidden finer pack keeps
         // working until that country download exists.
         if (ow.packs.activeRegionId == null) {
             val have = _state.value.installed.filter { it.compatible }.map { it.regionId }.toSet()
@@ -550,14 +554,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun download(p: PackManager.RemotePack) = viewModelScope.launch {
-        _state.update { it.copy(downloading = it.downloading + (p.regionId to 0f)) }
-        val r = withContext(Dispatchers.IO) {
-            runCatching {
-                ow.packs.download(p) { f -> _state.update { s -> s.copy(downloading = s.downloading + (p.regionId to f)) } }
-            }
-        }
-        _state.update { it.copy(downloading = it.downloading - p.regionId, message = r.exceptionOrNull()?.message) }
-        refreshInstalled()
+        val r = fetch(p)
         if (r.isSuccess) {
             val curPack = pack
             val cur = curPack?.regionId
@@ -567,6 +564,106 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val blank = curPack == null || !curPack.hasPhotos
             if (blank || cur == p.regionId || replacesLegacy) useRegion(p.regionId)
         }
+    }
+
+    /** Remember a country for the recommended card. Does not download. */
+    fun chooseCountry(regionId: String) {
+        val region = visibleCountry(regionId) ?: return
+        prefs.edit().putString(RECOMMENDED_COUNTRY, region.id).apply()
+        _state.update { it.copy(suggestedRegion = region.name, suggestedRegionId = region.id) }
+    }
+
+    /**
+     * Download the full country pack and World, then show the country in Explore.
+     * World stays enabled so its names and safety notes supplement the country.
+     * A pack that already has the full photo set is left as it is.
+     * The smaller essentials file, when one exists, stays available as its own download.
+     */
+    fun downloadRecommended(countryId: String) {
+        if (recommendedRunning) return
+        val country = visibleCountry(countryId) ?: return
+        val snap = _state.value
+        if (country.id in snap.downloading || CountryHint.WORLD_ID in snap.downloading || snap.installingRegion != null) return
+        recommendedRunning = true
+        chooseCountry(country.id)
+        viewModelScope.launch {
+            try {
+                val countryOk = ensureFull(country.id)
+                val worldOk = ensureFull(CountryHint.WORLD_ID)
+                if (!countryOk && !worldOk) {
+                    val missing = getApplication<Application>().getString(R.string.recommended_missing, country.name)
+                    _state.update { s -> if (s.message != null) s else s.copy(message = missing) }
+                    return@launch
+                }
+                focusRecommended(country.id, countryOk, worldOk)
+            } finally {
+                recommendedRunning = false
+            }
+        }
+    }
+
+    /** Put an already-downloaded recommended pair on screen, country in front. */
+    fun showRecommended(countryId: String) = viewModelScope.launch {
+        val country = visibleCountry(countryId) ?: return@launch
+        chooseCountry(country.id)
+        val installed = _state.value.installed.map { it.regionId }.toSet()
+        focusRecommended(country.id, country.id in installed, CountryHint.WORLD_ID in installed)
+    }
+
+    private fun visibleCountry(id: String): RegionInfo? =
+        _state.value.regions.firstOrNull { it.id == id && !it.hidden && it.id != CountryHint.WORLD_ID }
+
+    /** Full pack, not the smaller essentials file. Keeps a lighter copy if the full file cannot be fetched. */
+    private suspend fun ensureFull(id: String): Boolean {
+        val have = _state.value.installed.firstOrNull { it.regionId == id }
+        if (have != null && !have.light) return true
+        val remote = _state.value.remote.firstOrNull { it.regionId == id }
+        if (remote != null && org.openwild.app.BuildConfig.ALLOW_NETWORK) {
+            if (fetch(remote, keepMessageOnSuccess = true).isSuccess) return true
+        }
+        if (have != null) return true
+        if (_state.value.bundled.none { it.regionId == id && it.complete }) return false
+        _state.update { it.copy(installingRegion = id) }
+        val ok = withContext(Dispatchers.IO) { runCatching { ow.packs.installBundled(id) }.getOrDefault(false) }
+        _state.update { it.copy(installingRegion = null) }
+        if (ok) refreshInstalled()
+        else {
+            val name = _state.value.regions.firstOrNull { it.id == id }?.name ?: id
+            val missing = getApplication<Application>().getString(R.string.region_not_ready, name)
+            _state.update { it.copy(message = missing) }
+        }
+        return ok
+    }
+
+    private suspend fun focusRecommended(countryId: String, countryOk: Boolean, worldOk: Boolean) {
+        val enabled = ow.packs.enabledRegionIds().toMutableSet()
+        val installed = _state.value.installed.map { it.regionId }.toSet()
+        if (countryOk && countryId in installed) enabled += countryId
+        if (worldOk && CountryHint.WORLD_ID in installed) enabled += CountryHint.WORLD_ID
+        if (enabled.isNotEmpty()) ow.packs.setEnabledRegions(enabled)
+        when {
+            countryOk && countryId in installed -> ow.packs.activeRegionId = countryId
+            worldOk && CountryHint.WORLD_ID in installed && ow.packs.activeRegionId == null ->
+                ow.packs.activeRegionId = CountryHint.WORLD_ID
+        }
+        loadActivePack()
+    }
+
+    private suspend fun fetch(p: PackManager.RemotePack, keepMessageOnSuccess: Boolean = false): Result<Unit> {
+        _state.update { it.copy(downloading = it.downloading + (p.regionId to 0f)) }
+        val r = withContext(Dispatchers.IO) {
+            runCatching {
+                ow.packs.download(p) { f -> _state.update { s -> s.copy(downloading = s.downloading + (p.regionId to f)) } }
+            }
+        }
+        _state.update { s ->
+            s.copy(
+                downloading = s.downloading - p.regionId,
+                message = r.exceptionOrNull()?.message ?: if (keepMessageOnSuccess) s.message else null,
+            )
+        }
+        refreshInstalled()
+        return r
     }
 
     fun deletePack(regionId: String) = viewModelScope.launch {
@@ -773,6 +870,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     companion object {
         const val MAX_MATCHES = 30
         const val MAX_PHOTOS = 5
+        private const val RECOMMENDED_COUNTRY = "recommended_country"
 
         fun defaultPartFor(filter: KingdomFilter, n: Int): PhotoPart = when (filter) {
             KingdomFilter.FUNGI -> listOf(PhotoPart.CAP, PhotoPart.UNDERSIDE, PhotoPart.STEM_BASE).getOrElse(n) { PhotoPart.CAP }
