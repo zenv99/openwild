@@ -66,6 +66,7 @@ class SpeciesRecord:
     text_embedding: np.ndarray | None = None   # (D,) teacher text embedding fallback
     attributions: list[dict] = field(default_factory=list)  # {observer, license, url}
     photos: list[dict] = field(default_factory=list)  # {path, observer, license, url}: shown in the app
+    always_include: bool = False  # keep the row even with no fingerprint (deadly collection)
 
 
 # Display thumbs only. The raw training frames stay in the pipeline work dir and are not packed.
@@ -145,7 +146,14 @@ def build_pack(
     photos_per_species: int = 3,
     photos_per_key_species: int = 4,
     keep_each_prototype: bool = False,
+    include_deadly: bool = False,
 ) -> Path:
+    if include_deadly:
+        from .deadly import apply_to_pack
+
+        species, curated = apply_to_pack(species, curated)
+        sources = list(sources or [])
+        sources.append("OpenWild deadly species collection (Wikipedia lists, Wikidata, species articles; photos credited per file)")
     params = {**config.DEFAULT_PARAMS, **(params or {})}
     if projection is not None:
         from .projection import apply as project
@@ -199,7 +207,7 @@ def build_pack(
     sid = 0
     for rec in species:
         has_img = rec.embeddings is not None and len(rec.embeddings) >= min_photos_for_image_protos
-        if not has_img and rec.text_embedding is None and not guide_only:
+        if not has_img and rec.text_embedding is None and not guide_only and not rec.always_include:
             skipped += 1
             continue
         if rec.scientific_name.lower() in name_to_id:  # duplicate name (e.g. synonym keys): keep the first

@@ -1176,6 +1176,10 @@ def build_reference_pack(region_id: str, base: Path, out: Path | None = None, ve
             additions.append(row)
     dest = out or (config.PACKS_DIR / f"{region_id}-v{version}.owpack")
     stats = augment_pack(base, dest, additions, version)
+    from .deadly import insert_into_pack
+
+    deadly_stats = insert_into_pack(dest)
+    stats = {**stats, "deadly": deadly_stats}
     print("augment", stats, flush=True)
 
     print("leave-one-out after", flush=True)

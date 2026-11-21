@@ -28,6 +28,15 @@ class PackFocusTest {
     }
 
     @Test
+    fun worldStaysOnScreenWhenItAlreadyHasPhotos() {
+        val packs = listOf(
+            pack("WORLD", photos = true, species = 5936),
+            pack("ID", photos = true, species = 36621),
+        )
+        assertEquals("WORLD", PackFocus.choose("WORLD", packs))
+    }
+
+    @Test
     fun namesOnlyRegionRemainsWhenItIsTheOnlyOne() {
         val world = listOf(pack("WORLD", photos = false, species = 5936))
         assertEquals("WORLD", PackFocus.choose("WORLD", world))

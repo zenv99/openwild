@@ -432,6 +432,11 @@
     <string name="stage_related">Related species, not this plant</string>
     <string name="stage_example">Example of a dangerous species</string>
     <string name="example_banner">Example: %1$s</string>
+    <string name="see_real_photos">See real photos</string>
+    <string name="see_real_photos_hint">Opens a search in the browser. OpenWild has not checked those pictures.</string>
+    <string name="see_real_inat">iNaturalist</string>
+    <string name="see_real_gbif">GBIF</string>
+    <string name="see_real_commons">Wikimedia</string>
     <string name="stage_exact_specimen">Museum specimen of this exact plant</string>
     <string name="exact_specimen_banner">This exact plant, pressed in a museum. No photo of it alive exists yet.</string>
     <string name="related_banner">Related plant, NOT this one: %1$s</string>
